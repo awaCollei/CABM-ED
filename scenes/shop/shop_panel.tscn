@@ -1,0 +1,118 @@
+[gd_scene load_steps=5 format=3 uid="uid://h7vwr1re2m88"]
+
+[ext_resource type="Script" uid="uid://ckmxxg67eeuj8" path="res://scripts/shop_panel.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://dcmkqbhhcxi0m" path="res://assets/images/shop_internal.png" id="2_bg"]
+[ext_resource type="PackedScene" uid="uid://b0wadr1holiqe" path="res://scenes/universal_inventory_ui.tscn" id="3_inv"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ilykg"]
+bg_color = Color(0, 0.5686275, 1, 0.8509804)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_blend = true
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="ShopPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="SelectionUI" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="GroceryBtn" type="Button" parent="SelectionUI"]
+layout_mode = 0
+offset_left = 426.0
+offset_top = 390.0
+offset_right = 546.0
+offset_bottom = 470.0
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_ilykg")
+text = "杂货"
+
+[node name="SnacksBtn" type="Button" parent="SelectionUI"]
+layout_mode = 0
+offset_left = 90.0
+offset_top = 320.0
+offset_right = 210.0
+offset_bottom = 400.0
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_ilykg")
+text = "食品"
+
+[node name="DrinksBtn" type="Button" parent="SelectionUI"]
+layout_mode = 0
+offset_left = 178.0
+offset_top = 521.0
+offset_right = 298.0
+offset_bottom = 601.0
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_ilykg")
+text = "饮料"
+
+[node name="ProduceBtn" type="Button" parent="SelectionUI"]
+layout_mode = 0
+offset_left = 987.0
+offset_top = 396.0
+offset_right = 1107.0
+offset_bottom = 476.0
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_ilykg")
+text = "农产品"
+
+[node name="DailyBtn" type="Button" parent="SelectionUI"]
+layout_mode = 0
+offset_left = 701.0
+offset_top = 281.0
+offset_right = 821.0
+offset_bottom = 361.0
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBoxFlat_ilykg")
+text = "每日"
+
+[node name="CloseSelectionBtn" type="Button" parent="SelectionUI"]
+layout_mode = 0
+offset_left = 1190.0
+offset_top = 16.0
+offset_right = 1262.0
+offset_bottom = 64.0
+theme_override_font_sizes/font_size = 32
+text = "离开"
+
+[node name="ShopContainer" type="Control" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="UniversalInventoryUI" parent="ShopContainer" instance=ExtResource("3_inv")]
+visible = false
+layout_mode = 1

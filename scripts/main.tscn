@@ -1,0 +1,370 @@
+[gd_scene load_steps=17 format=3 uid="uid://c8yqvxm7qwxqj"]
+
+[ext_resource type="Script" uid="uid://b84t0i8227422" path="res://scripts/main.gd" id="1_main"]
+[ext_resource type="Theme" uid="uid://contcf3ey12vl" path="res://default_theme.tres" id="1_ragmj"]
+[ext_resource type="Script" uid="uid://tj3864tln2oi" path="res://scripts/sidebar.gd" id="2_sidebar"]
+[ext_resource type="Script" uid="uid://bvxm7qwxqj001" path="res://scripts/character.gd" id="3_character"]
+[ext_resource type="Script" uid="uid://cvxm7qwxqj002" path="res://scripts/chat_dialog.gd" id="4_chat_dialog"]
+[ext_resource type="Script" uid="uid://dvxm7qwxqj003" path="res://scripts/character_debug.gd" id="5_debug"]
+[ext_resource type="Texture2D" uid="uid://b43olrtg1sory" path="res://assets/images/chat/image.png" id="6_0im0j"]
+[ext_resource type="Script" uid="uid://bovp4hs3xx2vc" path="res://scripts/action_menu.gd" id="6_action_menu"]
+[ext_resource type="Script" uid="uid://c2uwvdnjbt6um" path="res://scripts/scene_menu.gd" id="7_scene_menu"]
+[ext_resource type="Script" uid="uid://dhaaxgkx54mkg" path="res://scripts/audio_manager.gd" id="8_audio_manager"]
+[ext_resource type="PackedScene" path="res://scenes/interactive_element.tscn" id="11_interactive"]
+[ext_resource type="PackedScene" uid="uid://c5826ps5xu45" path="res://scenes/inventory_button.tscn" id="12_o6pr8"]
+[ext_resource type="PackedScene" uid="uid://dqn684etc881m" path="res://scenes/character_diary_viewer.tscn" id="13_m1sh3"]
+[ext_resource type="PackedScene" path="res://scenes/ui/auto_save_indicator.tscn" id="14_m1sh3"]
+[ext_resource type="PackedScene" uid="uid://dbtqcy050w8bp" path="res://scenes/music_player_panel.tscn" id="15_music_panel"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0im0j"]
+bg_color = Color(0, 0, 0, 0)
+border_width_right = 3
+border_color = Color(0.9326067, 0.8857702, 0.6834521, 1)
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+shadow_size = 3
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("1_ragmj")
+script = ExtResource("1_main")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Character" type="TextureButton" parent="Background"]
+layout_mode = 1
+script = ExtResource("3_character")
+
+[node name="InteractiveElements" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="CharacterDiaryButton" parent="InteractiveElements" instance=ExtResource("11_interactive")]
+layout_mode = 0
+element_id = "character_diary_button"
+
+[node name="StoryModeButton" parent="InteractiveElements" instance=ExtResource("11_interactive")]
+layout_mode = 0
+element_id = "story_mode_button"
+
+[node name="CharacterDebugHelper" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("5_debug")
+
+[node name="RightClickArea" type="Control" parent="."]
+layout_mode = 1
+anchor_left = 0.75
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 100.0
+grow_horizontal = 0
+grow_vertical = 2
+mouse_filter = 1
+
+[node name="AudioManager" type="Node" parent="."]
+script = ExtResource("8_audio_manager")
+
+[node name="Sidebar" type="Panel" parent="."]
+custom_minimum_size = Vector2(250, 0)
+layout_mode = 0
+offset_right = 250.0
+offset_bottom = 600.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_0im0j")
+script = ExtResource("2_sidebar")
+
+[node name="MarginContainer" type="MarginContainer" parent="Sidebar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Sidebar/MarginContainer"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Sidebar/MarginContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Sidebar/MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Sidebar/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="SceneList" type="VBoxContainer" parent="Sidebar/MarginContainer/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="ToggleButton" type="Button" parent="Sidebar"]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -10.0
+offset_top = -20.0
+offset_right = 30.0
+offset_bottom = 20.0
+grow_horizontal = 0
+grow_vertical = 2
+text = "◀"
+
+[node name="ChatDialog" type="Panel" parent="."]
+custom_minimum_size = Vector2(800, 80)
+layout_mode = 0
+offset_top = 520.0
+offset_right = 800.0
+offset_bottom = 600.0
+script = ExtResource("4_chat_dialog")
+
+[node name="MarginContainer" type="MarginContainer" parent="ChatDialog"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 15
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ChatDialog/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CharacterNameLabel" type="Label" parent="ChatDialog/MarginContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+text = "角色名"
+
+[node name="MessageLabel" type="Label" parent="ChatDialog/MarginContainer/VBoxContainer"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+text = "角色回复内容..."
+autowrap_mode = 3
+
+[node name="InputContainer" type="HBoxContainer" parent="ChatDialog/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="InputField" type="LineEdit" parent="ChatDialog/MarginContainer/VBoxContainer/InputContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+placeholder_text = "输入消息..."
+
+[node name="MicButton" type="Button" parent="ChatDialog/MarginContainer/VBoxContainer/InputContainer"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+focus_mode = 0
+
+[node name="PicButton" type="Button" parent="ChatDialog/MarginContainer/VBoxContainer/InputContainer"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+icon = ExtResource("6_0im0j")
+icon_alignment = 1
+expand_icon = true
+
+[node name="SendButton" type="Button" parent="ChatDialog/MarginContainer/VBoxContainer/InputContainer"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "发送"
+
+[node name="EndButton" type="Button" parent="ChatDialog/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "查看历史"
+
+[node name="ContinueIndicator" type="Label" parent="ChatDialog"]
+visible = false
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -35.0
+offset_right = -20.0
+offset_bottom = -5.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 0.9, 0.3, 1)
+text = "▼"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ActionMenu" type="Panel" parent="."]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 0
+offset_right = 120.0
+offset_bottom = 80.0
+size_flags_horizontal = 0
+size_flags_vertical = 0
+script = ExtResource("6_action_menu")
+
+[node name="MarginContainer" type="MarginContainer" parent="ActionMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ActionMenu/MarginContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 5
+
+[node name="ChatButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "💬 聊天"
+
+[node name="CompanionButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "📚 陪伴"
+
+[node name="SleepButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "💤 助眠"
+
+[node name="GameButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+text = "🎮 游戏"
+
+[node name="GameSubmenu" type="Panel" parent="ActionMenu"]
+z_index = 1
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 0
+offset_left = 130.0
+offset_right = 250.0
+offset_bottom = 100.0
+
+[node name="MarginContainer" type="MarginContainer" parent="ActionMenu/GameSubmenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ActionMenu/GameSubmenu/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="GomokuButton" type="Button" parent="ActionMenu/GameSubmenu/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "五子棋"
+
+[node name="ChineseChessButton" type="Button" parent="ActionMenu/GameSubmenu/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "中国象棋"
+
+[node name="SceneMenu" type="Panel" parent="."]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 0
+offset_right = 150.0
+offset_bottom = 80.0
+script = ExtResource("7_scene_menu")
+
+[node name="MarginContainer" type="MarginContainer" parent="SceneMenu"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="VBoxContainer" type="VBoxContainer" parent="SceneMenu/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="CharacterDiaryViewer" parent="." instance=ExtResource("13_m1sh3")]
+layout_mode = 0
+
+[node name="AutoButton" type="Button" parent="."]
+layout_mode = 0
+offset_left = 1060.0
+offset_top = 10.0
+offset_right = 1160.0
+offset_bottom = 50.0
+focus_mode = 0
+text = "自动"
+
+[node name="InventoryButton" parent="." instance=ExtResource("12_o6pr8")]
+layout_mode = 1
+
+[node name="MusicPlayerPanel" parent="." instance=ExtResource("15_music_panel")]
+visible = false
+layout_mode = 0
+anchors_preset = 0
+anchor_left = 0.0
+anchor_top = 0.0
+anchor_right = 0.0
+anchor_bottom = 0.0
+offset_left = 0.0
+offset_top = 0.0
+offset_right = 800.0
+offset_bottom = 600.0
+grow_horizontal = 1
+grow_vertical = 1
+
+[node name="AutoSaveIndicator" parent="." instance=ExtResource("14_m1sh3")]
+layout_mode = 1
+anchors_preset = 1
+offset_left = -134.0
+offset_top = 677.0
+offset_right = -134.0
+offset_bottom = 677.0
+grow_horizontal = 0

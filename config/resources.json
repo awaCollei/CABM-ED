@@ -1,0 +1,37 @@
+{
+	"resources": [
+		{
+			"id": "BGM",
+			"type": "archive",
+			"source": "res://resources/BGM.zip",
+			"destination": "user://custom_bgm/",
+			"description": "背景音乐资源包",
+			"filesize":"16.4MB",
+			"limitation": "预设的背景音乐，当然你可以自己导入",
+			"supported_extensions": ["mp3", "ogg", "wav"],
+			"version": "1.0.0"
+		},
+		{
+			"id": "jieba_dict",
+			"type": "archive",
+			"source": "res://resources/jieba_dict.zip",
+			"destination": "user://",
+			"description": "分词库的词典",
+			"filesize":"4.17MB",
+			"limitation": "记忆图谱的重要组件",
+			"supported_extensions": ["utf8"],
+			"version": "1.0.0"
+		},
+        {
+			"id": "sleep",
+			"type": "archive",
+			"source": "res://resources/sleep.zip",
+			"destination": "user://sleep/",
+			"description": "ASMR音频资源包",
+			"filesize":"24.6MB",
+			"limitation": "助眠模式的音频资源",
+			"supported_extensions": ["mp3", "ogg", "wav"],
+			"version": "1.2.0"
+		}
+	]
+}

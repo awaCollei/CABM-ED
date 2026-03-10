@@ -1,0 +1,678 @@
+[gd_scene load_steps=9 format=3 uid="uid://buaxyhac5mtdc"]
+
+[ext_resource type="Script" uid="uid://b35lfy0un5ap6" path="res://scripts/ai_chat/ai_config_panel.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://0rwyjqp8cdi0" path="res://scenes/resource_manager_panel.tscn" id="2_6aqcn"]
+[ext_resource type="Theme" uid="uid://dxscbhbyg47rp" path="res://theme/green_button.tres" id="2_82fv0"]
+[ext_resource type="PackedScene" uid="uid://cbnksm5qnqh5p" path="res://scenes/memory_config_panel.tscn" id="2_qlv36"]
+[ext_resource type="PackedScene" uid="uid://3qbujdhy5hqa" path="res://scenes/voice_settings_panel.tscn" id="3_qhc2h"]
+[ext_resource type="PackedScene" uid="uid://c8v7y3x2xap4q" path="res://scenes/save_export_panel.tscn" id="3_save_export"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qhc2h"]
+bg_color = Color(0.12941177, 0.827451, 1, 0.78039217)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.7162962, 0.71629626, 0.7162961, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_size = 5
+
+[sub_resource type="ButtonGroup" id="ButtonGroup_template"]
+resource_name = "TemplateGroup"
+
+[node name="AIConfigPanel" type="Panel"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -250.0
+offset_top = -300.0
+offset_right = 550.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_qhc2h")
+script = ExtResource("1")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TitleContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/TitleContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "配置选项"
+horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="MarginContainer/VBoxContainer/TitleContainer"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+text = "×"
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="TabContainer" type="TabContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/drop_mark_color = Color(1, 1, 1, 1)
+current_tab = 0
+
+[node name="快速配置" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+metadata/_tab_index = 0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/快速配置"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 15
+
+[node name="HintLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "选择配置模板（仅限硅基流动，其他平台请使用详细配置）"
+horizontal_alignment = 1
+
+[node name="TemplateContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="FreeButton" type="CheckBox" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/TemplateContainer"]
+layout_mode = 2
+button_group = SubResource("ButtonGroup_template")
+text = "免费"
+
+[node name="StandardButton" type="CheckBox" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/TemplateContainer"]
+layout_mode = 2
+button_pressed = true
+button_group = SubResource("ButtonGroup_template")
+text = "标准"
+
+[node name="AlternateButton" type="CheckBox" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/TemplateContainer"]
+layout_mode = 2
+button_group = SubResource("ButtonGroup_template")
+text = "备用"
+
+[node name="DescriptionLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="KeyLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "API密钥:"
+
+[node name="KeyInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "sk-..."
+secret = true
+
+[node name="UseBuiltinKeyContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="UseBuiltinKeyCheckBox" type="CheckButton" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/UseBuiltinKeyContainer"]
+layout_mode = 2
+tooltip_text = "使用内置的免费API密钥（功能受限）"
+text = "使用免费内置密钥"
+
+[node name="ApplyButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("2_82fv0")
+text = "应用配置"
+
+[node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="详细配置" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+metadata/_tab_index = 1
+
+[node name="DetailTabs" type="TabContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置"]
+layout_mode = 2
+current_tab = 0
+
+[node name="对话模型" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+metadata/_tab_index = 0
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/对话模型"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/对话模型/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="DescLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/对话模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "用于角色的对话和行为"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ChatModelName" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/对话模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "模型名称:"
+
+[node name="ChatModelInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/对话模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "deepseek-ai/DeepSeek-V3.2"
+
+[node name="ChatBaseURLLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/对话模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Base URL:"
+
+[node name="ChatBaseURLInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/对话模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "https://api.siliconflow.cn/v1"
+
+[node name="ChatKeyLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/对话模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "API 密钥:"
+
+[node name="ChatKeyInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/对话模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "sk-..."
+secret = true
+
+[node name="ChatJsonModeContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/对话模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ChatJsonModeToggle" type="CheckButton" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/对话模型/ScrollContainer/VBoxContainer/ChatJsonModeContainer"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+tooltip_text = "减少响应格式错误，但部分模型不支持"
+button_pressed = true
+text = "启用JSON模式"
+
+[node name="总结模型" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+metadata/_tab_index = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/总结模型"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/总结模型/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="DescLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/总结模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "用于信息的整合和提取"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="SummaryModelName" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/总结模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "模型名称:"
+
+[node name="SummaryModelInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/总结模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "Qwen/Qwen3-30B-A3B"
+
+[node name="SummaryBaseURLLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/总结模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Base URL:"
+
+[node name="SummaryBaseURLInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/总结模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "https://api.siliconflow.cn/v1"
+
+[node name="SummaryKeyLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/总结模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "API 密钥:"
+
+[node name="SummaryKeyInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/总结模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "sk-..."
+secret = true
+
+[node name="SummaryJsonModeContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/总结模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SummaryJsonModeToggle" type="CheckButton" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/总结模型/ScrollContainer/VBoxContainer/SummaryJsonModeContainer"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+tooltip_text = "减少响应格式错误，但部分模型不支持"
+button_pressed = true
+text = "启用JSON模式"
+
+[node name="语音模型" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+metadata/_tab_index = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音模型"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音模型/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="DescLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "用于语音合成"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="TTSModelName" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "模型名称:"
+
+[node name="TTSModelInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "FunAudioLLM/CosyVoice2-0.5B"
+
+[node name="TTSBaseURLLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Base URL:"
+
+[node name="TTSBaseURLInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "https://api.siliconflow.cn"
+
+[node name="TTSKeyLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "API 密钥:"
+
+[node name="TTSKeyInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "sk-..."
+secret = true
+
+[node name="嵌入模型" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+metadata/_tab_index = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/嵌入模型"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/嵌入模型/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="DescLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/嵌入模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "用于长期记忆"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="EmbeddingModelName" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/嵌入模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "模型名称:"
+
+[node name="EmbeddingModelInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/嵌入模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "BAAI/bge-m3"
+
+[node name="EmbeddingBaseURLLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/嵌入模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Base URL:"
+
+[node name="EmbeddingBaseURLInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/嵌入模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "https://api.siliconflow.cn/v1"
+
+[node name="EmbeddingKeyLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/嵌入模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "API 密钥:"
+
+[node name="EmbeddingKeyInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/嵌入模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "sk-..."
+secret = true
+
+[node name="重排模型" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+metadata/_tab_index = 4
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/重排模型"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/重排模型/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="DescLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/重排模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "用于提高长期记忆召回精度"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="RerankModelName" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/重排模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "模型名称:"
+
+[node name="RerankModelInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/重排模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "BAAI/bge-reranker-v2-m3"
+
+[node name="RerankBaseURLLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/重排模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Base URL:"
+
+[node name="RerankBaseURLInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/重排模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "https://api.siliconflow.cn"
+
+[node name="RerankKeyLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/重排模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "API 密钥:"
+
+[node name="RerankKeyInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/重排模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "sk-..."
+secret = true
+
+[node name="视觉模型" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+metadata/_tab_index = 5
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/视觉模型"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/视觉模型/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="DescLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/视觉模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "用于图像的解析"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ViewModelName" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/视觉模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "模型名称:"
+
+[node name="ViewModelInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/视觉模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "Qwen/Qwen3-Omni-30B-A3B-Captioner"
+
+[node name="ViewBaseURLLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/视觉模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Base URL:"
+
+[node name="ViewBaseURLInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/视觉模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "https://api.siliconflow.cn/v1"
+
+[node name="ViewKeyLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/视觉模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "API 密钥:"
+
+[node name="ViewKeyInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/视觉模型/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "sk-..."
+secret = true
+
+[node name="语音输入" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+metadata/_tab_index = 6
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音输入"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音输入/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="DescLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音输入/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "用于语音转文本"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="STTModelName" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音输入/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "模型名称:"
+
+[node name="STTModelInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音输入/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "FunAudioLLM/SenseVoiceSmall"
+
+[node name="STTBaseURLLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音输入/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "Base URL:"
+
+[node name="STTBaseURLInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音输入/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "https://api.siliconflow.cn/v1"
+
+[node name="STTKeyLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音输入/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "API 密钥:"
+
+[node name="STTKeyInput" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音输入/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+placeholder_text = "sk-..."
+secret = true
+
+[node name="SaveArea" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/详细配置"]
+layout_mode = 2
+size_flags_vertical = 8
+alignment = 1
+
+[node name="DetailSaveButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/SaveArea"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_82fv0")
+text = "保存详细配置"
+
+[node name="DetailStatusLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/SaveArea"]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="语音设置" parent="MarginContainer/VBoxContainer/TabContainer" instance=ExtResource("3_qhc2h")]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 2
+
+[node name="资源管理" parent="MarginContainer/VBoxContainer/TabContainer" instance=ExtResource("2_6aqcn")]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 3
+
+[node name="记忆系统" parent="MarginContainer/VBoxContainer/TabContainer" instance=ExtResource("2_qlv36")]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 4
+
+[node name="日志导出" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+metadata/_tab_index = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/日志导出"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="InfoLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/日志导出/VBoxContainer"]
+layout_mode = 2
+text = "导出日志文件到 Documents/SnowFox_Logs/ 目录
+包含：AI日志、Godot日志、存档信息、日记"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer/TabContainer/日志导出/VBoxContainer"]
+layout_mode = 2
+
+[node name="ExportButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/日志导出/VBoxContainer"]
+layout_mode = 2
+theme = ExtResource("2_82fv0")
+text = "导出日志"
+
+[node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/日志导出/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer/TabContainer/日志导出/VBoxContainer"]
+layout_mode = 2
+
+[node name="HintLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/日志导出/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/line_spacing = -2
+theme_override_font_sizes/font_size = 20
+text = "提示：
+• 手机端可在文件管理器的Documents目录找到导出的文件
+• 可将日志压缩后分享给开发者用于问题诊断
+• 日志包含对话内容，请注意隐私保护"
+autowrap_mode = 3
+
+[node name="存档导出" parent="MarginContainer/VBoxContainer/TabContainer" instance=ExtResource("3_save_export")]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 6
+
+[node name="修复记忆" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+metadata/_tab_index = 7
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/修复记忆"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/修复记忆/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="InfoLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/修复记忆/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "修复向量数据损坏问题"
+horizontal_alignment = 1
+
+[node name="HSeparator1" type="HSeparator" parent="MarginContainer/VBoxContainer/TabContainer/修复记忆/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="CheckButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/修复记忆/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+text = "检查向量数据"
+
+[node name="CheckStatusLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/修复记忆/ScrollContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer/TabContainer/修复记忆/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="RepairButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/修复记忆/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+disabled = true
+text = "开始修复"
+
+[node name="ProgressLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/修复记忆/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="ProgressBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/TabContainer/修复记忆/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="LogScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/修复记忆/ScrollContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+
+[node name="LogLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/修复记忆/ScrollContainer/VBoxContainer/LogScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 3
+
+[node name="HSeparator3" type="HSeparator" parent="MarginContainer/VBoxContainer/TabContainer/修复记忆/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="HintLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/修复记忆/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "提示：修复会重新调用API生成向量"
+horizontal_alignment = 1
+autowrap_mode = 3

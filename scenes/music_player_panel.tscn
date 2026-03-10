@@ -1,0 +1,212 @@
+[gd_scene load_steps=3 format=3 uid="uid://dbtqcy050w8bp"]
+
+[ext_resource type="Script" uid="uid://ch1kfam5q4r2b" path="res://scripts/music_player_panel.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ukqod"]
+bg_color = Color(0.7864781, 0.37624615, 1, 0.5372549)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.73719263, 0.73719305, 0.73719275, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_size = 5
+
+[node name="MusicPlayerPanel" type="Panel"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ukqod")
+script = ExtResource("1")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 15
+theme_override_constants/margin_top = 15
+theme_override_constants/margin_right = 15
+theme_override_constants/margin_bottom = 15
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TopBar" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "🎵 音乐播放器"
+horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="MarginContainer/VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "关闭"
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="TabContainer" type="TabContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+current_tab = 0
+
+[node name="切换音乐" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 5
+theme_override_constants/margin_top = 5
+theme_override_constants/margin_right = 5
+theme_override_constants/margin_bottom = 5
+metadata/_tab_index = 0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SceneListPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer/SceneListPanel"]
+layout_mode = 2
+
+[node name="SceneList" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer/SceneListPanel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="MusicPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer/MusicPanel"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="HintLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer/MusicPanel/VBoxContainer"]
+layout_mode = 2
+text = "提示信息"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer/MusicPanel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="MusicList" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer/MusicPanel/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="RightPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer/RightPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PlayModePanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer/RightPanel/VBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer/RightPanel/VBoxContainer/PlayModePanel"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer/RightPanel/VBoxContainer/PlayModePanel/VBoxContainer"]
+layout_mode = 2
+text = "播放模式"
+horizontal_alignment = 1
+
+[node name="EditButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer/RightPanel/VBoxContainer"]
+layout_mode = 2
+text = "编辑"
+
+[node name="UploadButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer/RightPanel/VBoxContainer"]
+layout_mode = 2
+text = "上传音乐"
+
+[node name="DeleteButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer/RightPanel/VBoxContainer"]
+visible = false
+layout_mode = 2
+text = "删除选中"
+
+[node name="音量调节" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 20
+metadata/_tab_index = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/音量调节"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 30
+
+[node name="BGMVolume" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/音量调节/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/音量调节/VBoxContainer/BGMVolume"]
+layout_mode = 2
+text = "背景音乐音量"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/音量调节/VBoxContainer/BGMVolume"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Slider" type="HSlider" parent="MarginContainer/VBoxContainer/TabContainer/音量调节/VBoxContainer/BGMVolume/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+value = 50.0
+
+[node name="ValueLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/音量调节/VBoxContainer/BGMVolume/HBoxContainer"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "50%"
+horizontal_alignment = 2
+
+[node name="AmbientVolume" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/音量调节/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/音量调节/VBoxContainer/AmbientVolume"]
+layout_mode = 2
+text = "环境音音量"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/音量调节/VBoxContainer/AmbientVolume"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Slider" type="HSlider" parent="MarginContainer/VBoxContainer/TabContainer/音量调节/VBoxContainer/AmbientVolume/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+value = 50.0
+
+[node name="ValueLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/音量调节/VBoxContainer/AmbientVolume/HBoxContainer"]
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "50%"
+horizontal_alignment = 2
+
+[node name="FileDialog" type="FileDialog" parent="."]
+title = "Open File(s)"
+size = Vector2i(800, 600)
+ok_button_text = "打开"
+file_mode = 1
+access = 2

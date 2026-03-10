@@ -1,0 +1,432 @@
+[gd_scene load_steps=22 format=3 uid="uid://b0wadr1holiqe"]
+
+[ext_resource type="Script" uid="uid://bdvmtvfg6k7mn" path="res://scripts/universal_inventory_ui.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://cjl5n33ypxni5" path="res://assets/images/sort.png" id="2_sort"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.70980394, 0.75686276, 0.7882353, 0.8745098)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.6419338, 0.64193404, 0.641934, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pg060"]
+bg_color = Color(0.7921569, 0.8235294, 0.80784315, 0.5529412)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_use_normal"]
+bg_color = Color(0.15, 0.25, 0.15, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.5, 0.3, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_use_pressed"]
+bg_color = Color(0.25, 0.45, 0.25, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5, 0.7, 0.5, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_use_hover"]
+bg_color = Color(0.2, 0.35, 0.2, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.6, 0.4, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_use_disabled"]
+bg_color = Color(0.1, 0.1, 0.1, 0.8)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.2, 0.2, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_split_normal"]
+bg_color = Color(0.15, 0.15, 0.25, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.3, 0.5, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_split_pressed"]
+bg_color = Color(0.25, 0.25, 0.45, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5, 0.5, 0.7, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_split_hover"]
+bg_color = Color(0.2, 0.2, 0.35, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.4, 0.6, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_split_disabled"]
+bg_color = Color(0.1, 0.1, 0.1, 0.8)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.2, 0.2, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_slider"]
+bg_color = Color(0.2, 0.2, 0.2, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.4, 0.4, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_grabber_area"]
+bg_color = Color(0.3, 0.3, 0.3, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_grabber_highlight"]
+bg_color = Color(0.4, 0.4, 0.4, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_confirm_normal"]
+bg_color = Color(0.15, 0.25, 0.15, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.5, 0.3, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_confirm_pressed"]
+bg_color = Color(0.25, 0.45, 0.25, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5, 0.7, 0.5, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_confirm_hover"]
+bg_color = Color(0.2, 0.35, 0.2, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.6, 0.4, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cancel_normal"]
+bg_color = Color(0.25, 0.15, 0.15, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5, 0.3, 0.3, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cancel_pressed"]
+bg_color = Color(0.45, 0.25, 0.25, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.7, 0.5, 0.5, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_cancel_hover"]
+bg_color = Color(0.35, 0.2, 0.2, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.6, 0.4, 0.4, 1)
+
+[node name="UniversalInventoryUI" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 100.0
+offset_top = 80.0
+offset_right = -100.0
+offset_bottom = -80.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="CloseButton" type="Button" parent="Panel"]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -100.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 50.0
+grow_horizontal = 0
+text = "关闭 (ESC)"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 60.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 12
+
+[node name="PlayerPanel" type="PanelContainer" parent="Panel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pg060")
+
+[node name="VBox" type="VBoxContainer" parent="Panel/HBoxContainer/PlayerPanel"]
+layout_mode = 2
+
+[node name="Control" type="Control" parent="Panel/HBoxContainer/PlayerPanel/VBox"]
+layout_mode = 2
+
+[node name="Header" type="HBoxContainer" parent="Panel/HBoxContainer/PlayerPanel/VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="empty" type="Button" parent="Panel/HBoxContainer/PlayerPanel/VBox/Header"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "我是来占位的"
+flat = true
+expand_icon = true
+
+[node name="Title" type="Label" parent="Panel/HBoxContainer/PlayerPanel/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "背包"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SortButton" type="Button" parent="Panel/HBoxContainer/PlayerPanel/VBox/Header"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "一键整理"
+icon = ExtResource("2_sort")
+flat = true
+expand_icon = true
+
+[node name="WeaponContainer" type="VBoxContainer" parent="Panel/HBoxContainer/PlayerPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="InventoryContainer" type="VBoxContainer" parent="Panel/HBoxContainer/PlayerPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/HBoxContainer/PlayerPanel/VBox/InventoryContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Grid" type="GridContainer" parent="Panel/HBoxContainer/PlayerPanel/VBox/InventoryContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 1
+theme_override_constants/v_separation = 1
+columns = 5
+
+[node name="ContainerPanel" type="PanelContainer" parent="Panel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.2
+theme_override_styles/panel = SubResource("StyleBoxFlat_pg060")
+
+[node name="VBox" type="VBoxContainer" parent="Panel/HBoxContainer/ContainerPanel"]
+layout_mode = 2
+
+[node name="Control" type="Control" parent="Panel/HBoxContainer/ContainerPanel/VBox"]
+layout_mode = 2
+
+[node name="Header" type="HBoxContainer" parent="Panel/HBoxContainer/ContainerPanel/VBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="empty" type="Button" parent="Panel/HBoxContainer/ContainerPanel/VBox/Header"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "我是来占位的"
+flat = true
+expand_icon = true
+
+[node name="Title" type="Label" parent="Panel/HBoxContainer/ContainerPanel/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "容器"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SortButton" type="Button" parent="Panel/HBoxContainer/ContainerPanel/VBox/Header"]
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+tooltip_text = "一键整理"
+icon = ExtResource("2_sort")
+flat = true
+expand_icon = true
+
+[node name="WeaponContainer" type="VBoxContainer" parent="Panel/HBoxContainer/ContainerPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="InventoryContainer" type="VBoxContainer" parent="Panel/HBoxContainer/ContainerPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/HBoxContainer/ContainerPanel/VBox/InventoryContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="Grid" type="GridContainer" parent="Panel/HBoxContainer/ContainerPanel/VBox/InventoryContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 1
+theme_override_constants/v_separation = 1
+columns = 5
+
+[node name="InfoPanel" type="PanelContainer" parent="Panel/HBoxContainer"]
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="Panel/HBoxContainer/InfoPanel"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Control" type="Control" parent="Panel/HBoxContainer/InfoPanel/VBox"]
+layout_mode = 2
+
+[node name="ItemName" type="Label" parent="Panel/HBoxContainer/InfoPanel/VBox"]
+layout_mode = 2
+text = "选择物品查看详情"
+horizontal_alignment = 1
+
+[node name="IconContainer" type="PanelContainer" parent="Panel/HBoxContainer/InfoPanel/VBox"]
+layout_mode = 2
+
+[node name="ItemIcon" type="TextureRect" parent="Panel/HBoxContainer/InfoPanel/VBox/IconContainer"]
+custom_minimum_size = Vector2(256, 128)
+layout_mode = 2
+size_flags_horizontal = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/HBoxContainer/InfoPanel/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ItemDescription" type="Label" parent="Panel/HBoxContainer/InfoPanel/VBox/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+autowrap_mode = 3
+
+[node name="ButtonContainer" type="HBoxContainer" parent="Panel/HBoxContainer/InfoPanel/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="UseButton" type="Button" parent="Panel/HBoxContainer/InfoPanel/VBox/ButtonContainer"]
+custom_minimum_size = Vector2(70, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_focus_color = Color(0.8, 0.8, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 0.8, 1)
+theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.4, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_use_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_use_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_use_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_use_disabled")
+text = "使用"
+
+[node name="SplitButton" type="Button" parent="Panel/HBoxContainer/InfoPanel/VBox/ButtonContainer"]
+custom_minimum_size = Vector2(70, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_focus_color = Color(0.8, 0.8, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 0.8, 1)
+theme_override_colors/font_disabled_color = Color(0.4, 0.4, 0.4, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_split_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_split_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_split_hover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_split_disabled")
+text = "分离"
+
+[node name="SplitContainer" type="HBoxContainer" parent="Panel/HBoxContainer/InfoPanel/VBox"]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SplitSlider" type="HSlider" parent="Panel/HBoxContainer/InfoPanel/VBox/SplitContainer"]
+custom_minimum_size = Vector2(100, 36)
+layout_mode = 2
+theme_override_styles/slider = SubResource("StyleBoxFlat_slider")
+theme_override_styles/grabber_area = SubResource("StyleBoxFlat_grabber_area")
+theme_override_styles/grabber_area_highlight = SubResource("StyleBoxFlat_grabber_highlight")
+min_value = 1.0
+max_value = 10.0
+value = 5.0
+
+[node name="SplitCountLabel" type="Label" parent="Panel/HBoxContainer/InfoPanel/VBox/SplitContainer"]
+custom_minimum_size = Vector2(50, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+text = "5"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="SplitConfirmButton" type="Button" parent="Panel/HBoxContainer/InfoPanel/VBox/SplitContainer"]
+custom_minimum_size = Vector2(60, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_focus_color = Color(0.8, 0.8, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 0.8, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_confirm_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_confirm_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_confirm_hover")
+text = "分离"
+
+[node name="SplitCancelButton" type="Button" parent="Panel/HBoxContainer/InfoPanel/VBox/SplitContainer"]
+custom_minimum_size = Vector2(60, 36)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_focus_color = Color(0.8, 0.8, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 0.8, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_cancel_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_cancel_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_cancel_hover")
+text = "取消"

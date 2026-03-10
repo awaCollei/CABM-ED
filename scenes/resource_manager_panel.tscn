@@ -1,0 +1,45 @@
+[gd_scene load_steps=3 format=3 uid="uid://0rwyjqp8cdi0"]
+
+[ext_resource type="Script" uid="uid://cqrbfei47jlxo" path="res://scripts/resource_manager_panel.gd" id="1_resource_panel"]
+[ext_resource type="Theme" uid="uid://contcf3ey12vl" path="res://default_theme.tres" id="2_theme"]
+
+[node name="ResourceManagerPanel" type="MarginContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+script = ExtResource("1_resource_panel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="Header" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="RefreshButton" type="Button" parent="VBoxContainer/Header"]
+custom_minimum_size = Vector2(80, 35)
+layout_mode = 2
+text = "刷新"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="ResourceGrid" type="GridContainer" parent="VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/h_separation = 15
+theme_override_constants/v_separation = 15
+columns = 1
+
+[connection signal="pressed" from="VBoxContainer/Header/RefreshButton" to="." method="_on_refresh_button_pressed"]

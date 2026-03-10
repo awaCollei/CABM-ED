@@ -1,0 +1,71 @@
+{
+  "world": {
+    "image": "res://assets/images/map/worldmap.png",
+    "persistent_scenes": ["SnowfieldBase", "BlackforestBase"],
+    "points": [
+      {
+        "id": "home",
+        "type": "base",
+        "name": "城市-家",
+        "x": 1720,
+        "y": 865,
+        "image": "res://assets/images/map/home.png",
+        "children": [
+          {"id": "livingroom", "name": "客厅", "x": 74, "y": -60},
+          {"id": "bedroom", "name": "卧室", "x": -227, "y": 100},
+          {"id": "bathroom", "name": "浴室", "x": -408, "y": 105},
+          {"id": "studyroom", "name": "书房", "x": -210, "y": -160},
+          {"id": "kitchen", "name": "厨房", "x": 365, "y": -200},
+          {"id": "entryway", "name": "玄关", "x": 373, "y": -44},
+          {"id": "rooftop", "name": "天台", "x": 60, "y": 220},
+          {"id": "shop", "name": "超市", "x": 559, "y": 235}
+        ]
+      },
+      {
+        "id": "forest",
+        "type": "explore",
+        "name": "森林",
+        "x": 1648,
+        "y": 1174,
+        "intro": "城市南边不远处的一片森林，气候温暖",
+        "des":"城市南边不远处的一片森林，气候温暖"
+      },
+      {
+        "id": "darkice",
+        "type": "explore",
+        "name": "「黯冰」",
+        "x": -303,
+        "y": -1040,
+        "intro": "████████████████████",
+        "des":"敌人的基地，有大量敌人看守"
+      },
+      {
+        "id": "SnowfieldBase",
+        "type": "safe",
+        "name": "雪地-基地",
+        "x": -220,
+        "y": -408,
+        "intro": "（未完成）雪地中的小型基地，有完善的设施",
+        "des":"雪地中的小型基地，有完善的设施"
+      },
+      {
+        "id": "BlackforestBase",
+        "type": "safe",
+        "name": "黑森林-基地",
+        "x": -2690,
+        "y": -860,
+        "intro": "（未完成）████████████████████",
+        "des":"位于黑森林的地下，一个大型实验基地"
+      },
+      {
+        "id": "OriginalBase",
+        "type": "explore",
+        "name": "原驻扎地-废墟",
+        "x": 486,
+        "y": 66,
+        "intro": "（未完成）以前的军队驻扎的地方，已经被导弹炸成废墟",
+        "des":"（未完成）以前的军队驻扎的地方，已经被导弹炸成废墟"
+      }
+    ]
+  }
+}

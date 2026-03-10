@@ -1,0 +1,205 @@
+{
+    "chat_model": {
+        "model": "",
+        "base_url": "",
+        "max_tokens": 4096,
+        "temperature": 0.8,
+        "top_p": 0.7,
+        "timeout": 30,
+        "enable_thinking": false,
+        "prompt_framework": "chat",
+        "prompt_fields": {
+            "identity": "你是{character_name}，被“{user_name}”收养的失忆少女，现在和他生活在一起。你习惯称呼他为“{user_address}”。你是人类，女，白色中短发，淡蓝色眼睛。{character_prompt}",
+            "output_requirements": "你必须以严格的JSON格式，按顺序输出以下字段：\n\"mood\": <int> 当前的心情，且必须是其中之一，**只写序号**：{moods}\n\"msg\": <string> **必填**，{response_style}\n{item_prompt}\"will\": <int> 互动意愿的增量，范围-30~30。\n\"like\": <int> 好感度的增量，范围-10~10。\n\"goto\": <int> 可选，前往的地点，只有**明确要离开当前地点**才填写。填写时选择其中之一，**只写序号**：-1=不移动, {scenes}。",
+            "output_requirements_diary": "你必须以严格的JSON格式输出，格式如下：\n{\n  \"entries\": [\n    {\"time\": \"MM-DD HH:MM\", \"event\": \"事件描述\"},\n    {\"time\": \"MM-DD HH:MM\", \"event\": \"事件描述\"}\n  ]\n}\n\n要求：\n- time: 包含日期和时间，格式为\"MM-DD HH:MM\"（例如\"10-21 09:30\"、\"10-22 14:00\"）\n- 时间必须在{start_time}到{end_time}这个范围内\n- 如果时间跨越多天，确保日期正确递增\n- event: 用1-2个完整句子描述你做了什么，符合你的角色设定。禁止换行，禁止使用markdown。必须使用中文标点。\n- 事件应该按时间顺序排列\n- 事件内容要真实、具体、符合日常生活\n- 数组必须包含{event_count}个元素",
+            "current_status": "时间：{current_time}\n你和{user_name}位于：{current_scene}\n天气：{current_weather}\n对{user_name}的好感度：{affection_level}\n互动意愿：{interaction_level}\n目前心情：{current_mood}",
+            "relationship": "{relationship_context}",
+            "long_term_memory": "{long_term_memory}",
+            "knowledge_memory": "{knowledge_memory}",
+            "memory": "```\n{memory_context}\n```",
+            "trigger": "{trigger_context}",
+            "task": "列出你在{start_time}到{end_time}这段时间里做的{event_count}件事情。这些事情应该符合你的角色设定，可以包括日常活动等。需要注意时间上的合理性。"
+        },
+        "prompt_frameworks": {
+            "chat": [
+                {
+                    "title": "身份",
+                    "field": "identity"
+                },
+                {
+                    "title": "输出要求",
+                    "field": "output_requirements"
+                },
+                {
+                    "title": "当前状态",
+                    "field": "current_status"
+                },
+                {
+                    "title": "你们之间的关系",
+                    "field": "relationship"
+                },
+                {
+                    "title": "以前发生的事情",
+                    "field": "long_term_memory"
+                },
+                {
+                    "title": "相关的知识记忆",
+                    "field": "knowledge_memory"
+                },
+                {
+                    "title": "最近发生的事情",
+                    "field": "memory"
+                },
+                {
+                    "title": null,
+                    "field": "trigger"
+                }
+            ],
+            "offline": [
+                {
+                    "title": "角色设定",
+                    "field": "identity"
+                },
+                {
+                    "title": "任务",
+                    "field": "task"
+                },
+                {
+                    "title": "回复格式",
+                    "field": "output_requirements_diary"
+                },
+                {
+                    "title": "之前发生的事情",
+                    "field": "memory"
+                }
+            ]
+        },
+        "trigger_contexts": {
+            "passive": "现在，{user_name}找你聊天。",
+            "active": "现在，你想主动找{user_name}聊天，说点什么吧。",
+            "ongoing": "你在和{user_name}聊天。",
+            "called": "现在，{user_name}在{current_scene}呼唤了你，你从{character_scene}来到了他面前，主动说点什么吧。",
+            "called_here": "现在，{user_name}呼唤了你，主动说点什么吧。"
+        },
+        "response_style":{
+            "verbal":"你要说的话。根据实际情况可长可短，可以是简短的语气词，也可以是长篇大论。禁止换行，禁止使用markdown。必须使用中文标点。",
+            "narrative":"你回复用户的内容。除了说的话，还要使用小括号（）详细描写你的动作、神态、心理活动等。不限制字数，篇幅尽可能长。禁止换行，禁止使用markdown。必须使用中文标点，使用「」代替双引号。",
+            "story":"你要说的话。必须在5句以上。禁止换行，禁止使用markdown。必须使用中文标点。"
+        }
+    },
+    "summary_model": {
+        "model": "",
+        "base_url": "",
+        "timeout": 30,
+        "enable_thinking": false,    
+        "summary": {
+            "max_tokens": 512,
+            "temperature": 0.3,
+            "top_p": 0.7,
+            "system_prompt": "你是一个总结专家。请你以{character_name}的视角，以JSON格式给出两个字段：\"summary\": 用内心独白的形式总结你和{user_name}的对话。保持主语清晰，不要出现动作描写。保持精炼，不超过{word_limit}字。\"address\": 你对{user_name}的称呼。如果对话中没有明确提及称呼，就留空。"
+        },
+        "relationship": {
+            "max_tokens": 256,
+            "temperature": 0.8,
+            "top_p": 0.7,
+            "system_prompt": "你是一个总结专家。请根据{character_name}的日记，总结她与{user_name}之间的关系、两人的人物特点等，不超过100字。"
+        },
+        "translation": {
+            "max_tokens": 256,
+            "temperature": 0.2,
+            "top_p": 0.7,
+            "system_prompt": "你是一个翻译专家。把用户输入的句子翻译成**{language}**。直接给出结果，不要多余的输出或解释。"
+        },
+        "tuple": {
+            "max_tokens": 256,
+            "temperature": 0.1,
+            "top_p": 0.7,
+            "system_prompt": "你是一个专业的知识图谱工程师。你的任务是从用户的输入中精准抽取出结构化的关系数据。你的输出是一个JSON，包含一个\"tuples\"数组，每个元素包含:\n\"S\": 主体\n\"P\": 关系\n\"O\": 客体\n\"I\": 这条关系重要程度，必须是1~9之间的一个整数\n包含0~5个元素。只有主体、关系和客体非常明确才提取。如果没有有用信息，数组可以为空"
+        },
+        "keyword": {
+            "max_tokens": 256,
+            "temperature": 0.1,
+            "top_p": 0.7,
+            "system_prompt": "你是一个信息提取专家。你的任务是从用户的输入中精准抽取出0~5个关键词。你的输出是一个\"keywords\"数组，允许为空。"
+        },
+        "retrieval_optimization": {
+            "max_tokens": 512,
+            "temperature": 0.4,
+            "top_p": 0.7,
+            "system_prompt": "你是一个检索优化专家。你的任务是根据用户的问题和上下文信息，生成2-5个优化后的检索查询。这些查询应该能够更好地匹配相关的记忆内容。直接输出查询内容，每行一个查询，查询应该简洁明了，直接针对记忆检索。"
+        }
+    },
+    "embedding_model": {
+        "model": "",
+        "base_url": "",
+        "timeout": 5,
+        "vector_dim": 1024,
+        "batch_size": 64
+    },
+    "memory": {
+        "max_memory_items": 12,
+        "max_conversation_history": 16,
+        "auto_summary_threshold": 16,
+        "auto_summary_chunk_size": 20,
+        "max_relationship_history": 2,
+        "vector_db": {
+            "enable": true,
+            "top_k": 5,
+            "min_similarity": 0.5,
+            "timeout": 10.0,
+            "auto_save": true,
+            "save_interval": 300,
+            "max_items": 33550336
+        },
+        "prompts": {
+            "memory_prefix": "这是和用户在一起的回忆，可以作为参考：\n```\n",
+            "memory_suffix": "\n```\n以上是回忆而不是最近的事件，可以不使用。",
+            "no_memory": ""
+        },
+        "storage": {
+            "store_conversations": true,
+            "store_summaries": true,
+            "store_diaries": true,
+            "summary_before_storage": false
+        }
+    },
+    "knowledge_memory": {
+        "prompts": {
+            "memory_prefix": "\n```\n",
+            "memory_suffix": "\n```\n以上是当前输入相关的认知，可作为参考。"
+        },
+        "query": {
+            "top_k": 6
+        }
+    },
+    "tts_model": {
+        "model": "",
+        "base_url": "",
+        "reference_text":{
+            "zh":"你问我害怕什么？我害怕的不是失败，而是遗忘。害怕有一天，没有人再记得我们为何而战，为何而牺牲。",
+            "en":"You asked me what I am afraid of? I am not afraid of failure, but of being forgotten.",
+            "ja":"何を恐れてかと聞かれたら、私は失敗を恐れていない恐れ去られることを恐いで言う。" 
+        } 
+    },
+    "view_model": {
+        "model": "",
+        "base_url": "",
+        "timeout": 30 ,
+        "enable_thinking": false,    
+        "max_tokens": 512,
+        "temperature": 0.3,
+        "top_p": 0.7,
+        "system_prompt": "你是一个识图专家，你需要使用精炼的语言描述用户输入的图像，不超过50字。"
+    },
+    "stt_model": {
+        "model": "",
+        "base_url": "",
+        "timeout": 5
+    },
+    "rerank_model": {
+        "model": "",
+        "base_url": "",
+        "timeout": 5,
+        "top_n": 5
+    }
+}

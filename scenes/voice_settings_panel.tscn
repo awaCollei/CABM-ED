@@ -1,0 +1,152 @@
+[gd_scene load_steps=4 format=3 uid="uid://3qbujdhy5hqa"]
+
+[ext_resource type="Script" uid="uid://twq8y4r0vdiq" path="res://scripts/voice_settings_panel.gd" id="1"]
+[ext_resource type="Theme" uid="uid://dxscbhbyg47rp" path="res://theme/green_button.tres" id="2"]
+[ext_resource type="Theme" uid="uid://c6gyciuad8n1j" path="res://theme/red_button.tres" id="2_niia5"]
+
+[node name="VoiceSettingsPanel" type="MarginContainer"]
+offset_right = 760.0
+offset_bottom = 460.0
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+script = ExtResource("1")
+
+[node name="ScrollContainer" type="ScrollContainer" parent="."]
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 15
+
+[node name="EnableContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+alignment = 3
+
+[node name="EnableLabel" type="Label" parent="ScrollContainer/VBoxContainer/EnableContainer"]
+layout_mode = 2
+text = "启用语音合成"
+
+[node name="EnableCheckBox" type="CheckButton" parent="ScrollContainer/VBoxContainer/EnableContainer"]
+layout_mode = 2
+
+[node name="SliderContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="VolumeContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/SliderContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="VolumeLabel" type="Label" parent="ScrollContainer/VBoxContainer/SliderContainer/VolumeContainer"]
+layout_mode = 2
+text = "音量"
+
+[node name="VolumeSlider" type="HSlider" parent="ScrollContainer/VBoxContainer/SliderContainer/VolumeContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.01
+value = 0.8
+
+[node name="VolumeValueLabel" type="Label" parent="ScrollContainer/VBoxContainer/SliderContainer/VolumeContainer"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "80%"
+horizontal_alignment = 1
+
+[node name="VSeparator" type="VSeparator" parent="ScrollContainer/VBoxContainer/SliderContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SpeedContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/SliderContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="SpeedLabel" type="Label" parent="ScrollContainer/VBoxContainer/SliderContainer/SpeedContainer"]
+layout_mode = 2
+text = "语速"
+
+[node name="SpeedSlider" type="HSlider" parent="ScrollContainer/VBoxContainer/SliderContainer/SpeedContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+min_value = 0.25
+max_value = 2.0
+step = 0.05
+value = 1.0
+allow_greater = true
+
+[node name="SpeedValueLabel" type="Label" parent="ScrollContainer/VBoxContainer/SliderContainer/SpeedContainer"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "1.00x"
+horizontal_alignment = 1
+
+[node name="HSeparator1" type="HSeparator" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="VBoxContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="LanguageContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="LanguageLabel" type="Label" parent="ScrollContainer/VBoxContainer/VBoxContainer/LanguageContainer"]
+layout_mode = 2
+text = "语言"
+
+[node name="LanguageOption" type="OptionButton" parent="ScrollContainer/VBoxContainer/VBoxContainer/LanguageContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VoiceContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VoiceLabel" type="Label" parent="ScrollContainer/VBoxContainer/VBoxContainer/VoiceContainer"]
+layout_mode = 2
+text = "声线"
+
+[node name="VoiceOption" type="OptionButton" parent="ScrollContainer/VBoxContainer/VBoxContainer/VoiceContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="VoiceButtonsContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="DeleteVoiceButton" type="Button" parent="ScrollContainer/VBoxContainer/VoiceButtonsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2_niia5")
+text = "删除声线"
+
+[node name="AddVoiceButton" type="Button" parent="ScrollContainer/VBoxContainer/VoiceButtonsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2")
+text = "添加声线"
+
+[node name="HSeparator2" type="HSeparator" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="StatusLabel" type="Label" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="HintLabel" type="Label" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "提示：
+• 「启用语音合成」那边有个开关，默认是关的，你是不是没看见（
+• 请确保语种相同——或者你就想听「日式中文」？
+• 参考音频需要是8~10秒的清晰、无噪音的WAV格式音频
+• TTS比较贵，不用的话建议关闭（可以v我50嘛awa）"
+autowrap_mode = 1

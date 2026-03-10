@@ -1,0 +1,47 @@
+[gd_scene load_steps=2 format=3 uid="uid://bvurq47yol1d8"]
+
+[ext_resource type="Script" uid="uid://ctuguaiyft57w" path="res://scripts/explore/weapon_ui.gd" id="1"]
+
+[node name="WeaponUI" type="Control"]
+layout_mode = 3
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -191.0
+offset_top = -116.0
+offset_right = -31.0
+offset_bottom = -16.0
+grow_horizontal = 0
+grow_vertical = 0
+script = ExtResource("1")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.15
+anchor_top = -0.16000001
+anchor_right = 0.76100004
+anchor_bottom = 0.74
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="WeaponIcon" type="TextureRect" parent="VBox"]
+texture_filter = 1
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="AmmoLabel" type="Label" parent="VBox"]
+layout_mode = 2
+text = "0/0"
+horizontal_alignment = 1
+
+[node name="ReloadProgress" type="ProgressBar" parent="VBox"]
+layout_mode = 2
+max_value = 1.0
+value = 1.0
+show_percentage = false

@@ -1,0 +1,22 @@
+[
+  {"item_id": "iced_tea", "price": 20},
+  {"item_id": "pure_milk", "price": 18},
+  {"item_id": "soy_milk", "price": 22},
+  {"item_id": "bubble_milk_tea", "price": 25},
+  {"item_id": "fruit_juice", "price": 15},
+  {"item_id": "coconut_juice", "price": 18},
+  {"item_id": "yakult_milk", "price": 12},
+  {"item_id": "cola", "price": 20},
+  {"item_id": "sprite", "price": 20},
+  {"item_id": "ice_dew_bottled_water", "price": 8},
+  {"item_id": "salt_soda", "price": 16},
+  {"item_id": "oriental_leaf_tea", "price": 15},
+  {"item_id": "energy_drink", "price": 25},
+  {"item_id": "vodka", "price": 45},
+  {"item_id": "hot_chocolate", "price": 38},
+  {"item_id": "hot_americano", "price": 28},
+  {"item_id": "iced_americano", "price": 30},
+  {"item_id": "cappuccino", "price": 38},
+  {"item_id": "hot_dirty_chai", "price": 33},
+  {"item_id": "iced_dirty_chai", "price": 35}
+]

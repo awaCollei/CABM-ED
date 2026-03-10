@@ -1,0 +1,7 @@
+[
+  {"item_id": "bandage", "price": 50},
+  {"item_id": "medkit", "price": 260},
+  {"item_id": "5.8mm_ammo", "price": 3},
+  {"item_id": ".45_ammo", "price": 2},
+  {"item_id": "9mm_ammo", "price": 5}
+]

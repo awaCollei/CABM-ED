@@ -1,0 +1,162 @@
+{
+  "elements": {
+    "character_diary_button": {
+      "name": "日记入口",
+      "type": "click_area",
+      "size": {
+        "width": 140,
+        "height": 160
+      },
+      "position": {
+        "anchor": "bottom_left",
+        "offset_x": 120,
+        "offset_y": -130
+      },
+      "scenes": [
+        "bedroom"
+      ],
+      "enabled": true,
+      "options": [
+        {
+          "text": "📖 {character_name}的日记",
+          "action": "diary_selected",
+          "signal": "diary_selected"
+        }
+      ]
+    },
+    "costume_button": {
+      "name": "换装入口",
+      "type": "click_area",
+      "size": {
+        "width": 230,
+        "height": 230
+      },
+      "position": {
+        "anchor": "bottom_left",
+        "offset_x": 350,
+        "offset_y": -350
+      },
+      "scenes": [
+        "bathroom"
+      ],
+      "enabled": true,
+      "options": [
+        {
+          "text": "👗 换装",
+          "action": "costume_selector",
+          "signal": "costume_selector_requested"
+        }
+      ]
+    },
+    "story_mode_button": {
+      "name": "故事模式入口",
+      "type": "click_area",
+      "size": {
+        "width": 200,
+        "height": 150
+      },
+      "position": {
+        "anchor": "bottom_left",
+        "offset_x": 160,
+        "offset_y": -150
+      },
+      "scenes": [
+        "studyroom"
+      ],
+      "enabled": true,
+      "options": [
+        {
+          "text": "📔 如我所书",
+          "action": "story_mode",
+          "signal": null
+        }
+      ]
+    },
+    "cook_button": {
+      "name": "烹饪入口",
+      "type": "click_area",
+      "size": {
+        "width": 200,
+        "height": 150
+      },
+      "position": {
+        "anchor": "right_center",
+        "offset_x": -240,
+        "offset_y": 30
+      },
+      "scenes": [
+        "kitchen"
+      ],
+      "enabled": true,
+      "options": [
+        {
+          "text": "🍳 做饭",
+          "action": "start_cook",
+          "signal": "start_cook"
+        }
+      ]
+    },
+    "shop_button": {
+      "name": "商店入口",
+      "type": "click_area",
+      "size": {
+        "width": 150,
+        "height": 220
+      },
+      "position": {
+        "anchor": "center",
+        "offset_x": -30,
+        "offset_y": 10
+      },
+      "scenes": [
+        "shop"
+      ],
+      "enabled": true,
+      "options": [
+        {
+          "text": "🏪 商店",
+          "action": "enter_shop",
+          "signal": "enter_shop"
+        }
+      ]
+    },
+    "farming_button": {
+      "name": "菜园入口",
+      "type": "click_area",
+      "size": {
+        "width": 300,
+        "height": 250
+      },
+      "position": {
+        "anchor": "center",
+        "offset_x": 50,
+        "offset_y": 200
+      },
+      "scenes": [
+        "rooftop"
+      ],
+      "enabled": true,
+      "options": [
+        {
+          "text": "🥦 菜园",
+          "action": "enter_farming",
+          "signal": "enter_farming"
+        }
+      ]
+    }
+  },
+  "position_anchors": {
+    "top_left": "场景左上角",
+    "top_right": "场景右上角",
+    "bottom_left": "场景左下角",
+    "bottom_right": "场景右下角",
+    "center": "场景中心",
+    "left_center": "场景左侧中心",
+    "right_center": "场景右侧中心"
+  },
+  "notes": {
+    "offset_x": "正值向右，负值向左",
+    "offset_y": "正值向下，负值向上（从锚点开始计算）",
+    "scenes": "留空数组表示在所有场景显示"
+  }
+}

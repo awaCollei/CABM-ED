@@ -1,0 +1,68 @@
+{
+  "version": "1.0.0",
+  "save_slots": {
+    "slot_1": {
+      "character_data": {
+        "affection": 50,
+        "reply_willingness": 60,
+        "mood": "calm",
+        "energy": 100,
+        "trust_level": 0,
+        "current_scene": "",
+        "costume_id": "default",
+        "current_preset": {
+          "des": "",
+          "image": "",
+          "scale": 1.0,
+          "position": {
+            "x": 0.5,
+            "y": 0.5
+          }
+        }
+      },
+      "user_data": {
+        "user_name": "熵",
+        "user_address": "你",
+        "total_chat_count": 0,
+        "total_play_time": 0,
+        "last_login_date": "",
+        "consecutive_days": 0
+      },
+      "character_name": "雪狐",
+      "statistics": {
+        "total_messages_sent": 0,
+        "total_messages_received": 0,
+        "favorite_scene": "",
+        "most_used_action": ""
+      },
+      "timestamp": {
+        "created_at": "",
+        "last_saved_at": "",
+        "last_played_at": "",
+        "last_played_at_unix": 0.0
+      },
+      "ai_data": {
+        "memory": [],
+        "accumulated_summary_count": 0,
+        "relationship_history": []
+      },
+      "inventory_data": {
+        "inventory": [],
+        "warehouse": []
+      },
+      "shop_system_data": {
+        "active_offers": []
+      },
+      "snow_fox_inventory": {
+        "storage": [],
+        "weapon_slot": {}
+      }
+    }
+  },
+  "settings": {
+    "auto_save": true,
+    "auto_save_interval": 300,
+    "max_save_slots": 3,
+    "instant_save": true
+  }
+}

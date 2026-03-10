@@ -1,0 +1,83 @@
+[gd_scene load_steps=4 format=3 uid="uid://dn51fdxfp0ltq"]
+
+[ext_resource type="Script" uid="uid://bk10mcctpjlmh" path="res://scripts/companion/calendar_panel.gd" id="1"]
+[ext_resource type="PackedScene" uid="uid://bqy8m5n7qp3yl" path="res://scenes/memo_panel.tscn" id="2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_calendar"]
+bg_color = Color(0.95, 0.94, 0.88, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.65, 0.6, 0.5, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_size = 8
+shadow_color = Color(0, 0, 0, 0.2)
+
+[node name="CalendarPanel" type="Panel"]
+custom_minimum_size = Vector2(470, 450)
+offset_left = 357.0
+offset_top = 116.0
+offset_right = 827.0
+offset_bottom = 566.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_calendar")
+script = ExtResource("1")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PrevMonthBtn" type="Button" parent="VBox/Header"]
+custom_minimum_size = Vector2(60, 40)
+layout_mode = 2
+text = "◀"
+
+[node name="MonthLabel" type="Label" parent="VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.2, 0.15, 0.1, 1)
+theme_override_font_sizes/font_size = 18
+text = "2025年1月"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="NextMonthBtn" type="Button" parent="VBox/Header"]
+custom_minimum_size = Vector2(60, 40)
+layout_mode = 2
+text = "▶"
+
+[node name="CloseBtn" type="Button" parent="VBox/Header"]
+custom_minimum_size = Vector2(60, 40)
+layout_mode = 2
+text = "✕"
+
+[node name="CalendarGrid" type="GridContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/h_separation = 5
+theme_override_constants/v_separation = 5
+columns = 7
+
+[node name="MemoPanel" parent="." instance=ExtResource("2")]
+z_index = 10
+layout_mode = 0
+offset_left = 474.0
+offset_top = -47.0
+offset_right = 874.0
+offset_bottom = 603.0

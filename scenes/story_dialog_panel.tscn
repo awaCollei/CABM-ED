@@ -1,0 +1,246 @@
+[gd_scene load_steps=11 format=3 uid="uid://4yvcgwnkhyia"]
+
+[ext_resource type="Script" uid="uid://yj42vt7oyrqw" path="res://scripts/story/story_dialog_panel.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://8vo55rwlb5of" path="res://assets/images/story_background2.png" id="2"]
+[ext_resource type="PackedScene" path="res://scenes/universal_tree_view.tscn" id="3"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_transparent"]
+bg_color = Color(0, 0, 0, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_info_bar"]
+bg_color = Color(0.2, 0.3, 0.5, 0.8)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kg3em1"]
+bg_color = Color(0.26835972, 0.6612928, 0.19275102, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ce2531"]
+bg_color = Color(0.21489933, 0.75829023, 0.31385657, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_57v361"]
+bg_color = Color(0.21456605, 0.8545345, 0, 0.88235295)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialog_panel"]
+bg_color = Color(0.039215688, 0.6156863, 0.7176471, 0.42352942)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 1, 1, 1)
+border_blend = true
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_offset = Vector2(4, 4)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_message_input"]
+bg_color = Color(0.9, 0.9, 0.9, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6, 0.6, 0.6, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+
+[node name="StoryDialogPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Overlay" type="ColorRect" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0.2)
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_transparent")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+
+[node name="LeftPanel" type="VBoxContainer" parent="Panel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="InfoBar" type="Panel" parent="Panel/HBoxContainer/LeftPanel"]
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_info_bar")
+
+[node name="InfoHBox" type="HBoxContainer" parent="Panel/HBoxContainer/LeftPanel/InfoBar"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 10.0
+offset_right = -15.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="StoryInfoLabel" type="TextEdit" parent="Panel/HBoxContainer/LeftPanel/InfoBar/InfoHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 16
+text = "故事信息："
+editable = false
+selecting_enabled = false
+wrap_mode = 1
+
+[node name="CreateCheckpointButton" type="Button" parent="Panel/HBoxContainer/LeftPanel/InfoBar/InfoHBox"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_kg3em1")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ce2531")
+theme_override_styles/hover = SubResource("StyleBoxFlat_57v361")
+text = "创建存档点"
+
+[node name="TreeView" parent="Panel/HBoxContainer/LeftPanel" instance=ExtResource("3")]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BackButton" type="Button" parent="Panel/HBoxContainer/LeftPanel"]
+custom_minimum_size = Vector2(80, 40)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
+text = "返回"
+
+[node name="RightPanel" type="VBoxContainer" parent="Panel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="DialogPanel" type="Panel" parent="Panel/HBoxContainer/RightPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_dialog_panel")
+
+[node name="LoadPreviousButton" type="Button" parent="Panel/HBoxContainer/RightPanel/DialogPanel"]
+z_index = 1
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 0
+offset_left = 289.0
+offset_top = -15.0
+offset_right = 329.0
+offset_bottom = 25.0
+text = "↑"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/HBoxContainer/RightPanel/DialogPanel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MessageContainer" type="VBoxContainer" parent="Panel/HBoxContainer/RightPanel/DialogPanel/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="MessageInputPanel" type="Panel" parent="Panel/HBoxContainer/RightPanel"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_message_input")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="Panel/HBoxContainer/RightPanel/MessageInputPanel"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = -10.0
+theme_override_constants/separation = 10
+
+[node name="ToggleSizeButton" type="Button" parent="Panel/HBoxContainer/RightPanel/MessageInputPanel/HBoxContainer"]
+custom_minimum_size = Vector2(40, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "↑"
+
+[node name="MessageInput" type="TextEdit" parent="Panel/HBoxContainer/RightPanel/MessageInputPanel/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "输入消息..."
+wrap_mode = 1
+
+[node name="SendButton" type="Button" parent="Panel/HBoxContainer/RightPanel/MessageInputPanel/HBoxContainer"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "发送"

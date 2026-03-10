@@ -1,0 +1,62 @@
+{
+  "times": {
+    "day": "白天",
+    "dusk": "黄昏",
+    "night": "夜晚"
+  },
+  "weathers": {
+    "sunny": "晴天",
+    "rainy": "雨天",
+    "snowy": "雪天"
+  },
+  "scenes": {
+    "livingroom": {
+      "name": "客厅",
+      "weight": 5,
+      "class": "home",
+      "connect": ["bedroom", "kitchen", "bathroom", "studyroom","entryway","rooftop"]
+    },
+    "bedroom": {
+      "name": "卧室",
+      "weight": 3,
+      "class": "home",
+      "connect": ["livingroom","bathroom","studyroom"]
+    },
+    "bathroom": {
+      "name": "浴室",
+      "weight": 1,
+      "class": "home",
+      "connect": ["livingroom","bedroom","studyroom"]
+    },
+    "studyroom": {
+      "name": "书房",
+      "weight": 3,
+      "class": "home",
+      "connect": ["livingroom","bedroom","bathroom"]
+    },
+    "kitchen": {
+      "name": "厨房",
+      "weight": 1,
+      "class": "home",
+      "connect": ["livingroom","entryway"]
+    },
+    "rooftop": {
+      "name": "天台",
+      "weight": 1,
+      "class": "outdoor",
+      "connect": ["entryway","livingroom"]
+    },
+    "shop": {
+      "name": "超市",
+      "weight": 1,
+      "class": "outdoor",
+      "connect": ["entryway"]
+    },
+    "entryway": {
+      "name": "玄关",
+      "weight": 1,
+      "class": "home",
+      "connect": ["livingroom","kitchen","shop","rooftop"]
+    }
+  }
+}

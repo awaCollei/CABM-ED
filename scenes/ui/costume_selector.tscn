@@ -1,0 +1,133 @@
+[gd_scene load_steps=5 format=3 uid="uid://ck8itfjri5c8f"]
+
+[ext_resource type="Script" uid="uid://d4d26nf3svhqw" path="res://scripts/costume_selector.gd" id="1_script"]
+[ext_resource type="Theme" uid="uid://c6gyciuad8n1j" path="res://theme/red_button.tres" id="2_iiwje"]
+[ext_resource type="Theme" uid="uid://dxscbhbyg47rp" path="res://theme/green_button.tres" id="3_d7yof"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.12, 0.12, 0.12, 0.95)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 10
+shadow_offset = Vector2(0, 5)
+
+[node name="CostumeSelector" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.5)
+
+[node name="Panel" type="Panel" parent="."]
+custom_minimum_size = Vector2(600, 600)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -250.0
+offset_right = 300.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="MarginContainer" type="MarginContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "选择服装"
+horizontal_alignment = 1
+
+[node name="DisclaimerLabel" type="Label" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.6, 0.6, 1)
+theme_override_font_sizes/font_size = 14
+text = "默认以外的服装均为玩家制作，与开发者无关"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CostumeList" type="VBoxContainer" parent="Panel/MarginContainer/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 12
+
+[node name="ActionButtons" type="HBoxContainer" parent="Panel/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="DeleteButton" type="Button" parent="Panel/MarginContainer/VBoxContainer/ActionButtons"]
+custom_minimum_size = Vector2(120, 45)
+layout_mode = 2
+theme = ExtResource("2_iiwje")
+text = "删除服装"
+
+[node name="AddButton" type="Button" parent="Panel/MarginContainer/VBoxContainer/ActionButtons"]
+custom_minimum_size = Vector2(120, 45)
+layout_mode = 2
+theme = ExtResource("3_d7yof")
+text = "添加服装"
+
+[node name="CloseButton" type="Button" parent="Panel/MarginContainer/VBoxContainer/ActionButtons"]
+custom_minimum_size = Vector2(120, 45)
+layout_mode = 2
+text = "关闭"
+
+[node name="FileDialog" type="FileDialog" parent="."]
+oversampling_override = 1.0
+title = "Open a File"
+initial_position = 2
+size = Vector2i(800, 500)
+ok_button_text = "打开"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.zip ; ZIP文件")
+
+[node name="ConfirmDialog" type="ConfirmationDialog" parent="."]
+oversampling_override = 1.0
+initial_position = 2
+size = Vector2i(300, 100)
+ok_button_text = "确定删除"
+cancel_button_text = "取消"
+
+[node name="ResultDialog" type="AcceptDialog" parent="."]
+oversampling_override = 1.0
+title = "添加结果"
+initial_position = 2
+size = Vector2i(400, 200)

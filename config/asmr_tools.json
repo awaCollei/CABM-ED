@@ -1,0 +1,120 @@
+{
+	"tools": [
+		{
+			"type": "function",
+			"function": {
+				"name": "ear_cleaning",
+				"description": "采耳",
+				"parameters": {
+					"type": "object",
+					"properties": {
+						"position": {
+							"type": "string",
+							"description": "采耳位置：left（左耳）、right（右耳）、both（同时）",
+							"enum": ["left", "right", "both"]
+						},
+						"duration": {
+							"type": "number",
+							"description": "采耳时长（秒）"
+						}
+					},
+					"required": []
+				}
+			}
+		},
+		{
+			"type": "function",
+			"function": {
+				"name": "aloe_vera_gel",
+				"description": "用芦荟胶按摩",
+				"parameters": {
+					"type": "object",
+					"properties": {
+						"duration": {
+							"type": "number",
+							"description": "按摩时长（秒）"
+						}
+					},
+					"required": []
+				}
+			}
+		},
+		{
+			"type": "function",
+			"function": {
+				"name": "aromatherapy_massage",
+				"description": "精油按摩耳朵",
+				"parameters": {
+					"type": "object",
+					"properties": {
+						"position": {
+							"type": "string",
+							"description": "按摩位置：left（左耳）、right（右耳）、both（同时）",
+							"enum": ["left", "right", "both"]
+						},
+						"intensity": {
+							"type": "string",
+							"description": "是否深入耳朵进行按摩",
+							"enum": ["deep", "shallow","random"]
+						},
+						"prepare": {
+							"type": "boolean",
+							"description": "按摩前是否先在手上涂抹精油"
+						},
+						"duration": {
+							"type": "number",
+							"description": "按摩时长（秒）"
+						}
+					},
+					"required": []
+				}
+			}
+		},
+		{
+			"type": "function",
+			"function": {
+				"name": "fabric_friction",
+				"description": "用布料摩擦耳朵",
+				"parameters": {
+					"type": "object",
+					"properties": {
+						"position": {
+							"type": "string",
+							"description": "摩擦位置：left（左耳）、right（右耳）、both（同时）",
+							"enum": ["left", "right", "both"]
+						},
+						"duration": {
+							"type": "number",
+							"description": "摩擦时长（秒）"
+						}
+					},
+					"required": []
+				}
+			}
+		}
+	],
+	"audio_mapping": {
+		"ear_cleaning": {
+			"audio_id": "1",
+			"default_duration": 60,
+			"displayed_name":"正在掏耳朵..."
+		},
+		"aloe_vera_gel": {
+			"audio_id": "2",
+			"default_duration": 60,
+			"displayed_name":"正在芦荟胶按摩..."
+		},
+		"aromatherapy_massage": {
+			"audio_id": "3",
+			"default_duration": 60,
+			"default_prepare": false,
+			"default_intensity": "random",
+			"displayed_name":"正在精油按摩耳朵..."
+		},
+		"fabric_friction": {
+			"audio_id": "4",
+			"default_duration": 60,
+			"displayed_name":"正在布料摩擦耳朵..."
+		}
+	}
+}

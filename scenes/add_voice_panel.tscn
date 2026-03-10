@@ -1,0 +1,148 @@
+[gd_scene load_steps=4 format=3 uid="uid://b5tpvkibqxvei"]
+
+[ext_resource type="Script" uid="uid://dhvdgo1jhb376" path="res://scripts/add_voice_panel.gd" id="1"]
+[ext_resource type="Theme" uid="uid://dxscbhbyg47rp" path="res://theme/green_button.tres" id="2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_i1rih"]
+bg_color = Color(0.9490196, 0.9411765, 0.8784314, 1)
+
+[node name="AddVoicePanel" type="Panel"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -100.0
+offset_top = -325.0
+offset_right = 500.0
+offset_bottom = 315.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_i1rih")
+script = ExtResource("1")
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="TitleContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="MarginContainer/VBoxContainer/TitleContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "新建声线"
+horizontal_alignment = 1
+
+[node name="CloseButton" type="Button" parent="MarginContainer/VBoxContainer/TitleContainer"]
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+text = "×"
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="FormContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer/ScrollContainer/FormContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "声线名称"
+
+[node name="NameInput" type="LineEdit" parent="MarginContainer/VBoxContainer/ScrollContainer/FormContainer"]
+layout_mode = 2
+placeholder_text = "自定义声线1"
+
+[node name="LanguageLabel" type="Label" parent="MarginContainer/VBoxContainer/ScrollContainer/FormContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "语言"
+
+[node name="LanguageOption" type="OptionButton" parent="MarginContainer/VBoxContainer/ScrollContainer/FormContainer"]
+layout_mode = 2
+
+[node name="AudioLabel" type="Label" parent="MarginContainer/VBoxContainer/ScrollContainer/FormContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "上传参考音频 "
+
+[node name="AudioLabel2" type="Label" parent="MarginContainer/VBoxContainer/ScrollContainer/FormContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.34781694, 0.34781697, 0.3478169, 1)
+theme_override_font_sizes/font_size = 16
+text = "8~10秒清晰的语音，建议wav格式"
+
+[node name="AudioContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/ScrollContainer/FormContainer"]
+layout_mode = 2
+
+[node name="AudioPathLabel" type="Label" parent="MarginContainer/VBoxContainer/ScrollContainer/FormContainer/AudioContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0, 0.80784315, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "未选择文件"
+clip_text = true
+
+[node name="SelectAudioButton" type="Button" parent="MarginContainer/VBoxContainer/ScrollContainer/FormContainer/AudioContainer"]
+layout_mode = 2
+text = "选择文件"
+
+[node name="TextLabel" type="Label" parent="MarginContainer/VBoxContainer/ScrollContainer/FormContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+text = "参考文本"
+
+[node name="TextInput" type="TextEdit" parent="MarginContainer/VBoxContainer/ScrollContainer/FormContainer"]
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+placeholder_text = "输入参考音频对应的文本内容"
+wrap_mode = 1
+autowrap_mode = 1
+
+[node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ButtonsContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CancelButton" type="Button" parent="MarginContainer/VBoxContainer/ButtonsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "取消"
+
+[node name="ConfirmButton" type="Button" parent="MarginContainer/VBoxContainer/ButtonsContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme = ExtResource("2")
+text = "确定"
+
+[node name="FileDialog" type="FileDialog" parent="."]
+title = "Open a File"
+size = Vector2i(600, 400)
+ok_button_text = "选择"
+file_mode = 0
+access = 2
+filters = PackedStringArray("*.wav ; WAV音频文件")

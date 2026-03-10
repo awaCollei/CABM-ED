@@ -1,0 +1,80 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[android]
+
+window/keyboard_mode=1
+
+[application]
+
+config/name="CABM-ED"
+run/main_scene="res://scenes/game_launcher.tscn"
+config/features=PackedStringArray("4.5", "GL Compatibility")
+boot_splash/show_image=false
+boot_splash/fullsize=false
+boot_splash/use_filter=false
+config/icon="res://icon.png"
+
+[audio]
+
+buses/default_bus_layout="uid://b0mr6go8soxcr"
+driver/enable_input=true
+driver/force_input_mono=true
+
+[autoload]
+
+AndroidPermissions="*res://scripts/android_permissions.gd"
+SceneTransition="*res://scripts/scene_transition.gd"
+PlatformManager="*res://scripts/platform_manager.gd"
+ResourceManager="*res://scripts/resource_manager.gd"
+SaveManager="*res://scripts/save_manager.gd"
+OfflineTimeManager="*res://scripts/offline_time_manager.gd"
+PromptBuilder="*res://scripts/prompt_builder.gd"
+MemoryManager="*res://scripts/memory_manager.gd"
+UnifiedMemorySaver="*res://scripts/unified_memory_saver.gd"
+AIService="*res://scripts/ai_chat/ai_service.gd"
+AIConfigManager="*res://scripts/ai_chat/ai_config_manager.gd"
+TTSService="*res://scripts/tts_service.gd"
+EventHelpers="*res://scripts/event_helpers.gd"
+EventManager="*res://scripts/event_manager.gd"
+UIManager="*res://scripts/ui_manager.gd"
+InteractiveElementManager="*res://scripts/interactive_element_manager.gd"
+InventoryManager="*res://scripts/inventory_manager.gd"
+ShopManager="*res://scripts/shop_manager.gd"
+MessageDisplay="*res://scripts/message_display_manager.gd"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/ios/hide_home_indicator=false
+window/ios/hide_status_bar=false
+window/ios/suppress_ui_gesture=false
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/virtual_joystick/plugin.cfg")
+
+[gui]
+
+common/snap_controls_to_pixels=false
+theme/custom="res://default_theme.tres"
+theme/custom_font="res://zh-cn.ttf"
+
+[input_devices]
+
+pointing/emulate_touch_from_mouse=true
+
+[rendering]
+
+renderer/rendering_method="gl_compatibility"
+renderer/rendering_method.mobile="gl_compatibility"
+textures/vram_compression/import_etc2_astc=true

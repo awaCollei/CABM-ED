@@ -1,0 +1,927 @@
+{
+  "items": {
+    "CMR-951": {
+      "name": "九五式-改",
+      "type": "武器",
+      "subtype": "远程",
+      "description": "你最熟悉的武器，它是████████████████████",
+      "icon": "CRM-951.png",
+      "weight": 3.5,
+      "max_stack": 1,
+      "damage": 46,
+      "ammo_type": "5.8mm",
+      "magazine_size": 42,
+      "fire_rate": 0.09,
+      "reload_time":3.7,
+      "special_tags":["绑定"]
+    },
+    "UMP45": {
+      "name": "UMP45",
+      "type": "武器",
+      "subtype": "远程",
+      "description": "让敌人的心电图和她一样平",
+      "icon": "UMP45.png",
+      "weight": 2.3,
+      "max_stack": 1,
+      "damage": 33,
+      "ammo_type": ".45",
+      "magazine_size": 25,
+      "fire_rate": 0.06,
+      "reload_time":3.0
+    },
+    "Snow_Fox_L": {
+      "name": "雪狐",
+      "type": "武器",
+      "subtype": "远程",
+      "description": "你这是哪个雪狐？",
+      "icon": "Snow_Fox_L.png",
+      "weight": 2.8,
+      "max_stack": 1,
+      "damage": 40,
+      "ammo_type": "5.8mm",
+      "magazine_size": 35,
+      "fire_rate": 0.07,
+      "reload_time":3.0
+    },
+    "VSS-SF": {
+      "name": "VSS-改",
+      "type": "武器",
+      "subtype": "远程",
+      "description": "消音极好的狙击步枪，是她████████████████",
+      "icon": "VSS-SF.png",
+      "weight": 2.5,
+      "max_stack": 1,
+      "damage": 85,
+      "ammo_type": "9mm",
+      "magazine_size": 20,
+      "fire_rate": 0.30,
+      "reload_time":3.5,
+      "special_tags":["绑定"]
+    },
+    "5.8mm_ammo": {
+      "name": "5.8mm子弹",
+      "type": "弹药",
+      "description": "5.8×42mm小口径步枪弹",
+      "icon": "5.8mm.png",
+      "weight": 0.02,
+      "max_stack": 64,
+      "caliber": "5.8mm"
+    },
+    ".45_ammo": {
+      "name": ".45子弹",
+      "type": "弹药",
+      "description": ".45 ACP全威力手枪弹",
+      "icon": ".45.png",
+      "weight": 0.03,
+      "max_stack": 64,
+      "caliber": ".45"
+    },
+    "9mm_ammo": {
+      "name": "9mm子弹",
+      "type": "弹药",
+      "description": "9×39mm亚音速步枪弹",
+      "icon": "9mm.png",
+      "weight": 0.02,
+      "max_stack": 64,
+      "caliber": "9mm"
+    },
+    "bandage": {
+      "name": "绷带",
+      "type": "药品",
+      "description": "厕纸（buhsi）",
+      "icon": "bandage.png",
+      "weight": 0.2,
+      "max_stack": 64,
+      "heal_amount": 10,
+      "use_time": 3.0
+    },
+    "medkit": {
+      "name": "医疗箱",
+      "type": "药品",
+      "description": "∵绷带∈医疗箱 ∴医疗箱>绷带",
+      "icon": "medkit.png",
+      "weight": 1.5,
+      "max_stack": 64,
+      "heal_amount": 50,
+      "use_time": 5.0
+    },
+    "note": {
+      "name": "开发者注",
+      "type": "特殊",
+      "description": "你居然还留着？",
+      "icon": "note.png",
+      "weight": 0,
+      "max_stack": 1
+    },
+    "apple": {
+      "name": "苹果",
+      "type": "食材",
+      "description": "能做金苹果嘛……？",
+      "icon": "apple.png",
+      "weight": 0.2,
+      "max_stack": 64,
+      "cook_time": 10.0
+    },
+    "beef": {
+      "name": "牛肉",
+      "type": "食材",
+      "description": "新鲜的牛肉",
+      "icon": "beef.png",
+      "weight": 0.5,
+      "max_stack": 64,
+      "cook_time": 16.0
+    },
+    "beetroot": {
+      "name": "甜菜根",
+      "type": "食材",
+      "description": "可食用的根茎类蔬菜",
+      "icon": "beetroot.png",
+      "weight": 0.3,
+      "max_stack": 64,
+      "cook_time": 18.0
+    },
+    "carrot": {
+      "name": "胡萝卜",
+      "type": "食材",
+      "description": "富含维生素的胡萝卜",
+      "icon": "carrot.png",
+      "weight": 0.2,
+      "max_stack": 64,
+      "cook_time": 15.0
+    },
+    "chicken": {
+      "name": "鸡肉",
+      "type": "食材",
+      "description": "新鲜的鸡肉",
+      "icon": "chicken.png",
+      "weight": 0.4,
+      "max_stack": 64,
+      "cook_time": 25.0
+    },
+    "mutton": {
+      "name": "羊肉",
+      "type": "食材",
+      "description": "新鲜的羊肉",
+      "icon": "mutton.png",
+      "weight": 0.5,
+      "max_stack": 64,
+      "cook_time": 26.0
+    },
+    "porkchop": {
+      "name": "猪肉",
+      "type": "食材",
+      "description": "新鲜的猪肉",
+      "icon": "porkchop.png",
+      "weight": 0.5,
+      "max_stack": 64,
+      "cook_time": 24.0
+    },
+    "potato": {
+      "name": "土豆",
+      "type": "食材",
+      "description": "硅基流动的服务器",
+      "icon": "potato.png",
+      "weight": 0.3,
+      "max_stack": 64,
+      "cook_time": 20.0
+    },
+    "rabbit": {
+      "name": "兔肉",
+      "type": "食材",
+      "description": "她好像很喜欢吃这个，难道说……？",
+      "icon": "rabbit.png",
+      "weight": 0.3,
+      "max_stack": 64,
+      "cook_time": 20.0
+    },
+    "sweet_berry": {
+      "name": "甜浆果",
+      "type": "食材",
+      "description": "唔……她好像也喜欢这个……？",
+      "icon": "sweet_berries.png", 
+      "weight": 0.3,
+      "max_stack": 64,
+      "cook_time": 10.0
+    },
+    "wheat": {
+      "name": "小麦",
+      "type": "食材",
+      "description": "三个可以合成面包……吗？",
+      "icon": "wheat.png", 
+      "weight": 0.3,
+      "max_stack": 64,
+      "cook_time": 10.0
+    },
+    "amethyst": {
+      "name": "紫水晶",
+      "type": "收集物",
+      "description": "稀有的紫色水晶",
+      "icon": "amethyst.png",
+      "weight": 0.4,
+      "max_stack": 64
+    },
+    "credit": {
+      "name": "信用点",
+      "type": "货币",
+      "description": "公司都开拓到这儿了？",
+      "icon": "credit.png",
+      "weight": 0,
+      "max_stack": 1024
+    },
+    "cooked_meal": {
+      "name": "谜之炖菜",
+      "type": "食品",
+      "description": "无描述",
+      "icon": "cooked_meal.png",
+      "weight": 0.5,
+      "max_stack": 1,
+      "use": ["自己做的饭，不管怎样都要吃完！","虽然卖相一般，但味道竟然还不错。","温热的食物下肚，疲惫一扫而空。"]
+    },
+    "bread": {
+      "name": "面包",
+      "type": "食品",
+      "description": "新鲜烤制的面包",
+      "icon": "bread.png",
+      "weight": 0.4,
+      "max_stack": 64,
+      "use": ["表皮酥脆，内里柔软，麦香在口中弥漫", "不小心掉了点面包屑，引来一只鸽子", "再来点黄油就更完美了！"]
+    },
+    "cake": {
+      "name": "蛋糕",
+      "type": "食品",
+      "description": "上面三个小麦，下面三桶牛奶，中间一个糖两个鸡蛋……补兑！",
+      "icon": "cake.png",
+      "weight": 0.8,
+      "max_stack": 64,
+      "use": ["生日快乐！虽然今天不一定是你的生日", "奶油沾到了鼻子上，有点滑稽", "如此完美的合成配方，果然是MC玩家"]
+    },
+    "cookie": {
+      "name": "曲奇",
+      "type": "食品",
+      "description": "香甜的曲奇饼干",
+      "icon": "cookie.png",
+      "weight": 0.1,
+      "max_stack": 64,
+      "use": ["咔嚓一声，完美的酥脆感", "忍不住想再吃一块，然后一整盒就消失了", "想起了奶奶烤的味道"]
+    },
+    "pumpkin_pie": {
+      "name": "南瓜派",
+      "type": "食品",
+      "description": "香甜的南瓜派",
+      "icon": "pumpkin_pie.png",
+      "weight": 0.6,
+      "max_stack": 64,
+      "use": ["温暖香甜，充满了秋天的气息", "这不是普通的南瓜派，这是有感情的南瓜派", "吃完感觉可以过一个温馨的感恩节了"]
+    },
+    "ice_cream_cone": {
+      "name": "圆筒冰淇淋",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "经典香草冰淇淋，小心别滴到手上！",
+      "icon": "snack/圆筒冰淇淋.png",
+      "weight": 0.15,
+      "max_stack": 64,
+      "use": ["哦不，第一口就滴到手上了！", "冰爽的香草味瞬间驱散了炎热", "脆皮圆筒是冰淇淋的灵魂所在"]
+    },
+    "chocolate_frappuccino": {
+      "name": "巧克力雪冰",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "冰爽巧克力风味，夏日解暑必备！",
+      "icon": "snack/巧克力雪冰.png",
+      "weight": 0.3,
+      "max_stack": 64,
+      "use": ["大脑冻结警告！但真的停不下来", "浓郁的巧克力冰沙，是快乐的形状", "感觉体温瞬间下降了5度"]
+    },
+    "lamington": {
+      "name": "拉明顿",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "澳洲传统甜点，椰丝包裹的海绵蛋糕",
+      "icon": "snack/拉明顿.png",
+      "weight": 0.2,
+      "max_stack": 64,
+      "use": ["椰丝粘得满嘴都是，像个圣诞老人", "海绵蛋糕的柔软和椰丝的粗糙形成完美对比", "尝到了一丝南半球的阳光味道"]
+    },
+    "grilled_chicken_burger": {
+      "name": "板烧鸡腿堡",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "多汁烤鸡腿肉，搭配特制酱汁",
+      "icon": "snack/板烧鸡腿堡.png",
+      "weight": 0.35,
+      "max_stack": 64,
+      "use": ["酱汁从指缝流下，这就是幸福的代价", "鸡腿肉嫩到不像话，汁水在嘴里爆开", "吃完想对烤鸡师傅说声谢谢"]
+    },
+    "beef_burger": {
+      "name": "牛肉汉堡",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "经典牛肉汉堡，永远的人气王",
+      "icon": "snack/牛肉汉堡.png",
+      "weight": 0.4,
+      "max_stack": 64,
+      "use": ["张大嘴巴，挑战一口咬下所有层次！", "牛肉饼的焦香是永恒的王道", "简单的美味，永不过时"]
+    },
+    "corn_cup": {
+      "name": "玉米杯",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "香甜玉米粒，方便携带的小份快乐",
+      "icon": "snack/玉米杯.png",
+      "weight": 0.2,
+      "max_stack": 64,
+      "use": ["用勺子？不，直接倒进嘴里才是正确吃法", "每一颗玉米都像裹着阳光的小炸弹", "方便到可以在赶路时吃完，毫无压力"]
+    },
+    "century_egg_chicken_porridge": {
+      "name": "皮蛋鸡肉粥",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "暖心暖胃，深夜食堂的灵魂食物",
+      "icon": "snack/皮蛋鸡肉粥.png",
+      "weight": 0.5,
+      "max_stack": 64,
+      "use": ["一口热粥下肚，所有疲惫都被熨平了", "皮蛋的独特风味让粥的层次感飙升", "这是专属于深夜的慰藉"]
+    },
+    "cheeseburger": {
+      "name": "芝士汉堡",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "融化的芝士让牛肉更加美味！热量？什么热量？",
+      "icon": "snack/芝士汉堡.png",
+      "weight": 0.38,
+      "max_stack": 64,
+      "use": ["看这拉丝的芝士！热量是什么？我不知道", "芝士就是力量，这句话是真的", "牛肉和芝士的融合，是美食界的黄金搭档"]
+    },
+    "french_fries": {
+      "name": "薯条",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "金黄酥脆，要蘸番茄酱还是糖醋酱？",
+      "icon": "snack/薯条.png",
+      "weight": 0.25,
+      "max_stack": 64,
+      "use": ["‘仅此一根’的谎言再次上演", "在番茄酱和糖醋酱之间反复横跳", "“咔滋”声是吃薯条时最美妙的BGM"]
+    },
+    "taro_pie": {
+      "name": "香芋派",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "外酥内软，紫色香芋馅的甜蜜诱惑",
+      "icon": "snack/香芋派.png",
+      "weight": 0.18,
+      "max_stack": 64,
+      "use": ["小心！内馅烫到舌头了！", "酥皮碎屑掉了一身，但值得", "香芋的味道浓郁又温柔，像紫色的梦"]
+    },
+    "cod_fish_burger": {
+      "name": "鳕鱼汉堡",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "深海鳕鱼排，外脆内嫩的海之风味",
+      "icon": "snack/鳕鱼汉堡.png",
+      "weight": 0.35,
+      "max_stack": 64,
+      "use": ["仿佛听到了海浪的声音", "鱼排没有腥味，只有鲜甜，好评！", "外层的脆皮是点睛之笔"]
+    },
+    "chicken_fillet": {
+      "name": "鸡排",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "比脸还大的炸鸡排，满足感爆棚！",
+      "icon": "snack/鸡排.png",
+      "weight": 0.45,
+      "max_stack": 64,
+      "use": ["真的比脸还大！需要双手捧着吃", "撒上辣椒粉和梅子粉，是终极奥义", "脆皮和嫩肉在口中奏响交响乐"]
+    },
+    "chicken_nuggets": {
+      "name": "麦乐鸡块",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "一口一个，搭配甜酸酱停不下来",
+      "icon": "snack/麦乐鸡块.png",
+      "weight": 0.3,
+      "max_stack": 64,
+      "use": ["蘸酱，吃掉，蘸酱，吃掉……循环开始", "试图找出恐龙形状的那一块", "“一口一个”的设计让人丧失警惕，回过神来盒子已空"]
+    },
+    "mcflurry": {
+      "name": "麦旋风™",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "冰淇淋混入奥利奥碎，记得先搅拌再吃哦！",
+      "icon": "snack/麦旋风™.png",
+      "weight": 0.28,
+      "max_stack": 64,
+      "use": ["搅拌得不够均匀，但谁在乎呢？", "奥利奥碎和冰淇淋的完美融合，罪恶又快乐", "勺子有点软，但这不影响它的美味"]
+    },
+    "spicy_chicken_wings": {
+      "name": "麦辣鸡翅",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "香辣酥脆，配冰可乐是绝配",
+      "icon": "snack/麦辣鸡翅.png",
+      "weight": 0.25,
+      "max_stack": 64,
+      "use": ["嘶——好辣！但是手停不下来", "嘴唇在跳舞，急需冰可乐救援！", "酥脆的外皮锁住了香辣的汁水，绝了"]
+    },
+    "spicy_chicken_burger": {
+      "name": "麦辣鸡腿汉堡",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "辣味爱好者首选，挑战你的味蕾！",
+      "icon": "snack/麦辣鸡腿汉堡.png",
+      "weight": 0.4,
+      "max_stack": 64,
+      "use": ["辣度刚刚好，是能让人享受的挑战", "“辣并快乐着”的完美诠释", "吃完感觉能喷出小小的火焰（幻觉）"]
+    },
+    "iced_dirty_chai": {
+      "name": "冰奶铁",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "是咖啡不是金属啊！",
+      "icon": "drink/冰奶铁.png",
+      "weight": 0.4,
+      "max_stack": 64,
+      "use": ["香料和咖啡的冰爽碰撞，很提神！", "喝下去才发现，原来‘铁’指的是口感厚重", "透心凉，但灵魂被香料温暖了"]
+    },
+    "iced_americano": {
+      "name": "冰美式",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "纯粹的咖啡因补给，打工人的续命水",
+      "icon": "drink/冰美式.png",
+      "weight": 0.35,
+      "max_stack": 64,
+      "use": ["苦涩的液体注入灵魂，困意退散！", "“老板，再来十份报告！”（幻觉）", "喝的不是咖啡，是清醒的人生"]
+    },
+    "ice_dew_bottled_water": {
+      "name": "冰露包装饮用水",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "其实也算是可口可乐的一种",
+      "icon": "drink/冰露包装饮用水.png",
+      "weight": 0.3,
+      "max_stack": 64,
+      "use": ["拧瓶盖时发出标志性的‘咔啦’声", "最朴素的味道，最解渴的体验", "瓶身被捏得咯吱响，减压效果+1"]
+    },
+    "cappuccino": {
+      "name": "卡布奇诺",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "绵密奶泡下的温柔陷阱，小心别被它的外表迷惑",
+      "icon": "drink/卡布奇诺.png",
+      "weight": 0.4,
+      "max_stack": 64,
+      "use": ["先吃掉上面的奶泡，仪式感十足", "看似温柔，咖啡因含量可一点不含糊", "奶泡在嘴唇上留下白色印记，有点可爱"]
+    },
+    "hot_dirty_chai": {
+      "name": "热奶铁",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "冬日冒险必备，温暖从指尖传到心尖",
+      "icon": "drink/热奶铁.png",
+      "weight": 0.4,
+      "max_stack": 64,
+      "use": ["捧在手心，暖意驱散了洞穴的寒气", "姜和香料的辛辣感让人精神一振", "喝一口，呼出白色的雾气，很有冒险氛围"]
+    },
+    "hot_chocolate": {
+      "name": "热朱古力",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "液态的幸福感，治愈所有冒险中的小创伤",
+      "icon": "drink/热朱古力.png",
+      "weight": 0.45,
+      "max_stack": 64,
+      "use": ["浓稠香甜，是融化了的巧克力棒吧！", "幸福感随着温度从胃里扩散到全身", "顶上的棉花糖慢慢融化，形成甜蜜的漩涡"]
+    },
+    "hot_americano": {
+      "name": "热美式",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "苦中作乐的典范，真正的冒险者都懂得欣赏",
+      "icon": "drink/热美式.png",
+      "weight": 0.35,
+      "max_stack": 64,
+      "use": ["纯粹的苦味，像不加修饰的冒险生活", "抿一口，皱下眉，然后感觉能再探索三个地下城", "热气袅袅升起，伴随咖啡香，是沉思时刻"]
+    },
+    "bubble_milk_tea": {
+      "name": "珍珠奶茶",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "黑珍珠在奶茶海中漫游，每一口都是惊喜",
+      "icon": "drink/珍珠奶茶.png",
+      "weight": 0.5,
+      "max_stack": 64,
+      "use": ["‘噗’地一声吸上来好几颗珍珠，大满足！", "奶茶见底了，珍珠还有半杯", "嚼珍珠的乐趣，占了这杯饮料的80%"]
+    },
+    "pure_milk": {
+      "name": "纯牛奶",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "真的是喝啥补啥吗...?",
+      "icon": "drink/纯牛奶.png",
+      "weight": 0.4,
+      "max_stack": 64,
+      "use": ["嘴唇上留下一圈可爱的‘白胡子’", "喝下去感觉骨头在欢呼（心理作用）", "最基础的味道，却带来奇异的安心感"]
+    },
+    "soy_milk": {
+      "name": "豆浆",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "来自东方的神秘力量",
+      "icon": "drink/豆浆.png",
+      "weight": 0.4,
+      "max_stack": 64,
+      "use": ["是甜的？还是咸的？永恒的争论", "豆香浓郁，感觉非常养生（错觉）", "搭配油条才是完全体，可惜现在没有"]
+    },
+    "iced_tea": {
+      "name": "冰红茶",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "冰镇似国窖，man！",
+      "icon": "drink/冰红茶.png",
+      "weight": 1.0,
+      "max_stack": 64,
+      "use": ["甜度刚好，冰爽解渴，经典永流传", "冰镇似国窖，常温如马尿", "一口气喝完半瓶，打了个响亮的嗝"]
+    },
+    "sandwich": {
+      "name": "三明治",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "简易便携的经典美食，饱腹感十足",
+      "icon": "snack/三明治.png",
+      "weight": 0.3,
+      "max_stack": 64,
+      "use": ["边缘的面包皮有点干，但内馅很丰富", "一边吃一边担心馅料从另一边掉出来", "简易午餐的王者，快速补充能量"]
+    },
+    "dongpo_elbow": {
+      "name": "东坡肘子",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "肥而不腻的传说级料理，食用后可能获得诗词灵感",
+      "icon": "snack/东坡肘子.png",
+      "weight": 1.2,
+      "max_stack": 64,
+      "use": ["皮糯肉烂，筷子一夹就分离，入口即化", "“慢着火，少着水，火候足时它自美…” 突然想吟诗", "吃完感觉满嘴胶原蛋白，可以三天不洗脸（不是）"]
+    },
+    "five_nut_mooncake": {
+      "name": "五仁月饼",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "经典传统糕点，评价两极分化",
+      "icon": "snack/五仁月饼.png",
+      "weight": 0.15,
+      "max_stack": 64,
+      "use": ["吃到了红绿丝！是童年的味道（或阴影）", "坚果和冰糖的混合口感，爱的人很爱", "配上一杯浓茶，才是正确的打开方式"]
+    },
+    "ice_pop": {
+      "name": "冰棍",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "炎炎夏日的救赎，小心粘住舌头",
+      "icon": "snack/冰棍.png",
+      "weight": 0.1,
+      "max_stack": 64,
+      "use": ["不听警告舔了一下，果然被粘住了！", "水果味的冰渣在口中融化，透心凉", "木棍上还留着没舔干净的糖水，有点可惜"]
+    },
+    "waffle": {
+      "name": "华夫饼",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "方格状的甜蜜诱惑，适合搭配各种酱料",
+      "icon": "snack/华夫饼.png",
+      "weight": 0.25,
+      "max_stack": 64,
+      "use": ["蜂蜜正好流进每一个小方格，强迫症福音", "外脆内软，蛋奶香气十足", "淋上巧克力酱，罪恶感翻倍，快乐也翻倍"]
+    },
+    "chocolate_bar": {
+      "name": "巧克力",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "丝滑甜蜜，据说能带来幸福感",
+      "icon": "snack/巧克力.png",
+      "weight": 0.1,
+      "max_stack": 64,
+      "use": ["在口袋里有点融化了，但不影响它的美味", "掰下一块时那清脆的‘咔’声令人愉悦", "丝滑的口感像丝绸一样滑过舌尖"]
+    },
+    "pizza": {
+      "name": "披萨",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "永远在争论该不该加菠萝",
+      "icon": "snack/披萨.png",
+      "weight": 0.8,
+      "max_stack": 64,
+      "use": ["拉出长长的芝士丝，成就感满分！", "边角料的面包边有时候比馅料还好吃", "这一块上没有菠萝，安全！（或者遗憾？）"]
+    },
+    "triple_color_ice_cream": {
+      "name": "三色雪糕",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "吃得太急可能会冻伤大脑？",
+      "icon": "snack/三色雪糕.png",
+      "weight": 0.12,
+      "max_stack": 64,
+      "use": ["先吃哪个颜色？这是个哲学问题", "果然吃太快了，太阳穴一阵刺痛（冰淇淋头痛）", "香草、草莓、巧克力，一次满足三个愿望"]
+    },
+    "preserved_pork": {
+      "name": "猪肉脯",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "风干的美味，适合长途冒险时携带",
+      "icon": "snack/猪肉脯.png",
+      "weight": 0.08,
+      "max_stack": 64,
+      "use": ["咸甜有嚼劲，越嚼越香", "一小片可以啃很久，是打发赶路时间的好东西", "肉质纤维分明，充满了原始的肉香"]
+    },
+    "tomato_pasta": {
+      "name": "番茄意面",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "酸甜开胃，小心酱汁溅到衣服上",
+      "icon": "snack/番茄意面.png",
+      "weight": 0.5,
+      "max_stack": 64,
+      "use": ["用叉子旋转意面是一门艺术，而你失败了", "番茄的酸味非常开胃，不知不觉吃完了", "白衬衫上果然还是溅到了一个小红点！"]
+    },
+    "salt_baked_chicken": {
+      "name": "盐焗鸡",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "外皮金黄，肉质鲜嫩多汁",
+      "icon": "snack/盐焗鸡.png",
+      "weight": 1.0,
+      "max_stack": 64,
+      "use": ["鸡皮咸香脆爽，是精华所在！", "用手撕着吃才过瘾，不顾形象了", "简单的盐味，完美衬托出了鸡肉本身的鲜美"]
+    },
+    "braised_beef": {
+      "name": "红烧牛肉",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "慢火炖煮的经典",
+      "icon": "snack/红烧牛肉.png",
+      "weight": 0.9,
+      "max_stack": 64,
+      "use": ["牛肉炖得酥烂入味，筷子轻轻一拨就开了", "浓郁的酱汁拿来拌饭，可以吃三碗！", "“妈妈的味道”具象化了"]
+    },
+    "lion_head_meatball": {
+      "name": "红烧狮子头",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "巨大而美味的肉丸，据说吃了会获得勇气",
+      "icon": "snack/红烧狮子头.png",
+      "weight": 0.7,
+      "max_stack": 64,
+      "use": ["好大一颗！需要分开几次才能吃完", "肉丸里混入了荸荠碎，口感爽脆又解腻", "吃完感觉勇气+1，敢去摸隔壁洞穴的蜘蛛了"]
+    },
+    "paper_wrapped_chicken": {
+      "name": "纸包鸡",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "用纸包裹烤制，打开时香气四溢",
+      "icon": "snack/纸包鸡.png",
+      "weight": 0.6,
+      "max_stack": 64,
+      "use": ["小心翼翼地打开油纸，香气‘轰’地冲出来", "鸡肉鲜嫩多汁，锁住了所有的精华", "连手指上沾的油都不想放过，舔干净！"]
+    },
+    "borscht": {
+      "name": "罗宋汤",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "来自远方的红色浓汤，酸甜暖胃",
+      "icon": "snack/罗宋汤.png",
+      "weight": 0.7,
+      "max_stack": 64,
+      "use": ["酸甜可口，喝下去胃里暖暖的", "胡萝卜和土豆都炖得软糯入味", "上面的一勺酸奶油是灵魂"]
+    },
+    "stinky_tofu": {
+      "name": "臭豆腐",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "闻着臭吃着香，食用后可能获得嗅觉抗性",
+      "icon": "snack/臭豆腐.png",
+      "weight": 0.2,
+      "max_stack": 64,
+      "use": ["屏住呼吸咬下第一口，然后……真香！", "外脆内嫩，配上辣酱和泡菜，绝了", "“嗅觉抗性”技能经验值+10"]
+    },
+    "vegetable_salad": {
+      "name": "蔬菜沙拉",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "健康清爽，适合在油腻大餐后食用",
+      "icon": "snack/蔬菜沙拉.png",
+      "weight": 0.4,
+      "max_stack": 64,
+      "use": ["咔嚓咔嚓，感觉自己非常健康", "沙拉酱放多了，健康度打点折扣", "吃完烤肉后的一股清流"]
+    },
+    "chips": {
+      "name": "薯片",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "薄脆上瘾，打开一包就停不下来",
+      "icon": "snack/薯片.png",
+      "weight": 0.15,
+      "max_stack": 64,
+      "use": ["说好只吃一片，结果吃了半包", "在袋底寻找那些碎掉的薯片渣，别浪费", "“咔滋咔滋”的声音在寂静的夜晚格外响亮"]
+    },
+    "gummy_candy": {
+      "name": "软糖",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "Q弹有嚼劲，各种水果造型",
+      "icon": "snack/软糖.png",
+      "weight": 0.05,
+      "max_stack": 64,
+      "use": ["先吃小熊形状的，还是小鱼形状的？", "QQ弹弹，可以在嘴里玩一会儿", "水果香精的味道，但是让人很开心"]
+    },
+    "spicy_chicken": {
+      "name": "辣子鸡",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "辣椒里找鸡肉，食用后可能喷火",
+      "icon": "snack/辣子鸡.png",
+      "weight": 0.5,
+      "max_stack": 64,
+      "use": ["辣椒堆里寻宝，找到一块鸡肉就像中奖", "又麻又辣，嘴唇失去知觉，但筷子没停", "“咳……我感觉我能喷火了！”（猛灌水中）"]
+    },
+    "sauerkraut_fish": {
+      "name": "酸菜鱼",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "酸辣开胃，鱼片嫩滑，小心鱼刺！",
+      "icon": "snack/酸菜鱼.png",
+      "weight": 1.1,
+      "max_stack": 64,
+      "use": ["鱼片嫩得用筷子都差点夹不起来", "酸菜的酸爽和泡椒的辣味让人胃口大开", "“哎呀，有根小刺！” 小心翼翼地吐出来"]
+    },
+    "rice_cracker": {
+      "name": "雪饼",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "蓬松酥脆的米制零食，上面有糖霜雪花",
+      "icon": "snack/雪饼.png",
+      "weight": 0.06,
+      "max_stack": 64,
+      "use": ["咬一口，酥脆的米花在嘴里散开", "舔掉上面的白色糖霜，是童年的记忆", "“咔嚓”声很治愈，一片接一片"]
+    },
+    "pan_fried_beef_rib": {
+      "name": "香煎牛仔骨",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "带骨的美味，享受撕咬的乐趣",
+      "icon": "snack/香煎牛仔骨.png",
+      "weight": 0.8,
+      "max_stack": 64,
+      "use": ["抓着骨头啃，汁水四溢，非常过瘾！", "黑胡椒酱汁渗入肉里，味道浓郁", "“骨边肉”才是最香的部分"]
+    },
+    "mapo_tofu": {
+      "name": "麻婆豆腐",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "麻辣鲜香，小心后劲！",
+      "icon": "snack/麻婆豆腐.png",
+      "weight": 0.5,
+      "max_stack": 64,
+      "use": ["豆腐嫩得像布丁，一碰就碎", "“麻”和“辣”在舌尖上跳舞，额头冒汗", "必须配上一大碗白米饭！"]
+    },
+    "milk_tablet": {
+      "name": "奶片",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "浓缩的牛奶精华，方便补充钙质",
+      "icon": "snack/奶片.png",
+      "weight": 0.02,
+      "max_stack": 64,
+      "use": ["含在嘴里，等它慢慢融化，奶味越来越浓", "“嘎嘣”一声咬碎，瞬间释放所有奶香", "便携式牛奶，冒险好伙伴"]
+    },
+    "milk_candy": {
+      "name": "奶糖",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "童年回忆，甜到心里",
+      "icon": "snack/奶糖.png",
+      "weight": 0.03,
+      "max_stack": 64,
+      "use": ["包装纸有点难剥，但里面的糖很软", "浓浓的奶香和甜味，简单又美好", "粘牙了！用舌头努力把它弄下来"]
+    },
+    "popcorn": {
+      "name": "爆米花",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "看戏必备，小心吃到没爆开的玉米粒！",
+      "icon": "snack/爆米花.png",
+      "weight": 0.2,
+      "max_stack": 64,
+      "use": ["抓一大把塞进嘴里，咸甜口味混在一起", "“咯嘣”！咬到了那颗该死的硬玉米粒", "吃爆米花的声音比电影台词还响"]
+    },
+    "meicai_pork": {
+      "name": "梅菜扣肉",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "肥瘦相间，梅菜解腻，下饭神器",
+      "icon": "snack/梅菜扣肉.png",
+      "weight": 0.9,
+      "max_stack": 64,
+      "use": ["五花肉肥而不腻，入口即化", "梅菜吸饱了肉汁，比肉还好吃！", "有了它，白米饭瞬间变成了美味佳肴"]
+    },
+    "pan_fried_steak": {
+      "name": "煎牛排",
+      "type": "食品",
+      "subtype": "小吃",
+      "description": "表面微焦，内里多汁，火候恰到好处",
+      "icon": "snack/煎牛排.png",
+      "weight": 0.65,
+      "max_stack": 64,
+      "use": ["切开后看到粉红色的切面，完美！", "肉汁混合着黑椒汁在盘子里流淌，不能浪费", "虽然只是用剑（？）煎的，但味道不输大厨"]
+    },
+    "yakult_milk": {
+      "name": "AD钙奶",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "童年的味道，喝了能长高（心理作用）",
+      "icon": "drink/AD钙奶.png",
+      "weight": 0.3,
+      "max_stack": 64,
+      "use": ["熟悉的酸甜味，瞬间穿越回小学时代", "“咕嘟咕嘟”一口气喝完一瓶，打了个嗝", "感觉骨头在生长（尽管是错觉）"]
+    },
+    "oriental_leaf_tea": {
+      "name": "东方树叶",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "喝的不是茶，是意境",
+      "icon": "drink/东方树叶.png",
+      "weight": 0.4,
+      "max_stack": 64,
+      "use": ["味道很淡，细细品味才能尝到茶香", "看着瓶身上的水墨画，感觉自己很有文化", "“无糖”的标签让人喝得毫无负担（也毫无甜味）"]
+    },
+    "vodka": {
+      "name": "伏特加",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "战斗民族的血液",
+      "icon": "drink/伏特加.png",
+      "weight": 0.8,
+      "max_stack": 64,
+      "use": ["像火焰一样从喉咙烧到胃里！", "纯饮是对伏特加的基本尊重（也是对自己酒量的挑战）", "喝完后感觉能空手打死一头熊（幻觉）"]
+    },
+    "cola": {
+      "name": "可乐",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "快乐水！但喝多了小心骨质疏松",
+      "icon": "drink/可乐.png",
+      "weight": 0.5,
+      "max_stack": 64,
+      "use": ["第一口气泡冲上鼻腔，爽！", "“吨吨吨”半瓶下去，满足地叹了口气", "暂时的快乐也是快乐，骨头的事以后再说"]
+    },
+    "fruit_juice": {
+      "name": "果汁",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "纯天然维C补充剂（大概吧）",
+      "icon": "drink/果汁.png",
+      "weight": 0.45,
+      "max_stack": 64,
+      "use": ["酸甜的水果味，感觉非常健康", "能喝到细微的果肉纤维，口感不错", "假装自己在补充每日所需维生素"]
+    },
+    "coconut_juice": {
+      "name": "椰汁",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "热带风情，喝了想去沙滩度假",
+      "icon": "drink/椰汁.png",
+      "weight": 0.4,
+      "max_stack": 64,
+      "use": ["清甜爽口，仿佛有海风吹过", "闭上眼睛，能听到海浪的声音（幻听）", "喝完想去买条花衬衫和草裙"]
+    },
+    "salt_soda": {
+      "name": "盐汽水",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "老上海的味道，复古又解渴",
+      "icon": "drink/盐汽水.png",
+      "weight": 0.35,
+      "max_stack": 64,
+      "use": ["淡淡的咸味和气泡结合，意外地解渴", "喝出了旧时光的味道，有点怀念", "气泡没有可乐那么冲，很温和"]
+    },
+    "energy_drink": {
+      "name": "能量饮料",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "熬夜必备，但建议还是好好睡觉",
+      "icon": "drink/能量饮料.png",
+      "weight": 0.4,
+      "max_stack": 64,
+      "use": ["一股化学合成的‘能量’味道", "感觉心跳加速了！可以再熬五百年！", "喝完后很精神，但不知道是咖啡因的作用还是对健康的焦虑"]
+    },
+    "sprite": {
+      "name": "雪碧",
+      "type": "食品",
+      "subtype": "饮料",
+      "description": "透心凉，心飞扬！柠檬味的气泡快乐",
+      "icon": "drink/雪碧.png",
+      "weight": 0.5,
+      "max_stack": 64,
+      "use": ["柠檬的清爽感瞬间激活所有味蕾", "气泡比可乐更刺激，直冲天灵盖", "喝下去感觉整个人都变得‘透明’和凉爽了"]
+    }
+  }
+}

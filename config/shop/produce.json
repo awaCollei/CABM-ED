@@ -1,0 +1,13 @@
+[
+  {"item_id": "carrot", "price": 15},
+  {"item_id": "potato", "price": 12},
+  {"item_id": "wheat", "price": 10},
+  {"item_id": "beetroot", "price": 18},
+  {"item_id": "beef", "price": 45},
+  {"item_id": "chicken", "price": 28},
+  {"item_id": "mutton", "price": 42},
+  {"item_id": "porkchop", "price": 38},
+  {"item_id": "rabbit", "price": 35},
+  {"item_id": "apple", "price": 25},
+  {"item_id": "sweet_berry", "price": 22}
+]

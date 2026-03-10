@@ -1,0 +1,9 @@
+{
+	"background_music": {},
+	"ambient_sounds": {},
+	"volume": {
+		"background_music": 0.3,
+		"ambient": 0.3
+	},
+	"default_bgm": "user://custom_bgm/木漏れ日の縁側.mp3"
+}

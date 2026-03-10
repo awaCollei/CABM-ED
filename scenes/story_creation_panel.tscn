@@ -1,0 +1,329 @@
+[gd_scene load_steps=7 format=3 uid="uid://dhfu8imjy0u08"]
+
+[ext_resource type="Script" uid="uid://cejo7l7ugh2ny" path="res://scripts/story/story_creation_panel.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://ciav2n21hexqb" path="res://assets/images/story_background.png" id="2"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.8, 0.9, 1, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.6, 0.8, 1, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_color = Color(0, 0, 0, 0.2)
+shadow_size = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_delete"]
+bg_color = Color(0.8, 0.2, 0.2, 0.8)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.3, 0.3, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_delete_pressed"]
+bg_color = Color(0.6, 0.1, 0.1, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.8, 0.2, 0.2, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_delete_hover"]
+bg_color = Color(1, 0.3, 0.3, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.5, 0.5, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[node name="StoryCreationPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+texture = ExtResource("2")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="Overlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.3)
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -500.0
+offset_top = -330.0
+offset_right = 500.0
+offset_bottom = 330.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = -20.0
+
+[node name="TopBar" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="BackButton" type="Button" parent="Panel/VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(80, 35)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "返回"
+
+[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "创建故事"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="Panel/VBoxContainer/TopBar"]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="Content" type="VBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 15
+
+[node name="KeywordSection" type="HBoxContainer" parent="Panel/VBoxContainer/Content"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 10
+
+[node name="KeywordLabel" type="Label" parent="Panel/VBoxContainer/Content/KeywordSection"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "关键词："
+
+[node name="KeywordInput" type="LineEdit" parent="Panel/VBoxContainer/Content/KeywordSection"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "让AI生成故事，可留空"
+
+[node name="GenerateButton" type="Button" parent="Panel/VBoxContainer/Content/KeywordSection"]
+custom_minimum_size = Vector2(100, 30)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "生成故事"
+
+[node name="EditHintSection" type="HBoxContainer" parent="Panel/VBoxContainer/Content"]
+visible = false
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 10
+
+[node name="EditHintLabel" type="Label" parent="Panel/VBoxContainer/Content/EditHintSection"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+text = "注意：编辑故事不会修改历史，这可能导致意外的错误"
+
+[node name="DeleteStoryButton" type="Button" parent="Panel/VBoxContainer/Content/EditHintSection"]
+custom_minimum_size = Vector2(100, 30)
+layout_mode = 2
+size_flags_horizontal = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_delete")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_delete_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_delete_hover")
+text = "删除故事"
+
+[node name="TitleSection" type="VBoxContainer" parent="Panel/VBoxContainer/Content"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 5
+
+[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer/Content/TitleSection"]
+layout_mode = 2
+text = "*故事标题："
+
+[node name="TitleInput" type="LineEdit" parent="Panel/VBoxContainer/Content/TitleSection"]
+layout_mode = 2
+placeholder_text = "给故事起个名字"
+
+[node name="CharacterSection" type="VBoxContainer" parent="Panel/VBoxContainer/Content"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 5
+
+[node name="UserRoleContainer" type="HBoxContainer" parent="Panel/VBoxContainer/Content/CharacterSection"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="UserRoleLabel" type="Label" parent="Panel/VBoxContainer/Content/CharacterSection/UserRoleContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "你的身份："
+
+[node name="UserRoleInput" type="LineEdit" parent="Panel/VBoxContainer/Content/CharacterSection/UserRoleContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "你在故事中的角色（可留空）"
+
+[node name="CharacterRoleContainer" type="HBoxContainer" parent="Panel/VBoxContainer/Content/CharacterSection"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CharacterRoleLabel" type="Label" parent="Panel/VBoxContainer/Content/CharacterSection/CharacterRoleContainer"]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "角色身份："
+
+[node name="CharacterRoleInput" type="LineEdit" parent="Panel/VBoxContainer/Content/CharacterSection/CharacterRoleContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "角色在故事中的身份（可留空）"
+
+[node name="SummarySection" type="VBoxContainer" parent="Panel/VBoxContainer/Content"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 5
+
+[node name="SummaryLabel" type="Label" parent="Panel/VBoxContainer/Content/SummarySection"]
+layout_mode = 2
+size_flags_vertical = 0
+text = "*故事简介："
+
+[node name="SummaryInput" type="TextEdit" parent="Panel/VBoxContainer/Content/SummarySection"]
+layout_mode = 2
+size_flags_vertical = 3
+placeholder_text = "这一定会是一个不同以往的浪漫故事♪"
+wrap_mode = 1
+
+[node name="OptionsSection" type="HBoxContainer" parent="Panel/VBoxContainer/Content"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 20
+
+[node name="LeftOptions" type="VBoxContainer" parent="Panel/VBoxContainer/Content/OptionsSection"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 4
+
+[node name="TemperatureRow" type="HBoxContainer" parent="Panel/VBoxContainer/Content/OptionsSection/LeftOptions"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="TemperatureLabel" type="Label" parent="Panel/VBoxContainer/Content/OptionsSection/LeftOptions/TemperatureRow"]
+layout_mode = 2
+text = "温度："
+
+[node name="TemperatureSlider" type="HSlider" parent="Panel/VBoxContainer/Content/OptionsSection/LeftOptions/TemperatureRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+max_value = 2.0
+step = 0.1
+value = 1.2
+tick_count = 11
+ticks_on_borders = true
+ticks_position = 2
+
+[node name="TemperatureInput" type="LineEdit" parent="Panel/VBoxContainer/Content/OptionsSection/LeftOptions/TemperatureRow"]
+custom_minimum_size = Vector2(45, 0)
+layout_mode = 2
+size_flags_horizontal = 0
+placeholder_text = "1.2"
+
+[node name="TemperatureHint" type="Label" parent="Panel/VBoxContainer/Content/OptionsSection/LeftOptions"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+theme_override_font_sizes/font_size = 11
+text = "控制模型的创造力，过高可能会输出乱码"
+
+[node name="RightOptions" type="VBoxContainer" parent="Panel/VBoxContainer/Content/OptionsSection"]
+layout_mode = 2
+size_flags_horizontal = 10
+theme_override_constants/separation = 4
+
+[node name="BackgroundRow" type="HBoxContainer" parent="Panel/VBoxContainer/Content/OptionsSection/RightOptions"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="BackgroundLabel" type="Label" parent="Panel/VBoxContainer/Content/OptionsSection/RightOptions/BackgroundRow"]
+layout_mode = 2
+text = "背景图片："
+
+[node name="BackgroundUploadButton" type="Button" parent="Panel/VBoxContainer/Content/OptionsSection/RightOptions/BackgroundRow"]
+custom_minimum_size = Vector2(90, 32)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "上传图片"
+
+[node name="BackgroundThumbnail" type="TextureRect" parent="Panel/VBoxContainer/Content/OptionsSection/RightOptions/BackgroundRow"]
+custom_minimum_size = Vector2(80, 45)
+layout_mode = 2
+size_flags_horizontal = 0
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TemperatureHint" type="Label" parent="Panel/VBoxContainer/Content/OptionsSection/RightOptions"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.5, 0.5, 1)
+theme_override_font_sizes/font_size = 11
+text = "推荐使用1280*720（16:9）的png图片"
+
+[node name="BottomBar" type="HBoxContainer" parent="Panel/VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+alignment = 1
+
+[node name="CreateButton" type="Button" parent="Panel/VBoxContainer/BottomBar"]
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+text = "创建故事"
+
+[connection signal="pressed" from="Panel/VBoxContainer/TopBar/BackButton" to="." method="_on_back_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/Content/KeywordSection/GenerateButton" to="." method="_on_generate_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/Content/EditHintSection/DeleteStoryButton" to="." method="_on_delete_story_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/Content/OptionsSection/RightOptions/BackgroundRow/BackgroundUploadButton" to="." method="_on_background_upload_pressed"]
+[connection signal="pressed" from="Panel/VBoxContainer/BottomBar/CreateButton" to="." method="_on_create_pressed"]
