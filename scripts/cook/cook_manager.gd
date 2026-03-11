@@ -50,6 +50,24 @@ func add_ingredient_to_pan(item_id: String, pan_rect: Rect2):
 	var ingredient = PanIngredient.new(item_id, rand_pos, rand_rot)
 	pan_ingredients.append(ingredient)
 
+func flip_ingredients(pan_rect: Rect2):
+	"""翻炒食材：重新排列位置、角度和图层顺序"""
+	if pan_ingredients.is_empty():
+		return
+	
+	# 重新随机位置和角度
+	for ingredient in pan_ingredients:
+		print(pan_rect)
+		ingredient.position = Vector2(
+			randf_range(pan_rect.position.x, pan_rect.position.x + pan_rect.size.x),
+			randf_range(pan_rect.position.y, pan_rect.position.y + pan_rect.size.y)
+		)
+		print(ingredient.position )
+		ingredient.rotation = randf() * PI * 2
+	
+	# 打乱数组顺序以改变图层（z轴）
+	pan_ingredients.shuffle()
+
 func update_cooking(delta: float):
 	"""更新烹饪状态"""
 	for ingredient in pan_ingredients:
