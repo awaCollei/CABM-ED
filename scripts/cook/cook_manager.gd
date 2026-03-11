@@ -167,11 +167,16 @@ func record_dish(ingredients: Array, p_items_config: Dictionary, dish_name: Stri
 	# 分析整体熟度
 	var overall_cook_state = analyze_overall_cook_state(cook_levels)
 	
+	# 判断是否为素食
+	var counts = MealNameGenerator.get_ingredient_counts(ingredients)
+	var is_veg = MealNameGenerator.is_vegetarian(counts.meat_count, counts.veg_count)
+	
 	# 记录菜品
 	var dish = {
 		"dish_name": dish_name,
 		"ingredients": ingredients_desc,
 		"cook_state": overall_cook_state,
+		"is_veg": is_veg,
 		"raw_count": cook_levels.count(IngredientState.RAW),
 		"light_count": cook_levels.count(IngredientState.LIGHT),
 		"medium_count": cook_levels.count(IngredientState.MEDIUM),

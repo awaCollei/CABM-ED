@@ -2,7 +2,9 @@
 extends RefCounted
 class_name MealNameGenerator
 
-# 移除全局变量 CookManagerClass
+# 食材分类常量
+const MEAT_TYPES = ["beef", "chicken", "mutton", "porkchop", "rabbit"]
+const VEG_TYPES = ["carrot", "potato", "beetroot", "sweet_berry"]
 
 func _init():
 	# 无需特殊初始化
@@ -29,6 +31,35 @@ static func generate_meal_name(ingredients: Array, items_config: Dictionary, Coo
 
 	# --- 3. 组合形容词和菜名 ---
 	return adjective + dish_name
+
+static func get_ingredient_counts(ingredients: Array) -> Dictionary:
+	"""
+	统计食材中的肉类和蔬菜数量。
+	@param ingredients: 一个包含 PanIngredient 对象的数组。
+	@return: 包含 meat_count 和 veg_count 的字典。
+	"""
+	var meat_count = 0
+	var veg_count = 0
+	
+	for ingredient in ingredients:
+		var id = ingredient.item_id
+		if id in MEAT_TYPES:
+			meat_count += 1
+		elif id in VEG_TYPES:
+			veg_count += 1
+			
+	return {
+		"meat_count": meat_count,
+		"veg_count": veg_count,
+		"total": ingredients.size()
+	}
+
+static func is_vegetarian(meat_count: int, veg_count: int) -> bool:
+	"""
+	判断是否为素菜。
+	规则：素菜数量 > 荤菜数量 * 2，则是素菜。
+	"""
+	return veg_count > meat_count * 2
 
 static func _analyze_adjective(ingredients: Array, CookManagerClassRef) -> String:
 	"""
@@ -122,34 +153,21 @@ static func _analyze_dish_name(ingredients: Array, items_config: Dictionary) -> 
 	@return: 菜名字符串。
 	"""
 	# 提取食材ID列表
-	var ingredient_ids = []
-	for ingredient in ingredients:
-		ingredient_ids.append(ingredient.item_id)
-
-	# 用字典模拟集合
 	var ingredient_set = {}
-	for id in ingredient_ids:
-		ingredient_set[id] = true
+	for ingredient in ingredients:
+		ingredient_set[ingredient.item_id] = true
 
 	var unique_ingredients = ingredient_set.keys()
 	var num_unique = unique_ingredients.size()
 
-	# 定义食材分类
-	var meat_types = ["beef", "chicken", "mutton", "porkchop", "rabbit"]
-	var veg_types = ["carrot", "potato", "beetroot", "sweet_berry"]  # wheat不算蔬菜
-
-	# 统计肉类和蔬菜
-	var meat_count = 0
+	# 使用新定义的分类统计
 	var meat_type_count = 0
-	var veg_count = 0
 	var veg_type_count = 0
 
 	for id in unique_ingredients:
-		if id in meat_types:
-			meat_count += 1
+		if id in MEAT_TYPES:
 			meat_type_count += 1
-		elif id in veg_types:
-			veg_count += 1
+		elif id in VEG_TYPES:
 			veg_type_count += 1
 
 	# 快捷判断函数

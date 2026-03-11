@@ -228,14 +228,23 @@
       "weight": 0,
       "max_stack": 1024
     },
-    "cooked_meal": {
+    "cooked_meal_veg": {
       "name": "谜之炖菜",
       "type": "食品",
       "description": "无描述",
-      "icon": "cooked_meal.png",
+      "icon": "cooked_meal_veg.png",
       "weight": 0.5,
       "max_stack": 1,
-      "use": ["自己做的饭，不管怎样都要吃完！","虽然卖相一般，但味道竟然还不错。","温热的食物下肚，疲惫一扫而空。"]
+      "use": ["自己做的饭，不管怎样都要吃完！","虽然卖相一般，但味道竟然还不错","简单的调味反而凸显了食材的本味","入口清脆，蔬菜本身的甜味在舌尖绽放","蔬菜的清甜在口中绽放，感觉整个人都轻盈了"]
+    },
+    "cooked_meal_meat": {
+      "name": "谜之炖肉",
+      "type": "食品",
+      "description": "无描述",
+      "icon": "cooked_meal_meat.png",
+      "weight": 0.5,
+      "max_stack": 1,
+      "use": ["自己做的饭，不管怎样都要吃完！","虽然卖相一般，但味道竟然还不错","咬下去肉汁在口中爆开，满足感爆棚！","温热的食物咽下，疲惫一扫而空","满满的蛋白质，感觉力气都变大了！"]
     },
     "bread": {
       "name": "面包",

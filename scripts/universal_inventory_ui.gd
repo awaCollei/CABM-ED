@@ -606,14 +606,14 @@ func _show_item_info(item_data: Dictionary):
 	var is_unknown = item_config.is_empty()
 	
 	# 如果是 cooked_meal 且有自定义属性，优先使用
-	if item_data.get("item_id") == "cooked_meal" and item_data.has("meal_name"):
+	if item_data.get("item_id") in ["cooked_meal_veg", "cooked_meal_meat"] and item_data.has("meal_name"):
 		info_name.text = item_data.meal_name
 	else:
 		info_name.text = item_config.get("name", "未知物品")
 		
 	if is_unknown:
 		info_desc.text = "该物品可能已被删除，可以丢弃到地图上"
-	elif item_data.get("item_id") == "cooked_meal" and item_data.has("meal_des"):
+	elif item_data.get("item_id") in ["cooked_meal_veg", "cooked_meal_meat"] and item_data.has("meal_des"):
 		info_desc.text = item_data.meal_des
 	else:
 		info_desc.text = item_config.get("description", "无描述")

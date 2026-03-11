@@ -536,7 +536,7 @@ func _show_result(ingredients: Array):
 
 	# 保存标题输入框的引用，以便在关闭时获取
 	result_panel.set_meta("title_input", title_input)
-
+	
 	# 结果容器
 	var result_container = Control.new()
 	result_container.custom_minimum_size = Vector2(500, 300)
@@ -623,9 +623,14 @@ func _on_result_closed():
 			
 			# 将菜品作为物品加入准备区
 			if prep_container:
-				var dish = cooked_dishes[-1]
+				var dish = cooked_dishes[-1]				
+				# 从菜品数据中直接获取荤素属性
+				var is_veg = dish.get("is_veg", false)
+				
+				var item_id = "cooked_meal_veg" if is_veg else "cooked_meal_meat"
+				
 				var cooked_meal = {
-					"item_id": "cooked_meal",
+					"item_id": item_id,
 					"count": 1,
 					"meal_name": dish["dish_name"],
 					"meal_des": dish["dish_name"] + "，" + dish["cook_state"]
