@@ -57,12 +57,10 @@ func flip_ingredients(pan_rect: Rect2):
 	
 	# 重新随机位置和角度
 	for ingredient in pan_ingredients:
-		print(pan_rect)
 		ingredient.position = Vector2(
 			randf_range(pan_rect.position.x, pan_rect.position.x + pan_rect.size.x),
 			randf_range(pan_rect.position.y, pan_rect.position.y + pan_rect.size.y)
 		)
-		print(ingredient.position )
 		ingredient.rotation = randf() * PI * 2
 	
 	# 打乱数组顺序以改变图层（z轴）

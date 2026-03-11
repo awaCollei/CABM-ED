@@ -7,7 +7,9 @@ signal game_ended()
 
 var cook_manager
 var items_config: Dictionary = {}
-
+var flip_cooldown: float = 0.8  # 冷却时间0.8秒
+var flip_cooldown_timer: float = 0.0  # 冷却计时器
+var can_flip: bool = true  # 是否可以翻炒
 # UI节点
 @onready var pan_texture: TextureRect = $PanContainer/PanTexture
 @onready var prep_panel: PanelContainer = $PrepPanel
@@ -165,6 +167,13 @@ func _process(delta):
 		cook_manager.update_cooking(delta)
 		_update_ingredient_sprites()
 		_update_fire_animation()
+	
+	# 更新翻炒冷却计时
+	if not can_flip:
+		flip_cooldown_timer -= delta
+		if flip_cooldown_timer <= 0:
+			can_flip = true
+			flip_cooldown_timer = 0
 
 func _create_prep_slots():
 	"""创建食材准备栏格子"""
@@ -307,6 +316,10 @@ func _on_pan_gui_input(event: InputEvent):
 
 func _flip_pan():
 	"""执行翻炒逻辑"""
+	# 检查冷却时间
+	if not can_flip:
+		return
+	
 	var pan_rect = _get_pan_rect()
 	cook_manager.flip_ingredients(pan_rect)
 	
@@ -316,6 +329,10 @@ func _flip_pan():
 	
 	# 重建食材显示以匹配新的顺序和位置
 	_rebuild_ingredient_sprites()
+	
+	# 设置冷却
+	can_flip = false
+	flip_cooldown_timer = flip_cooldown
 
 func _add_ingredient_to_pan(item_id: String) -> bool:
 	"""添加食材到锅中，返回是否成功"""
