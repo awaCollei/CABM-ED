@@ -1,0 +1,86 @@
+[gd_scene load_steps=5 format=3 uid="uid://bliscikujqa4v"]
+
+[ext_resource type="Script" uid="uid://d04c8slgpb2uj" path="res://scripts/cook/cook_result_panel.gd" id="1_r1r1r"]
+[ext_resource type="Texture2D" uid="uid://dfivusfpphvdr" path="res://assets/images/cook/bowl.png" id="2_b2b2b"]
+[ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="3_3m0gy"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_yk83q"]
+bg_color = Color(2.283971, 2.3464565, 0.6771977, 0.6784314)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.9411765, 0.972549, 0, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="CookResultPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_r1r1r")
+
+[node name="ColorRect" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.501961)
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(600, 500)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -250.0
+offset_right = 300.0
+offset_bottom = 250.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_yk83q")
+
+[node name="VBox" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="PanelContainer/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.17641908, 0.17641911, 0.17641902, 1)
+text = "菜名："
+horizontal_alignment = 1
+
+[node name="TitleInput" type="LineEdit" parent="PanelContainer/VBox"]
+layout_mode = 2
+placeholder_text = "谜之炖菜"
+alignment = 1
+
+[node name="ResultContainer" type="Control" parent="PanelContainer/VBox"]
+custom_minimum_size = Vector2(500, 300)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BowlBackground" type="TextureRect" parent="PanelContainer/VBox/ResultContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_b2b2b")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ConfirmButton" type="Button" parent="PanelContainer/VBox"]
+layout_mode = 2
+theme = ExtResource("3_3m0gy")
+text = "确认"

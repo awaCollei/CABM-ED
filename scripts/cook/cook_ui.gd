@@ -29,12 +29,13 @@ var inventory_ui: UniversalInventoryUI = null
 # 背包UI场景
 const INVENTORY_UI_SCENE = preload("res://scenes/universal_inventory_ui.tscn")
 const SLOT_SCENE = preload("res://scenes/inventory_slot.tscn")
+const RESULT_PANEL_SCENE = preload("res://scenes/cook/cook_result_panel.tscn")
 
 # 锅中食材显示
 var ingredient_sprites: Array[Control] = []
 
 # 出锅结果显示
-var result_panel: PanelContainer = null
+var result_panel: Control = null
 
 # 防止清理时的循环触发
 var is_cleaning: bool = false
@@ -515,153 +516,46 @@ func _show_result(ingredients: Array):
 	if result_panel:
 		result_panel.queue_free()
 
-	# 创建结果面板
-	result_panel = PanelContainer.new()
-	result_panel.custom_minimum_size = Vector2(600, 400)
-
-	# 获取视口尺寸
-	var viewport_size = get_viewport_rect().size
-
-	# 直接计算居中位置
-	result_panel.position = Vector2(
-		(viewport_size.x - result_panel.custom_minimum_size.x) * 0.5,
-		(viewport_size.y - result_panel.custom_minimum_size.y) * 0.5
-	)
-
+	# 创建并设置结果面板
+	result_panel = RESULT_PANEL_SCENE.instantiate()
 	add_child(result_panel)
-
-	# 内部容器使用正确的预设
-	var vbox = VBoxContainer.new()
-	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_KEEP_SIZE)
-	result_panel.add_child(vbox)
-
-	# 标题标签
-	var title_label = Label.new()
-	title_label.text = "菜名："
-	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(title_label)
-
-	# 可编辑的标题输入框
-	var title_input = LineEdit.new()
+	
 	var default_dish_name = "谜之炖菜"
 	if cooked_dishes.size() > 0:
 		default_dish_name = cooked_dishes[-1].get("dish_name", "谜之炖菜")
-	title_input.text = default_dish_name
-	title_input.placeholder_text = default_dish_name
-	title_input.alignment = HORIZONTAL_ALIGNMENT_CENTER
-	vbox.add_child(title_input)
-
-	# 保存标题输入框的引用，以便在关闭时获取
-	result_panel.set_meta("title_input", title_input)
 	
-	# 结果容器
-	var result_container = Control.new()
-	result_container.custom_minimum_size = Vector2(500, 300)
-	result_container.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT, Control.PRESET_MODE_KEEP_SIZE)
-	vbox.add_child(result_container)
+	result_panel.setup(ingredients, items_config, cook_manager, default_dish_name)
+	result_panel.result_closed.connect(_on_result_closed)
 
-	# 背景图片
-	var bowl_bg = TextureRect.new()
-	bowl_bg.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-	bowl_bg.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	bowl_bg.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-
-	var bowl_path = "res://assets/images/cook/bowl.png"
-	if ResourceLoader.exists(bowl_path):
-		bowl_bg.texture = load(bowl_path)
-
-	result_container.add_child(bowl_bg)
-
-	# 等待一帧让容器尺寸更新
-	await get_tree().process_frame
-
-	# 获取碗的矩形区域
-	var bowl_rect = _get_bowl_rect(result_container)
-
-	# 显示食材（随机放置在碗中）
-	for ingredient in ingredients:
-		var sprite = Control.new()
-		sprite.custom_minimum_size = Vector2(150, 150)
-		sprite.set_anchors_and_offsets_preset(Control.PRESET_TOP_LEFT)
-
-		var icon = TextureRect.new()
-		icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-		icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		icon.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
-		icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-
-		var item_config = items_config.get(ingredient.item_id, {})
-		if item_config.has("icon"):
-			var icon_path = "res://assets/images/items/" + item_config.icon
-			if ResourceLoader.exists(icon_path):
-				icon.texture = load(icon_path)
-
-		sprite.add_child(icon)
-
-		# 随机位置和角度（和放入锅一样的逻辑）
-		var rand_pos = Vector2(
-			randf_range(bowl_rect.position.x, bowl_rect.position.x + bowl_rect.size.x),
-			randf_range(bowl_rect.position.y, bowl_rect.position.y + bowl_rect.size.y)
-		)
-		var rand_rot = randf() * PI * 2
-
-		# 使用中心点作为位置，而不是左上角
-		sprite.position = rand_pos - Vector2(75, 75)  # 居中偏移（食材大小150x150）
-		sprite.pivot_offset = Vector2(75, 75)  # 设置旋转中心为食材中心
-		sprite.rotation = rand_rot
-		sprite.modulate = cook_manager.get_ingredient_color(ingredient)
-		result_container.add_child(sprite)
-
-	# 关闭按钮
-	var close_btn = Button.new()
-	close_btn.text = "确认"
-	close_btn.pressed.connect(_on_result_closed)
-	vbox.add_child(close_btn)
-
-func _get_bowl_rect(bowl_container: Control) -> Rect2:
-	"""获取碗的矩形区域（相对于碗容器）"""
-	if not bowl_container:
-		return Rect2()
-	
-	# 返回相对于碗容器的矩形，范围调小到碗的实际区域
-	var margin = bowl_container.size * 0.38  # 缩小的边距
-	return Rect2(margin, bowl_container.size - margin * 2)
-
-func _on_result_closed():
+func _on_result_closed(dish_name: String):
 	"""结果面板关闭"""
-	if result_panel:
-		# 获取并更新最后一道菜的菜名
-		if cooked_dishes.size() > 0:
-			var title_input = result_panel.get_meta("title_input", null)
-			if title_input:
-				var dish_name = title_input.text.strip_edges()
-				if not dish_name.is_empty():
-					cooked_dishes[-1]["dish_name"] = dish_name
-			
-			# 将菜品作为物品加入准备区
-			if prep_container:
-				var dish = cooked_dishes[-1]				
-				# 从菜品数据中直接获取荤素属性
-				var is_veg = dish.get("is_veg", false)
-				
-				var item_id = "cooked_meal_veg" if is_veg else "cooked_meal_meat"
-				
-				var cooked_meal = {
-					"item_id": item_id,
-					"count": 1,
-					"meal_name": dish["dish_name"],
-					"meal_des": dish["dish_name"] + "，" + dish["cook_state"]
-				}
-				# 寻找第一个空格子放入
-				for i in range(prep_container.storage.size()):
-					if prep_container.storage[i] == null:
-						prep_container.storage[i] = cooked_meal
-						if prep_container.has_signal("storage_changed"):
-							prep_container.storage_changed.emit()
-						break
+	# 更新最后一道菜的菜名
+	if cooked_dishes.size() > 0:
+		cooked_dishes[-1]["dish_name"] = dish_name
 		
-		result_panel.queue_free()
-		result_panel = null
+		# 将菜品作为物品加入准备区
+		if prep_container:
+			var dish = cooked_dishes[-1]				
+			# 从菜品数据中直接获取荤素属性
+			var is_veg = dish.get("is_veg", false)
+			
+			var item_id = "cooked_meal_veg" if is_veg else "cooked_meal_meat"
+			
+			var cooked_meal = {
+				"item_id": item_id,
+				"count": 1,
+				"meal_name": dish["dish_name"],
+				"meal_des": dish["dish_name"] + "，" + dish["cook_state"]
+			}
+			# 寻找第一个空格子放入
+			for i in range(prep_container.storage.size()):
+				if prep_container.storage[i] == null:
+					prep_container.storage[i] = cooked_meal
+					if prep_container.has_signal("storage_changed"):
+						prep_container.storage_changed.emit()
+					break
+	
+	result_panel = null
 
 func _clear_ingredient_sprites():
 	"""清空食材精灵"""
