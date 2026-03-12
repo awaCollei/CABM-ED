@@ -129,7 +129,7 @@ func _show_progress_ui():
 	vbox.add_child(progress_bar)
 	
 	var hint = Label.new()
-	hint.text = "\n首次启动需要解压资源 (约80MB)\n手机端可能耗时较长，请勿退出应用"
+	hint.text = "\n首次启动需要解压资源\n这可能需要一些时间，请勿退出应用"
 	hint.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	hint.add_theme_font_size_override("font_size", 16)
 	hint.add_theme_color_override("font_color", Color.GRAY)
