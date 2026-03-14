@@ -806,9 +806,9 @@ func _compose_chat_texture(base_texture: Texture2D, expression_texture: Texture2
 		if base_image.get_format() != Image.FORMAT_RGBA8:
 			base_image.convert(Image.FORMAT_RGBA8)
 		
-		var result_image = base_image.duplicate()
-		var composed_texture = ImageTexture.create_from_image(result_image)
-		return composed_texture
+		var result_image_fallback = base_image.duplicate()
+		var composed_texture_fallback = ImageTexture.create_from_image(result_image_fallback)
+		return composed_texture_fallback
 	
 	var expression_image = expression_texture.get_image()
 	if not expression_image:
@@ -818,9 +818,9 @@ func _compose_chat_texture(base_texture: Texture2D, expression_texture: Texture2
 		if base_image.get_format() != Image.FORMAT_RGBA8:
 			base_image.convert(Image.FORMAT_RGBA8)
 		
-		var result_image = base_image.duplicate()
-		var composed_texture = ImageTexture.create_from_image(result_image)
-		return composed_texture
+		var result_image_fallback = base_image.duplicate()
+		var composed_texture_fallback = ImageTexture.create_from_image(result_image_fallback)
+		return composed_texture_fallback
 	
 	# 确保两个图片格式正确且不压缩
 	if base_image.is_compressed():

@@ -304,7 +304,7 @@ func change_scene_with_fade(scene_path: String) -> void:
 	is_transitioning = false
 	pending_scene_path = "" # 清空待加载路径
 
-func _handle_timeout(scene_path: String):
+func _handle_timeout(_scene_path: String):
 	"""处理加载超时情况"""
 	is_timed_out = true
 	# 显示超时提示信息

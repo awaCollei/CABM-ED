@@ -229,7 +229,9 @@ func _recording_to_wav_bytes(rec: AudioStreamWAV) -> PackedByteArray:
 	var channels = 2 if rec.stereo else 1
 	var sample_rate = rec.mix_rate
 	var bits_per_sample = 16
+	@warning_ignore("integer_division")
 	var byte_rate = sample_rate * channels * (bits_per_sample / 8)
+	@warning_ignore("integer_division")
 	var block_align = channels * (bits_per_sample / 8)
 	var data_bytes = rec.get_data()
 	var header = PackedByteArray()

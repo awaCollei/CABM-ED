@@ -324,7 +324,7 @@ func _call_diary_generation_api(system_prompt: String, start_datetime: Dictionar
 	var ai_service = get_node("/root/AIService")
 	
 	# 检查API密钥
-	if ai_service.api_key.is_empty():
+	if not ai_service.has_api_key:
 		print("错误: API密钥未配置，跳过日记生成")
 		return
 	

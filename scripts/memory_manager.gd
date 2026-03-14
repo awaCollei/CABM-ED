@@ -79,8 +79,7 @@ func _load_config():
 	
 	# 1. 先加载项目配置中的记忆相关配置
 	var project_config = _load_project_config()
-	print("项目配置加载结果: ", project_config.keys() if not project_config.is_empty() else "空")
-	
+	print("项目配置加载结果: ", "空" if project_config.is_empty() else str(project_config.keys()))
 	# 2. 从配置加载器获取模型配置
 	var embedding_config = config_loader.get_model_config("embedding_model")
 	var rerank_config = config_loader.get_model_config("rerank_model")

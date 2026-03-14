@@ -628,11 +628,6 @@ func _on_xiangqi_ended():
 func _on_open_map_requested():
 	var map_scene = load("res://scenes/map/map_view.tscn")
 	if map_scene:
-		var origin := ""
-		if has_node("/root/SaveManager"):
-			var sm = get_node("/root/SaveManager")
-			if sm.has_meta("map_origin"):
-				origin = sm.get_meta("map_origin")
 		var map_view = map_scene.instantiate()
 		add_child(map_view)
 		game_state_manager.hide_main_scene()

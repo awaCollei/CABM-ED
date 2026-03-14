@@ -24,7 +24,7 @@ func _on_auto_save_started(message: String) -> void:
 	lbl.text = message
 	visible = true
 
-func _on_auto_save_completed(summary: String) -> void:
+func _on_auto_save_completed(_summary: String) -> void:
 	# 简单短暂反馈：显示“已保存” 1.2 秒后隐藏
 	# lbl.text = "已保存"
 	# visible = true

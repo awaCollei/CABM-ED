@@ -50,11 +50,9 @@ static func _split_chunk(chunk_text: String, is_in_paren: bool) -> Array:
 
 	while not buffer.is_empty():
 		var earliest_pos = -1
-		var found_punct = ""
 		var found_punct_type = ""  # "normal", "ellipsis"
 		var found_left_paren = false
 		var found_right_paren = false
-		var is_ellipsis_handled = false
 		
 		# 括号优先级最高：先查找括号
 		# 查找左括号
@@ -63,7 +61,6 @@ static func _split_chunk(chunk_text: String, is_in_paren: bool) -> Array:
 			if l_pos != -1 and (earliest_pos == -1 or l_pos < earliest_pos):
 				earliest_pos = l_pos
 				found_left_paren = true
-				found_punct = ""
 				found_punct_type = ""
 		
 		# 查找右括号
@@ -72,7 +69,6 @@ static func _split_chunk(chunk_text: String, is_in_paren: bool) -> Array:
 			if r_pos != -1 and (earliest_pos == -1 or r_pos < earliest_pos):
 				earliest_pos = r_pos
 				found_right_paren = true
-				found_punct = ""
 				found_punct_type = ""
 		
 		# 如果没有找到括号，再查找省略号
@@ -80,7 +76,6 @@ static func _split_chunk(chunk_text: String, is_in_paren: bool) -> Array:
 			var ellipsis_pos = buffer.find(ELLIPSIS)
 			if ellipsis_pos != -1 and (earliest_pos == -1 or ellipsis_pos < earliest_pos):
 				earliest_pos = ellipsis_pos
-				found_punct = ELLIPSIS
 				found_punct_type = "ellipsis"
 		
 		# 如果没有找到括号和省略号，再查找普通标点
@@ -89,7 +84,6 @@ static func _split_chunk(chunk_text: String, is_in_paren: bool) -> Array:
 				var pos = buffer.find(punct)
 				if pos != -1 and (earliest_pos == -1 or pos < earliest_pos):
 					earliest_pos = pos
-					found_punct = punct
 					found_punct_type = "normal"
 		
 		var sentence_text = ""
@@ -277,12 +271,9 @@ static func split_stream(state: StreamState, new_text: String, is_end: bool = fa
 	
 	while not state.buffer.is_empty():
 		var earliest_pos = -1
-		var found_punct = ""
 		var found_punct_type = ""  # "normal", "ellipsis"
 		var found_left_paren = false
 		var found_right_paren = false
-		var matched_left_type = null
-		var matched_right_type = null
 		
 		# 1. 查找最早出现的特殊字符（括号优先级最高）
 		
@@ -294,8 +285,7 @@ static func split_stream(state: StreamState, new_text: String, is_end: bool = fa
 				if l_pos != -1 and (earliest_pos == -1 or l_pos < earliest_pos):
 					earliest_pos = l_pos
 					found_left_paren = true
-					matched_left_type = paren_char
-					found_punct = ""
+
 					found_punct_type = ""
 		else:
 			# 在括号内时，查找右括号
@@ -304,8 +294,7 @@ static func split_stream(state: StreamState, new_text: String, is_end: bool = fa
 				if r_pos != -1 and (earliest_pos == -1 or r_pos < earliest_pos):
 					earliest_pos = r_pos
 					found_right_paren = true
-					matched_right_type = paren_char
-					found_punct = ""
+
 					found_punct_type = ""
 		
 		# 如果没有找到括号，再查找省略号
@@ -313,7 +302,6 @@ static func split_stream(state: StreamState, new_text: String, is_end: bool = fa
 			var ellipsis_pos = state.buffer.find(ELLIPSIS)
 			if ellipsis_pos != -1 and (earliest_pos == -1 or ellipsis_pos < earliest_pos):
 				earliest_pos = ellipsis_pos
-				found_punct = ELLIPSIS
 				found_punct_type = "ellipsis"
 		
 		# 如果没有找到括号和省略号，再查找普通标点
@@ -333,7 +321,6 @@ static func split_stream(state: StreamState, new_text: String, is_end: bool = fa
 						continue # 忽略这个标点，留给右括号处理
 					
 					earliest_pos = pos
-					found_punct = punct
 					found_punct_type = "normal"
 
 		# 2. 如果没找到任何切分点，根据 is_end 决定是否结束

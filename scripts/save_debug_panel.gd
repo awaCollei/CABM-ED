@@ -106,7 +106,7 @@ func _update_info():
 	if has_node("/root/AIService"):
 		var ai_service = get_node("/root/AIService")
 		info += "AIService: 已加载\n"
-		info += "API 密钥状态: %s\n" % ("已配置" if not ai_service.api_key.is_empty() else "未配置")
+		info += "API 密钥状态: %s\n" % ("已配置" if ai_service.has_api_key else "未配置")
 	else:
 		info += "AIService: 未找到\n"
 	
@@ -120,7 +120,7 @@ func _on_ai_test_pressed():
 	
 	var ai_service = get_node("/root/AIService")
 	
-	if ai_service.api_key.is_empty():
+	if not ai_service.has_api_key:
 		info_label.text += "\n\n✗ API 密钥未配置"
 		return
 	

@@ -43,10 +43,10 @@ var pending_summary_data: Dictionary = {} # 待总结的数据
 var auto_save_in_progress: bool = false
 var last_summarized_timestamp: float = 0.0 # 最近一次被总结的消息时间戳（用于避免重复总结）
 
-# 公共访问器（向后兼容）
-var api_key: String:
+# 检查是否有 API key
+var has_api_key: bool:
 	get:
-		return config_loader.api_key if config_loader else ""
+		return config_loader and config_loader.api_key != ""
 
 var config: Dictionary:
 	get:

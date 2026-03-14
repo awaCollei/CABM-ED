@@ -72,7 +72,7 @@ func sort() -> void:
 	var stacked_items = []
 	
 	for item in items:
-		var merged = false
+		var _merged = false
 		var item_config = get_item_config(item.item_id)
 		var max_stack = int(item_config.get("max_stack", 1))
 		
@@ -88,7 +88,7 @@ func sort() -> void:
 						item.count = int(item.count) - add_count
 						
 						if int(item.count) <= 0:
-							merged = true
+							_merged = true
 							break
 		
 		# 如果循环结束还有剩余且未被完全合并，则作为新堆叠添加

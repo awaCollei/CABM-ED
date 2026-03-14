@@ -85,7 +85,7 @@ func _process_request_queue():
 	is_processing_request = true
 	current_request = request_queue.pop_front()
 	var request = current_request.request
-	var api_key = current_request.api_key
+	api_key = current_request.api_key
 
 	var url = base_url.trim_suffix("/") + "/chat/completions"
 	var headers = [

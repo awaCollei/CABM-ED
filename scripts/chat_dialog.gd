@@ -1154,11 +1154,11 @@ func _create_top_input_field():
 	print("右侧辅助输入框已创建（支持自动换行），初始状态：隐藏")
 
 ## 更新顶部输入框的可见性
-func _update_top_input_visibility(show: bool):
+func _update_top_input_visibility(need_show: bool):
 	if top_input_field == null:
 		return
-	top_input_field.visible = show
-	print("顶部输入框可见性更新: %s" % show)
+	top_input_field.visible = need_show
+	print("顶部输入框可见性更新: %s" % need_show)
 
 ## 主输入框文本变化时同步到顶部输入框
 func _on_input_text_changed(new_text: String):
