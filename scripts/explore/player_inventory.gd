@@ -43,30 +43,67 @@ func add_item(item_id: String, count: int = 1) -> bool:
 	return container.add_item(item_id, count)
 
 func add_item_with_data(item_id: String, count: int = 1, data: Dictionary = {}) -> bool:
+	count = int(count)
+	if count <= 0:
+		return false
 	var cfg = get_item_config(item_id)
-	if cfg.get("type") == "武器":
-		var is_remote = cfg.get("subtype") == "远程"
-		var ammo_val := int(data.get("ammo", 0)) if is_remote else 0
-		if container.has_weapon_slot and container.weapon_slot.is_empty():
-			var w := {"item_id": item_id, "count": 1}
-			if is_remote:
-				w["ammo"] = ammo_val
-			container.weapon_slot = w
+	if cfg.is_empty():
+		return container.add_item(item_id, count)
+	var incoming_data = data.duplicate(true)
+	incoming_data.erase("count")
+	incoming_data["item_id"] = item_id
+	if cfg.get("type") == "武器" and cfg.get("subtype") == "远程" and not incoming_data.has("ammo"):
+		incoming_data["ammo"] = 0
+	var max_stack = int(cfg.get("max_stack", 1))
+	var remaining = count
+	var changed := false
+	if cfg.get("type") == "武器" and container.has_weapon_slot and container.weapon_slot.is_empty():
+		container.weapon_slot = _build_item_instance(item_id, 1, incoming_data)
+		remaining -= 1
+		changed = true
+		if remaining <= 0:
 			container.storage_changed.emit()
 			return true
-		else:
-			var placed := false
-			for i in range(container.storage.size()):
-				if container.storage[i] == null:
-					var w2 := {"item_id": item_id, "count": 1}
-					if is_remote:
-						w2["ammo"] = ammo_val
-					container.storage[i] = w2
-					placed = true
-					break
-			container.storage_changed.emit()
-			return placed
-	return container.add_item(item_id, count)
+	for i in range(container.storage.size()):
+		if remaining <= 0:
+			break
+		var slot = container.storage[i]
+		if slot == null:
+			continue
+		if _is_same_stack(slot, incoming_data):
+			var current_count = int(slot.get("count", 0))
+			var can_add = min(remaining, max_stack - current_count)
+			if can_add > 0:
+				slot["count"] = current_count + can_add
+				container.storage[i] = slot
+				remaining -= can_add
+				changed = true
+	for i in range(container.storage.size()):
+		if remaining <= 0:
+			break
+		if container.storage[i] == null:
+			var add_count = min(remaining, max_stack)
+			container.storage[i] = _build_item_instance(item_id, add_count, incoming_data)
+			remaining -= add_count
+			changed = true
+	if changed:
+		container.storage_changed.emit()
+	return remaining <= 0
+
+func _is_same_stack(existing_item: Dictionary, incoming_data: Dictionary) -> bool:
+	if existing_item.get("item_id", "") != incoming_data.get("item_id", ""):
+		return false
+	var a = existing_item.duplicate(true)
+	var b = incoming_data.duplicate(true)
+	a.erase("count")
+	b.erase("count")
+	return a == b
+
+func _build_item_instance(item_id: String, count: int, incoming_data: Dictionary) -> Dictionary:
+	var item = incoming_data.duplicate(true)
+	item["item_id"] = item_id
+	item["count"] = int(count)
+	return item
 
 func get_inventory_data():
 	"""获取背包数据用于保存"""

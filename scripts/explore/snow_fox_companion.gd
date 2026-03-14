@@ -275,34 +275,64 @@ func _add_item_to_storage(item_id: String, count: int, data: Dictionary = {}) ->
 	var cfg = items_config.get(item_id, {})
 	if cfg.is_empty():
 		return false
+	count = int(count)
+	if count <= 0:
+		return false
+	if not storage.has("storage") or not (storage.storage is Array):
+		storage["storage"] = []
+		storage.storage.resize(STORAGE_SIZE)
+		for i in range(storage.storage.size()):
+			storage.storage[i] = null
+	if not storage.has("weapon_slot") or not (storage.weapon_slot is Dictionary):
+		storage["weapon_slot"] = {}
+	var incoming_data = data.duplicate(true)
+	incoming_data.erase("count")
+	incoming_data["item_id"] = item_id
+	if cfg.get("type") == "武器" and cfg.get("subtype") == "远程" and not incoming_data.has("ammo"):
+		incoming_data["ammo"] = 0
 	var max_stack := int(cfg.get("max_stack", 1))
 	var remaining := int(count)
 	if cfg.get("type") == "武器":
 		if storage.has("weapon_slot") and (storage.weapon_slot is Dictionary) and storage.weapon_slot.is_empty():
-			var w := {"item_id": item_id, "count": 1}
-			if cfg.get("subtype") == "远程":
-				w["ammo"] = int(data.get("ammo", 0))
-			storage.weapon_slot = w
-			return true
+			storage.weapon_slot = _build_item_instance(item_id, 1, incoming_data)
+			remaining -= 1
+			if remaining <= 0:
+				return true
 			
 	for i in range(storage.storage.size()):
+		if remaining <= 0:
+			break
 		var it = storage.storage[i]
-		if it != null and it.get("item_id") == item_id:
+		if it != null and _is_same_stack(it, incoming_data):
 			var cur := int(it.get("count", 0))
 			var can_add = min(remaining, max_stack - cur)
 			if can_add > 0:
-				storage.storage[i].count = cur + can_add
+				it["count"] = cur + can_add
+				storage.storage[i] = it
 				remaining -= can_add
-				if remaining <= 0:
-					return true
 	for i in range(storage.storage.size()):
+		if remaining <= 0:
+			break
 		if storage.storage[i] == null:
 			var add_cnt = min(remaining, max_stack)
-			storage.storage[i] = {"item_id": item_id, "count": add_cnt}
+			storage.storage[i] = _build_item_instance(item_id, add_cnt, incoming_data)
 			remaining -= add_cnt
-			if remaining <= 0:
-				return true
 	return remaining <= 0
+
+func _is_same_stack(existing_item: Dictionary, incoming_data: Dictionary) -> bool:
+	if existing_item.get("item_id", "") != incoming_data.get("item_id", ""):
+		return false
+	var a = existing_item.duplicate(true)
+	var b = incoming_data.duplicate(true)
+	a.erase("count")
+	b.erase("count")
+	return a == b
+
+func _build_item_instance(item_id: String, count: int, incoming_data: Dictionary) -> Dictionary:
+	var item = incoming_data.duplicate(true)
+	item["item_id"] = item_id
+	item["count"] = int(count)
+	return item
 
 func _auto_reload_weapon(cfg: Dictionary):
 	if cfg.is_empty():
