@@ -21,9 +21,8 @@ var is_waiting_for_audio: bool = false
 var current_playing_hash: String = ""
 var voice_enabled: bool = true
 
-# 句子缓冲区
-var sentence_buffer: String = ""
-const CHINESE_PUNCTUATION = ["。", "！", "？", "；", "…"]
+# 句子缓冲区 - 使用SentenceSplitter的流式状态
+var stream_state: SentenceSplitter.StreamState = null
 const END_MARKER = "END_MARKER"
 
 # 处理循环
@@ -37,6 +36,10 @@ func _ready():
 	
 	tts_service.tts_error.connect(_on_tts_error)
 	_load_voice_settings()
+	
+	# 初始化流式分句状态
+	stream_state = SentenceSplitter.StreamState.new()
+	
 	_start_processing_loop()
 
 func _load_voice_settings():
@@ -63,30 +66,12 @@ func process_text_chunk(text: String):
 	if not voice_enabled or text.strip_edges().is_empty():
 		return
 	
-	sentence_buffer += text
-	_extract_and_enqueue_sentences()
-
-func _extract_and_enqueue_sentences():
-	"""提取完整句子并入队"""
-	var punctuation_index = -1
-	var found_punct = ""
+	# 使用SentenceSplitter进行流式分句
+	var sentences = SentenceSplitter.split_stream(stream_state, text, false)
 	
-	for punct in CHINESE_PUNCTUATION:
-		var index = sentence_buffer.find(punct)
-		if index != -1 and (punctuation_index == -1 or index < punctuation_index):
-			punctuation_index = index
-			found_punct = punct
-	
-	if punctuation_index != -1:
-		var sentence = sentence_buffer.substr(0, punctuation_index + found_punct.length()).strip_edges()
-		
-		if not sentence.is_empty():
-			_enqueue_sentence(sentence)
-		
-		sentence_buffer = sentence_buffer.substr(punctuation_index + found_punct.length())
-		
-		if not sentence_buffer.is_empty():
-			_extract_and_enqueue_sentences()
+	# 将提取出的句子入队
+	for sentence_dict in sentences:
+		_enqueue_sentence(sentence_dict.text)
 
 func _enqueue_sentence(sentence: String):
 	"""句子入队并请求TTS"""
@@ -190,9 +175,11 @@ func _on_tts_error(error_message: String):
 
 func on_stream_finished():
 	"""流式响应完成"""
-	if not sentence_buffer.strip_edges().is_empty():
-		_enqueue_sentence(sentence_buffer)
-		sentence_buffer = ""
+	# 使用SentenceSplitter处理缓冲区剩余内容
+	var remaining_sentences = SentenceSplitter.split_stream(stream_state, "", true)
+	
+	for sentence_dict in remaining_sentences:
+		_enqueue_sentence(sentence_dict.text)
 	
 	playback_queue.append(END_MARKER)
 	print("TTS添加结束标记，队列长度:", playback_queue.size())
@@ -230,7 +217,11 @@ func clear_all():
 	playback_queue.clear()
 	sentence_data.clear()
 	current_playing_hash = ""
-	sentence_buffer = ""
+	
+	# 重置流式分句状态
+	if stream_state:
+		stream_state.buffer = ""
+		stream_state.in_paren = false
 	
 	if tts_service:
 		tts_service.clear_queue()

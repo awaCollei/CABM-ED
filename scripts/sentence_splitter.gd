@@ -4,7 +4,7 @@
 class_name SentenceSplitter
 
 # 定义中文标点符号，用于切分句子
-const CHINESE_PUNCTUATION = ["。", "！", "？", "；", "…"]
+const CHINESE_PUNCTUATION = ["。", "！", "？", "；"]
 
 # 定义中文括号
 const LEFT_PAREN_CN = "（"
