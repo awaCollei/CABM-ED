@@ -5,6 +5,7 @@ extends Node
 
 signal content_received(content: String)
 signal mood_extracted(mood_id: int)
+signal parse_error(error_message: String)
 
 var sse_buffer: String = ""
 var json_response_buffer: String = ""
@@ -235,17 +236,13 @@ func finalize_response() -> Dictionary:
 		print("JSON解析失败: ", json.get_error_message())
 		print("尝试解析的内容: ", clean_json.substr(0, 200))
 
-		# 如果JSON解析失败，将原始内容替换为友好的错误消息
-		# 这样用户看到的不是不完整的JSON，而是清晰的错误提示
-		if not msg_buffer.is_empty():
-			# 如果已经提取到了msg内容，保留它
-			json_response_buffer = JSON.stringify({"msg": msg_buffer})
-		else:
-			# 如果连msg都没有提取到，使用错误提示
-			json_response_buffer = JSON.stringify({"msg": "（响应中断，未能完整接收）"})
-			msg_buffer = "（响应中断，未能完整接收）"
-
-		print("已将不完整的JSON替换为友好的错误消息")
+		# 发送错误信号，由上层处理撤回操作
+		var error_msg = "JSON解析失败: " + json.get_error_message()
+		parse_error.emit(error_msg)
+		
+		# 清空缓冲区，避免污染上下文
+		json_response_buffer = ""
+		msg_buffer = ""
 
 	return extracted_fields.duplicate()
 

@@ -72,6 +72,7 @@ func _ready():
 	add_child(response_parser)
 	response_parser.content_received.connect(_on_content_received)
 	response_parser.mood_extracted.connect(_on_mood_extracted)
+	response_parser.parse_error.connect(_on_parse_error)
 
 	logger = preload("res://scripts/ai_chat/ai_logger.gd").new()
 	add_child(logger)
@@ -417,6 +418,12 @@ func _on_stream_error(error_message: String):
 func _on_content_received(content: String):
 	"""接收到新内容"""
 	chat_response_received.emit(content)
+
+func _on_parse_error(error_message: String):
+	"""解析错误回调 - 触发错误并撤回"""
+	is_chatting = false
+	print("响应解析错误: ", error_message)
+	chat_error.emit(error_message)
 
 func _on_mood_extracted(mood_id: int):
 	"""mood字段提取完成"""
