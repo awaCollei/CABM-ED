@@ -173,8 +173,35 @@ func set_sort_buttons_visible(player_visible: bool, container_visible: bool):
 	if container_empty_button:
 		container_empty_button.visible = container_visible
 
+func _force_cleanup_drag_state():
+	"""强制清理拖拽状态（用于背包关闭时）"""
+	# 销毁拖拽预览
+	_destroy_drag_preview()
+	
+	# 重置拖拽相关变量
+	is_dragging = false
+	dragging_slot_index = -1
+	dragging_storage_type = ""
+	dragging_is_weapon_slot = false
+	
+	# 通知所有格子拖拽结束（防止格子卡在拖拽状态）
+	for slot in player_slots:
+		if slot.has_method("force_drag_end"):
+			slot.force_drag_end()
+	
+	for slot in other_slots:
+		if slot.has_method("force_drag_end"):
+			slot.force_drag_end()
+	
+	# 清理武器槽拖拽状态
+	if player_weapon_slot and player_weapon_slot.has_method("force_drag_end"):
+		player_weapon_slot.force_drag_end()
+	if other_weapon_slot and other_weapon_slot.has_method("force_drag_end"):
+		other_weapon_slot.force_drag_end()
+
 func close_inventory():
 	"""关闭背包"""
+	_force_cleanup_drag_state()
 	hide()
 	_clear_selection()
 	_clear_item_info()
