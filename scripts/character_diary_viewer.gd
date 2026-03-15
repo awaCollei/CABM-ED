@@ -127,17 +127,68 @@ func _play_next_sentence():
 		stop_audio_playback()
 		return
 	var sentence_hash = tts.compute_sentence_hash(sentence_text)
-	tts.synthesize_speech(sentence_text)
-	tts.on_new_sentence_displayed(sentence_hash)
-	await _wait_for_tts_sentence_done(tts, sentence_hash)
-	if not is_playing_audio:
-		return
+	
+	# 先检查缓存
+	var cached_audio = tts.sentence_audio.get(sentence_hash, null)
+	
+	if cached_audio != null and cached_audio.size() > 0:
+		# 内存中有缓存，直接播放
+		print("使用内存缓存的语音")
+		tts.on_new_sentence_displayed(sentence_hash)
+		# 等待播放完成
+		await _wait_for_playback_complete(tts, sentence_hash)
+	else:
+		# 从磁盘加载
+		var loaded = tts._load_audio_from_file(sentence_hash)
+		if loaded:
+			print("使用磁盘缓存的语音")
+			tts.on_new_sentence_displayed(sentence_hash)
+			await _wait_for_playback_complete(tts, sentence_hash)
+		else:
+			# 没有缓存，请求合成
+			print("生成新的语音")
+			tts.synthesize_speech(sentence_text)
+			# 等待音频准备好
+			await _wait_for_audio_ready(tts, sentence_hash)
+			if not is_playing_audio:
+				return
+			# 然后播放
+			tts.on_new_sentence_displayed(sentence_hash)
+			await _wait_for_playback_complete(tts, sentence_hash)
+	
+	# 继续下一句
 	current_sentence_index += 1
 	if current_sentence_index >= current_playing_sentences.size():
 		stop_audio_playback()
 		return
+	
 	await get_tree().create_timer(SENTENCE_PAUSE_DURATION).timeout
 	_play_next_sentence()
+
+func _wait_for_audio_ready(tts, sentence_hash: String):
+	"""等待音频准备好"""
+	var timeout = 30.0
+	var elapsed = 0.0
+	var check_interval = 0.1
+	
+	while is_playing_audio and elapsed < timeout:
+		if tts.sentence_audio.has(sentence_hash) and tts.sentence_audio[sentence_hash] != null:
+			return
+		await get_tree().create_timer(check_interval).timeout
+		elapsed += check_interval
+
+func _wait_for_playback_complete(tts, sentence_hash: String):
+	"""等待播放完成"""
+	var timeout = 120.0
+	var elapsed = 0.0
+	var check_interval = 0.1
+	
+	while is_playing_audio and elapsed < timeout:
+		# 检查是否还在播放这个句子
+		if tts.playing_sentence_hash != sentence_hash:
+			return
+		await get_tree().create_timer(check_interval).timeout
+		elapsed += check_interval
 
 func _on_audio_finished():
 	current_sentence_index += 1

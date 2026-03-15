@@ -636,7 +636,7 @@ func synthesize_speech(text: String, lang: String = ""):
 	# 如果已经有音频数据（内存或磁盘缓存），跳过TTS请求
 	var cached_audio = sentence_audio.get(sentence_hash, null)
 	if cached_audio != null and cached_audio.size() > 0:
-		print("句子 hash:%s 已有缓存，跳过TTS请求" % _short_hash(sentence_hash))
+		print("【缓存命中】句子 hash:%s 已有缓存，跳过TTS请求" % _short_hash(sentence_hash))
 		return
 
 	# 如果目标语言不是中文，先进行翻译（翻译结果仍与该哈希绑定）
@@ -697,9 +697,8 @@ func translate_text(target_lang: String, text: String, callback: Callable) -> vo
 	http_request.request_completed.connect(_on_translate_completed.bind(tid, http_request))
 
 	var url = base_url + "/chat/completions"
-	var auth_key = ""
-	if ai_service:
-		auth_key = ai_service.api_key
+	var translate_config = ai_service.config_loader.get_model_config("summary_model")
+	var auth_key = translate_config.api_key
 	var headers = ["Content-Type: application/json", "Authorization: Bearer " + auth_key]
 	var json_body = JSON.stringify(body)
 	var err = http_request.request(url, headers, HTTPClient.METHOD_POST, json_body)
@@ -950,7 +949,7 @@ func _load_audio_from_file(sentence_hash: String) -> bool:
 	sentence_audio[sentence_hash] = audio_data
 	sentence_state[sentence_hash] = "ready"
 	
-	print("从磁盘加载音频缓存: %s (%d 字节)" % [file_path, audio_data.size()])
+	print("【缓存命中】从磁盘加载音频缓存: %s (%d 字节)" % [file_path, audio_data.size()])
 	return true
 		
 func on_new_sentence_displayed(sentence_hash: String):
