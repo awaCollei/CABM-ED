@@ -178,12 +178,18 @@ func stop():
 	is_showing_sentence = false
 
 func _compute_sentence_hash(original_text: String) -> String:
-	"""计算句子原始内容的 SHA256 哈希值（未去除括号，未翻译）"""
+	if has_node("/root/TTSService"):
+		var tts = get_node("/root/TTSService")
+		if tts:
+			if tts.has_method("compute_sentence_hash"):
+				return tts.compute_sentence_hash(original_text)
+			if tts.has_method("_compute_sentence_hash"):
+				return tts._compute_sentence_hash(original_text)
 	if original_text == null:
-		return ""
+		original_text = ""
 	var hashing_context = HashingContext.new()
 	hashing_context.start(HashingContext.HASH_SHA256)
-	hashing_context.update(original_text.to_utf8_buffer())
+	hashing_context.update(str(original_text).to_utf8_buffer())
 	var hash_bytes = hashing_context.finish()
 	return hash_bytes.hex_encode()
 

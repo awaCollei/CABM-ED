@@ -84,18 +84,6 @@ func stop_audio_playback():
 	# 重置所有播放按钮样式
 	_update_all_play_buttons()
 
-# 计算句子哈希
-func compute_sentence_hash(text: String) -> String:
-	var hashing_context = HashingContext.new()
-	hashing_context.start(HashingContext.HASH_SHA256)
-	hashing_context.update(text.to_utf8_buffer())
-	var hash_bytes = hashing_context.finish()
-	return hash_bytes.hex_encode()
-
-# 获取音频文件路径
-func get_audio_file(sentence_hash: String) -> String:
-	return "user://speech/" + sentence_hash + ".mp3"
-
 # 播放角色对话
 func play_character_speech(content: String):
 	"""播放角色的对话语音"""
@@ -119,61 +107,60 @@ func play_character_speech(content: String):
 
 # 播放下一句
 func _play_next_sentence():
-	"""播放下一句语音"""
 	if current_sentence_index >= current_playing_sentences.size() or not is_playing_audio:
-		# 播放完成
 		is_playing_audio = false
-		_update_all_play_buttons() # 确保按钮状态被重置
+		_update_all_play_buttons()
 		return
 	
 	var sentence_info = current_playing_sentences[current_sentence_index]
 	var sentence_text = sentence_info.text
 	var no_tts = sentence_info.no_tts
 	
-	# 如果 no_tts 为 true，则跳过此句的播放
 	if no_tts:
 		print("跳过播放 (no_tts): ", sentence_text)
 		current_sentence_index += 1
-		# 立即尝试播放下一句，不延迟
 		_play_next_sentence()
 		return
 
-	var sentence_hash = compute_sentence_hash(sentence_text)
-	var audio_path = get_audio_file(sentence_hash)
-	
-	# 检查文件是否存在
-	if not FileAccess.file_exists(audio_path):
-		# 文件不存在，跳过这句
-		print("音频文件不存在: ", audio_path)
-		current_sentence_index += 1
-		_play_next_sentence()
+	var tts = get_node_or_null("/root/TTSService")
+	if tts == null or not tts.is_enabled:
+		stop_audio_playback()
 		return
-	
-	# 加载并播放音频
-	var file = FileAccess.open(audio_path, FileAccess.READ)
-	if file:
-		var audio_stream = AudioStreamMP3.new()
-		audio_stream.data = file.get_buffer(file.get_length())
-		audio_player.stream = audio_stream
-		audio_player.play()
-		print("正在播放: ", sentence_text)
-	else:
-		# 文件读取失败，跳过这句
-		print("无法读取音频文件: ", audio_path)
-		current_sentence_index += 1
-		_play_next_sentence()
-
-func _on_audio_finished():
-	"""一句音频播放完成"""
+	var sentence_hash = tts.compute_sentence_hash(sentence_text)
+	tts.synthesize_speech(sentence_text)
+	tts.on_new_sentence_displayed(sentence_hash)
+	await _wait_for_tts_sentence_done(tts, sentence_hash)
+	if not is_playing_audio:
+		return
 	current_sentence_index += 1
 	if current_sentence_index >= current_playing_sentences.size():
-		# 播放完成，重置所有按钮
+		stop_audio_playback()
+		return
+	await get_tree().create_timer(SENTENCE_PAUSE_DURATION).timeout
+	_play_next_sentence()
+
+func _on_audio_finished():
+	current_sentence_index += 1
+	if current_sentence_index >= current_playing_sentences.size():
 		stop_audio_playback()
 	else:
-		# 停顿后播放下一句
 		await get_tree().create_timer(SENTENCE_PAUSE_DURATION).timeout
-		# 播放下一句
 		_play_next_sentence()
+
+func _wait_for_tts_sentence_done(tts, sentence_hash: String):
+	var timeout = 30.0
+	var elapsed = 0.0
+	var check_interval = 0.1
+	
+	while is_playing_audio and elapsed < timeout:
+		var is_current = tts.current_sentence_hash == sentence_hash
+		var is_playing = tts.playing_sentence_hash == sentence_hash
+		var has_request = tts.tts_requests.has(sentence_hash)
+		var state = tts.sentence_state.get(sentence_hash, "")
+		if not is_current and not is_playing and not has_request and (state == "ready" or tts.sentence_audio.has(sentence_hash)):
+			return
+		await get_tree().create_timer(check_interval).timeout
+		elapsed += check_interval
 
 func _setup_scrollbar_style():
 	"""设置滚动条样式（加粗）"""
@@ -829,7 +816,7 @@ func _display_detail_view():
 	if scroll_container:
 		scroll_container.scroll_vertical = 0
 
-# 新增函数：创建带播放按钮的对话内容（保持上下布局）
+# 创建带播放按钮的对话内容（保持上下布局）
 func _create_speech_with_play_button(speaker: String, content: String) -> Control:
 	"""创建带播放按钮的对话行（保持上下布局）"""
 	var container = VBoxContainer.new()
@@ -882,7 +869,7 @@ func _create_speech_with_play_button(speaker: String, content: String) -> Contro
 	
 	return container
 
-# 新增函数：播放按钮点击处理
+# 播放按钮点击处理
 func _on_play_button_pressed(content: String, button: Button):
 	"""播放按钮点击事件"""
 	if not is_playing_audio:
@@ -897,19 +884,19 @@ func _on_play_button_pressed(content: String, button: Button):
 		# 恢复按钮样式
 		_reset_play_button_style(button)
 
-# 新增函数：重置播放按钮样式
+# 重置播放按钮样式
 func _reset_play_button_style(button: Button):
 	"""重置播放按钮为默认样式"""
 	button.text = "🔊"
 	button.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
 
-# 新增函数：更新所有播放按钮状态
+# 更新所有播放按钮状态
 func _update_all_play_buttons():
 	"""更新所有播放按钮的状态（停止播放时调用）"""
 	for child in content_vbox.get_children():
 		_find_and_reset_play_buttons(child)
 
-# 新增函数：递归查找并重置播放按钮
+# 递归查找并重置播放按钮
 func _find_and_reset_play_buttons(node: Node):
 	"""递归查找并重置所有播放按钮"""
 	if node is Button and node.text == "⏹️":

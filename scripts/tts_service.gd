@@ -570,18 +570,26 @@ func _remove_parentheses(text: String) -> String:
 	
 	return result
 
-func _compute_sentence_hash(original_text: String) -> String:
-	"""对句子原始内容（未翻译、未去除括号）计算SHA256哈希，返回十六进制字符串"""
-	# 接受 null 或 非字符串 的输入，保证返回非 null 的字符串（空字符串可能会被外部误判为 null）
+func compute_sentence_hash(original_text: String, lang: String = "", voice_tag: String = "", speed_value: float = -1.0) -> String:
 	if original_text == null:
 		original_text = ""
-	# 确保类型为字符串
 	original_text = str(original_text)
+	var chosen_lang = lang if not lang.is_empty() else language
+	var chosen_voice = voice_tag
+	if chosen_voice.is_empty():
+		chosen_voice = current_voice_id
+	if chosen_voice.is_empty():
+		chosen_voice = voice_uri
+	var chosen_speed = speed_value if speed_value >= 0.0 else speed
+	var cache_key = "%s|%s|%s|%.4f" % [original_text, chosen_lang, chosen_voice, chosen_speed]
 	var hashing_context = HashingContext.new()
 	hashing_context.start(HashingContext.HASH_SHA256)
-	hashing_context.update(original_text.to_utf8_buffer())
+	hashing_context.update(cache_key.to_utf8_buffer())
 	var hash_bytes = hashing_context.finish()
 	return hash_bytes.hex_encode()
+
+func _compute_sentence_hash(original_text: String) -> String:
+	return compute_sentence_hash(original_text)
 
 func _short_hash(h: String) -> String:
 	if h == null:
@@ -608,7 +616,7 @@ func synthesize_speech(text: String, lang: String = ""):
 
 	# 保留原始文本用于哈希（未翻译，未去除括号）
 	var original_text = text
-	var sentence_hash = _compute_sentence_hash(original_text)
+	var sentence_hash = compute_sentence_hash(original_text, chosen_lang)
 
 	# 对用于合成的文本继续进行后处理（移除括号）
 	text = _remove_parentheses(original_text)
