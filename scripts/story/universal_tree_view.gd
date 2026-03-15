@@ -35,6 +35,14 @@ var initial_touch_distance: float = 0.0
 var initial_zoom_level: float = 1.0
 var touch_positions: Dictionary = {}  # 存储触摸点位置
 
+# 大树优化相关
+var large_tree_mode: bool = false  # 是否启用大树模式
+var large_tree_threshold: int = 120  # 触发大树模式的节点数阈值
+var current_focus_node_id: String = ""  # 当前焦点节点（在大树模式下使用）
+var previous_node_id: String = ""  # 上一个节点（父节点）
+var displayed_nodes: Dictionary = {}  # 当前显示的节点集合
+var warning_label: Label = null  # 警告标签，动态创建
+
 const NODE_SIZE = Vector2(200, 60)
 const NODE_SPACING_X = 250
 const NODE_SPACING_Y = 80
@@ -166,6 +174,15 @@ func _get_all_parent_nodes(node_id: String, nodes: Dictionary) -> Array:
 
 	return parent_nodes
 
+func _get_parent_node(node_id: String, nodes: Dictionary) -> String:
+	"""获取指定节点的直接父节点ID"""
+	for potential_parent_id in nodes:
+		var node_data = nodes[potential_parent_id]
+		var child_nodes = node_data.get("child_nodes", [])
+		if node_id in child_nodes:
+			return potential_parent_id
+	return ""
+
 func _is_node_highlighted(node_id: String) -> bool:
 	"""判断节点是否需要高亮"""
 	if selected_node_id.is_empty():
@@ -259,7 +276,61 @@ func render_tree(root_node_id: String, nodes: Dictionary):
 	nodes_data = nodes
 	tree_nodes.clear()
 	node_positions.clear()
+	
+	# 检查节点数量，判断是否需要启用大树模式
+	var node_count = nodes.size()
+	large_tree_mode = node_count > large_tree_threshold
+	
+	# 如果没有选中节点，默认使用根节点作为焦点
+	if selected_node_id.is_empty() and node_count > 0:
+		current_focus_node_id = root_node_id
+	else:
+		current_focus_node_id = selected_node_id
+	
+	# 更新警告标签
+	_update_warning_label(node_count)
+	
+	if large_tree_mode and not current_focus_node_id.is_empty():
+		# 大树模式：只渲染当前焦点节点、父节点和子节点
+		_render_large_tree(current_focus_node_id, nodes)
+	else:
+		# 正常模式：渲染完整树
+		_render_full_tree(root_node_id, nodes)
 
+func _update_warning_label(node_count: int):
+	"""更新或创建警告标签"""
+	if large_tree_mode:
+		if not warning_label:
+			# 创建警告标签
+			warning_label = Label.new()
+			warning_label.name = "LargeTreeWarningLabel"
+			warning_label.add_theme_color_override("font_color", Color(1.0, 0.8, 0.0, 1.0))
+			warning_label.add_theme_font_size_override("font_size", 14)
+			warning_label.add_theme_constant_override("outline_size", 2)
+			warning_label.add_theme_color_override("font_outline_color", Color(0.2, 0.2, 0.2, 0.8))
+			warning_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+			warning_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+			
+			# 设置标签位置在容器右上角
+			warning_label.set_anchors_and_offsets_preset(Control.PRESET_TOP_RIGHT)
+			warning_label.offset_left = -300  # 向左偏移300像素
+			warning_label.offset_right = -10  # 距离右边10像素
+			warning_label.offset_top = 5     # 距离顶部5像素
+			warning_label.offset_bottom = 35  # 高度30像素
+			
+			# 添加到容器
+			tree_view_container.add_child(warning_label)
+		
+		# 更新文本
+		warning_label.text = "⚠ 当前故事树过大 (" + str(node_count) + "个节点)，无法渲染"
+	else:
+		# 如果不是大树模式，移除警告标签
+		if warning_label:
+			warning_label.queue_free()
+			warning_label = null
+
+func _render_full_tree(root_node_id: String, nodes: Dictionary):
+	"""渲染完整树"""
 	# 获取容器尺寸
 	var container_size = tree_view_container.size
 	var start_pos = Vector2(container_size.x * 0.1, container_size.y * 0.5)  # 从容器左侧10%位置开始，垂直居中
@@ -270,8 +341,79 @@ func render_tree(root_node_id: String, nodes: Dictionary):
 	# 重绘树状图
 	_redraw_tree()
 
+func _render_large_tree(focus_node_id: String, nodes: Dictionary):
+	"""大树模式：只渲染焦点节点、父节点和子节点"""
+	# 获取容器尺寸
+	var container_size = tree_view_container.size
+	var center_pos = Vector2(container_size.x * 0.3, container_size.y * 0.5)  # 焦点节点位置
+	
+	# 清空显示的节点集合
+	displayed_nodes.clear()
+	tree_nodes.clear()
+	node_positions.clear()
+	
+	# 添加焦点节点
+	if nodes.has(focus_node_id):
+		displayed_nodes[focus_node_id] = {
+			"type": "focus",
+			"data": nodes[focus_node_id]
+		}
+		
+		# 获取父节点
+		var parent_id = _get_parent_node(focus_node_id, nodes)
+		if not parent_id.is_empty() and nodes.has(parent_id):
+			previous_node_id = parent_id
+			displayed_nodes[parent_id] = {
+				"type": "parent",
+				"data": nodes[parent_id]
+			}
+		
+		# 获取子节点
+		var child_nodes = nodes[focus_node_id].get("child_nodes", [])
+		for child_id in child_nodes:
+			if nodes.has(child_id):
+				displayed_nodes[child_id] = {
+					"type": "child",
+					"data": nodes[child_id]
+				}
+		
+		# 计算节点位置
+		_calculate_large_tree_positions(focus_node_id, parent_id, child_nodes, center_pos)
+		
+		# 重绘树状图
+		_redraw_tree()
+
+func _calculate_large_tree_positions(focus_node_id: String, parent_id: String, child_nodes: Array, center_pos: Vector2):
+	"""计算大树模式下的节点位置"""
+	var vertical_spacing = NODE_SIZE.y + NODE_SPACING_Y
+	
+	# 焦点节点位置（居中）
+	node_positions[focus_node_id] = center_pos - NODE_SIZE / 2
+	tree_nodes.append({"id": focus_node_id, "data": displayed_nodes[focus_node_id]["data"], "type": "focus"})
+	
+	# 父节点位置（在上方）
+	if not parent_id.is_empty():
+		var parent_pos = Vector2(center_pos.x, center_pos.y - vertical_spacing - NODE_SIZE.y)
+		node_positions[parent_id] = parent_pos - NODE_SIZE / 2
+		tree_nodes.append({"id": parent_id, "data": displayed_nodes[parent_id]["data"], "type": "parent"})
+	
+	# 子节点位置（在下方）
+	var child_count = child_nodes.size()
+	if child_count > 0:
+		# 计算子节点起始Y坐标，使它们居中分布
+		var total_height = child_count * (NODE_SIZE.y + NODE_SPACING_Y) - NODE_SPACING_Y
+		var start_y = center_pos.y + NODE_SIZE.y + NODE_SPACING_Y
+		
+		for i in range(child_count):
+			var child_id = child_nodes[i]
+			if displayed_nodes.has(child_id):
+				var child_y = start_y + i * (NODE_SIZE.y + NODE_SPACING_Y)
+				var child_pos = Vector2(center_pos.x, child_y)
+				node_positions[child_id] = child_pos - NODE_SIZE / 2
+				tree_nodes.append({"id": child_id, "data": displayed_nodes[child_id]["data"], "type": "child"})
+
 func _calculate_node_positions(node_id: String, nodes: Dictionary, node_position: Vector2, depth: int = 0):
-	"""计算节点位置"""
+	"""计算节点位置（完整树模式）"""
 	if not nodes.has(node_id):
 		return
 
@@ -325,9 +467,11 @@ func _calculate_node_vertical_space(node_id: String, nodes: Dictionary, depth: i
 
 func _redraw_tree():
 	"""重绘树状图"""
-	# 清空现有节点
+	# 清空现有节点（但要保留警告标签）
 	for child in tree_view_container.get_children():
-		child.queue_free()
+		# 不要删除警告标签
+		if child != warning_label:
+			child.queue_free()
 
 	if tree_nodes.is_empty():
 		return
@@ -340,6 +484,10 @@ func _redraw_tree():
 
 	# 应用缩放和移动变换
 	_apply_transform()
+	
+	# 确保警告标签始终在最上层
+	if warning_label:
+		tree_view_container.move_child(warning_label, tree_view_container.get_child_count() - 1)
 
 func _draw_connections():
 	"""绘制节点间的连线"""
@@ -350,9 +498,17 @@ func _draw_connections():
 
 		var child_nodes = node_data.get("child_nodes", [])
 		for child_id in child_nodes:
+			# 在大树模式下，只绘制显示的节点之间的连线
 			if node_positions.has(child_id):
 				var end_pos = node_positions[child_id] + NODE_SIZE / 2
 				_draw_line(start_pos, end_pos, node_id, child_id)
+		
+		# 在大树模式下，如果当前节点是子节点，还需要绘制到父节点的连线
+		if large_tree_mode and node_info.has("type") and node_info.type == "child":
+			var parent_id = _get_parent_node(node_id, nodes_data)
+			if node_positions.has(parent_id):
+				var parent_pos = node_positions[parent_id] + NODE_SIZE / 2
+				_draw_line(parent_pos, start_pos, parent_id, node_id)
 
 func _draw_line(start_pos: Vector2, end_pos: Vector2, start_node_id: String = "", end_node_id: String = ""):
 	"""绘制一条连线"""
@@ -381,6 +537,10 @@ func _draw_nodes():
 		node_panel.custom_minimum_size = NODE_SIZE
 		node_panel.position = node_position
 		node_panel.set_meta("original_position", node_position)
+		
+		# 在大树模式下，存储节点类型信息
+		if node_info.has("type"):
+			node_panel.set_meta("node_type", node_info.type)
 
 		var label = Label.new()
 		var full_text = node_data.get("display_text", "")
@@ -410,15 +570,29 @@ func _draw_nodes():
 
 		node_panel.add_child(label)
 
-		# 设置样式 - 根据是否高亮使用不同颜色
+		# 设置样式 - 根据是否高亮和节点类型使用不同颜色
 		var style_box = StyleBoxFlat.new()
 		var is_highlighted = _is_node_highlighted(node_id)
+		
 		if is_highlighted:
 			style_box.bg_color = Color(1.0, 1.0, 0.0, 0.8)  # 黄色高亮背景
 			style_box.border_color = Color(1.0, 0.8, 0.0, 1.0)  # 金色边框
 		else:
-			style_box.bg_color = Color(0.4, 0.6, 1.0, 0.6)  # 普通蓝色背景
+			# 在大树模式下，根据节点类型使用不同颜色
+			if large_tree_mode and node_info.has("type"):
+				match node_info.type:
+					"focus":
+						style_box.bg_color = Color(0.4, 0.8, 1.0, 0.8)  # 亮蓝色
+					"parent":
+						style_box.bg_color = Color(0.6, 0.4, 1.0, 0.7)  # 紫色
+					"child":
+						style_box.bg_color = Color(0.4, 0.6, 0.8, 0.6)  # 深蓝色
+					_:
+						style_box.bg_color = Color(0.4, 0.6, 1.0, 0.6)  # 普通蓝色
+			else:
+				style_box.bg_color = Color(0.4, 0.6, 1.0, 0.6)  # 普通蓝色背景
 			style_box.border_color = Color(1.0, 1.0, 1.0, 1.0)  # 白色边框
+		
 		style_box.border_width_left = 2
 		style_box.border_width_right = 2
 		style_box.border_width_top = 2
@@ -446,6 +620,10 @@ func _apply_transform():
 	"""应用缩放和移动变换"""
 	# 直接使用pan_offset和zoom_level进行变换
 	for child in tree_view_container.get_children():
+		# 警告标签不应用变换
+		if child == warning_label:
+			continue
+			
 		if child is Line2D:
 			# 处理连线
 			var original_points = child.get_meta("original_points", child.points)
@@ -541,7 +719,14 @@ func _on_node_clicked(event: InputEvent, node_id: String):
 		else:
 			# 选中新节点
 			selected_node_id = node_id
-			_redraw_tree()
+			
+			# 如果在大树模式下，需要重新渲染以焦点节点为中心
+			if large_tree_mode:
+				current_focus_node_id = node_id
+				render_tree("", nodes_data)  # 重新渲染，根节点参数在这里不重要，因为我们会使用current_focus_node_id
+			else:
+				_redraw_tree()
+			
 			node_selected.emit(node_id)
 
 			# 平滑移动到选中节点
@@ -553,7 +738,14 @@ func select_node(node_id: String):
 	"""外部调用：选中指定节点"""
 	if nodes_data.has(node_id):
 		selected_node_id = node_id
-		_redraw_tree()
+		
+		# 如果在大树模式下，更新焦点节点并重新渲染
+		if large_tree_mode:
+			current_focus_node_id = node_id
+			render_tree("", nodes_data)  # 重新渲染以新节点为焦点
+		else:
+			_redraw_tree()
+		
 		_smooth_move_to_node(node_id)
 		# 触发节点选中信号，让外部监听者更新UI
 		node_selected.emit(node_id)
@@ -569,6 +761,15 @@ func clear_tree():
 	node_positions.clear()
 	nodes_data.clear()
 	selected_node_id = ""
+	large_tree_mode = false
+	current_focus_node_id = ""
+	previous_node_id = ""
+	displayed_nodes.clear()
+
+	# 移除警告标签
+	if warning_label:
+		warning_label.queue_free()
+		warning_label = null
 
 	# 重绘（会清空所有可视元素）
 	_redraw_tree()
@@ -588,6 +789,14 @@ func set_selection_disabled(disabled: bool):
 	selection_disabled = disabled
 	if disabled and not selected_node_id.is_empty():
 		_clear_node_selection()
+
+func set_large_tree_threshold(threshold: int):
+	"""设置触发大树模式的节点数阈值"""
+	large_tree_threshold = threshold
+
+func is_large_tree_mode() -> bool:
+	"""检查当前是否处于大树模式"""
+	return large_tree_mode
 
 var input_protected: bool = false
 var input_disabled: bool = false  # 完全禁用输入的标志
