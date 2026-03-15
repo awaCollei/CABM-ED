@@ -28,7 +28,6 @@ var current_search_keyword: String = "" # 当前搜索关键词
 
 var current_playing_sentences: Array = [] # 当前正在播放的句子列表 {text: String, no_tts: bool}
 var current_sentence_index: int = 0 # 当前播放的句子索引
-var audio_player: AudioStreamPlayer = null # 音频播放器
 var is_playing_audio: bool = false # 是否正在播放音频
 const SENTENCE_PAUSE_DURATION = 0.4  # 句子间的停顿时间（秒）
 
@@ -61,11 +60,6 @@ func _ready():
 	if search_input:
 		search_input.text_submitted.connect(_on_search_submitted)
 	
-	# 创建音频播放器
-	audio_player = AudioStreamPlayer.new()
-	add_child(audio_player)
-	audio_player.finished.connect(_on_audio_finished)
-	
 	# 连接窗口关闭信号
 	diary_closed.connect(_on_diary_closed)
 
@@ -76,8 +70,7 @@ func _on_diary_closed():
 
 func stop_audio_playback():
 	"""停止所有音频播放"""
-	if audio_player and audio_player.playing:
-		audio_player.stop()
+	TTSService.stop_playback()
 	current_playing_sentences.clear()
 	current_sentence_index = 0
 	is_playing_audio = false
@@ -959,6 +952,7 @@ func _find_and_reset_play_buttons(node: Node):
 func _on_back_to_list():
 	"""返回列表视图"""
 	view_mode = "list"
+	stop_audio_playback()
 	# 显示日期选择器，隐藏返回按钮
 	if date_selector:
 		date_selector.visible = true

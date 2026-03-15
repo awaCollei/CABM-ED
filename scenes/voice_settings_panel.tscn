@@ -32,6 +32,26 @@ text = "启用语音合成"
 [node name="EnableCheckBox" type="CheckButton" parent="ScrollContainer/VBoxContainer/EnableContainer"]
 layout_mode = 2
 
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/EnableContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+text = "缓存清理"
+
+[node name="OptionButton" type="OptionButton" parent="ScrollContainer/VBoxContainer/EnableContainer"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+size_flags_horizontal = 8
+selected = 0
+item_count = 4
+popup/item_0/text = "不清理"
+popup/item_0/id = 0
+popup/item_1/text = "1个月"
+popup/item_1/id = 1
+popup/item_2/text = "7天"
+popup/item_2/id = 2
+popup/item_3/text = "1天"
+popup/item_3/id = 3
+
 [node name="SliderContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
 layout_mode = 2
 
