@@ -1,9 +1,10 @@
-[gd_scene load_steps=3 format=3 uid="uid://dc3qgcnpahfmn"]
+[gd_scene load_steps=4 format=3 uid="uid://dc3qgcnpahfmn"]
 
 [ext_resource type="Script" uid="uid://c4w5pc0y2foga" path="res://scripts/about_dialog.gd" id="1_about"]
+[ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="2_tmso8"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_lpi4m"]
-bg_color = Color(1, 1, 1, 0)
+bg_color = Color(0, 0, 0, 0.1764706)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
@@ -22,9 +23,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -140.0
-offset_top = -250.0
+offset_top = -260.0
 offset_right = 360.0
-offset_bottom = 250.0
+offset_bottom = 260.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_lpi4m")
@@ -54,11 +55,16 @@ horizontal_alignment = 1
 
 [node name="VersionLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-text = "版本: v2-0315-6"
+text = "版本: v2-0315-7"
 horizontal_alignment = 1
 
 [node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
+
+[node name="GitHubLink2" type="LinkButton" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "CABM官网"
+uri = "http://shasnow.top:39051"
 
 [node name="CustomerServiceLink" type="LinkButton" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -66,15 +72,15 @@ theme_override_colors/font_color = Color(0.875, 0.875, 0.875, 1)
 text = "24小时在线客服"
 uri = "https://cabm.shasnow.top/cabm-ed"
 
+[node name="GitHubLink3" type="LinkButton" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "bug反馈/建议/提问"
+uri = "https://docs.qq.com/sheet/DZHdYdGhIa1Z6VmZk"
+
 [node name="GitHubLink" type="LinkButton" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-text = "CABM-ED仓库"
+text = "Github仓库"
 uri = "https://github.com/awaCollei/CABM-ED"
-
-[node name="GitHubLink2" type="LinkButton" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-text = "CABM官网"
-uri = "http://shasnow.top:39051"
 
 [node name="HSeparator3" type="HSeparator" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -93,9 +99,7 @@ layout_mode = 2
 text = "二群（满）：813734786"
 uri = "https://qm.qq.com/q/pqgOnzn8Gs"
 
-[node name="HSeparator4" type="HSeparator" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-
 [node name="CloseButton" type="Button" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
+theme = ExtResource("2_tmso8")
 text = "关闭"
