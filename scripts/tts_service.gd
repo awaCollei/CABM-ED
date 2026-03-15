@@ -14,6 +14,7 @@ var volume: float = 0.8 # 音量 (0.0 - 1.0)
 var speed: float = 1.0 # 语速 (0.25 - 4.0)
 var language: String = "zh" # 当前选择语言: zh / en / ja
 var current_voice_id: String = "" # 当前选择的声线ID
+var cache_cleanup_days: int = 0 # 缓存清理天数: 0=不清理, 1=1个月(30天), 2=7天, 3=1天
 
 # 声线数据结构
 # voice_cache.json 格式:
@@ -105,6 +106,9 @@ func _ready():
 	# 如果启用TTS且当前声线需要上传（voice_uri为空或audio_hash不匹配），上传参考音频
 	if is_enabled:
 		_check_and_upload_current_voice()
+	
+	# 启动异步缓存清理（低优先级，不阻塞启动）
+	_start_cache_cleanup()
 
 func _load_config():
 	"""加载AI配置（包含TTS配置）"""
@@ -141,7 +145,8 @@ func _load_tts_settings():
 			speed = settings.get("speed", 1.0)
 			language = settings.get("language", "zh")
 			current_voice_id = settings.get("current_voice_id", "")
-			print("TTS设置加载成功: enabled=%s, volume=%.2f, speed=%.2f, language=%s, voice_id=%s" % [is_enabled, volume, speed, language, current_voice_id])
+			cache_cleanup_days = settings.get("cache_cleanup_days", 0)
+			print("TTS设置加载成功: enabled=%s, volume=%.2f, speed=%.2f, language=%s, voice_id=%s, cache_cleanup=%d" % [is_enabled, volume, speed, language, current_voice_id, cache_cleanup_days])
 	
 	# 同步 voice_uri（从当前声线数据中获取）
 	var voice = _get_current_voice()
@@ -176,7 +181,8 @@ func save_tts_settings():
 		"volume": volume,
 		"speed": speed,
 		"language": language,
-		"current_voice_id": current_voice_id
+		"current_voice_id": current_voice_id,
+		"cache_cleanup_days": cache_cleanup_days
 	}
 	
 	var settings_path = "user://tts_settings.json"
@@ -1208,3 +1214,84 @@ func set_volume(vol: float):
 	
 	if current_player.playing:
 		current_player.volume_db = linear_to_db(volume)
+
+func set_cache_cleanup_days(index: int):
+	"""设置缓存清理天数
+	
+	参数:
+	- index: 0=不清理, 1=1个月(30天), 2=7天, 3=1天
+	"""
+	cache_cleanup_days = clamp(index, 0, 3)
+	save_tts_settings()
+	print("缓存清理设置为: %d，下次启动游戏时生效" % cache_cleanup_days)
+
+func _start_cache_cleanup():
+	"""启动异步缓存清理（低优先级，不阻塞启动）"""
+	if cache_cleanup_days == 0:
+		print("缓存清理已禁用")
+		return
+	
+	# 延迟2秒后开始清理，确保不影响游戏启动
+	await get_tree().create_timer(2.0).timeout
+	
+	# 在后台线程中执行清理
+	_cleanup_old_cache_files()
+
+func _cleanup_old_cache_files():
+	"""清理过期的音频缓存文件"""
+	var cache_dir = "user://speech/"
+	
+	# 检查目录是否存在
+	var dir = DirAccess.open(cache_dir)
+	if dir == null:
+		print("缓存目录不存在，跳过清理")
+		return
+	
+	# 计算过期时间（秒）
+	var days_map = {0: 0, 1: 30, 2: 7, 3: 1}
+	var expire_days = days_map.get(cache_cleanup_days, 0)
+	if expire_days == 0:
+		return
+	
+	var expire_seconds = expire_days * 24 * 60 * 60
+	var current_time = Time.get_unix_time_from_system()
+	
+	print("开始清理缓存：删除 %d 天前的文件" % expire_days)
+	
+	var deleted_count = 0
+	var total_size = 0
+	
+	# 遍历目录中的所有文件
+	dir.list_dir_begin()
+	var file_name = dir.get_next()
+	
+	while file_name != "":
+		if not dir.current_is_dir() and file_name.ends_with(".mp3"):
+			var file_path = cache_dir + file_name
+			var modified_time = FileAccess.get_modified_time(file_path)
+			var age_seconds = current_time - modified_time
+			
+			# 如果文件过期，删除它
+			if age_seconds > expire_seconds:
+				var file_size = 0
+				var file = FileAccess.open(file_path, FileAccess.READ)
+				if file:
+					file_size = file.get_length()
+					file.close()
+				
+				var error = DirAccess.remove_absolute(file_path)
+				if error == OK:
+					deleted_count += 1
+					total_size += file_size
+					print("删除过期缓存: %s (%.1f 天前, %.1f KB)" % [file_name, age_seconds / 86400.0, file_size / 1024.0])
+				else:
+					push_error("删除文件失败: %s (错误: %d)" % [file_path, error])
+		
+		file_name = dir.get_next()
+	
+	dir.list_dir_end()
+	
+	if deleted_count > 0:
+		print("缓存清理完成：删除 %d 个文件，释放 %.2f MB 空间" % [deleted_count, total_size / 1024.0 / 1024.0])
+	else:
+		print("缓存清理完成：没有过期文件")

@@ -244,7 +244,7 @@ func save_generation_options(enabled: bool) -> bool:
 ## 加载生成选项设置
 func load_generation_options() -> bool:
     var config = load_config()
-    return config.get("generation_options", false) # 默认关闭
+    return config.get("generation_options", true) # 默认开启
 
 ## 保存上方输入框设置
 func save_top_input_box(enabled: bool) -> bool:

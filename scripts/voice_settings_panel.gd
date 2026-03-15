@@ -12,6 +12,7 @@ extends MarginContainer
 @onready var add_voice_button = $ScrollContainer/VBoxContainer/VoiceButtonsContainer/AddVoiceButton
 @onready var speed_slider = $ScrollContainer/VBoxContainer/SliderContainer/SpeedContainer/SpeedSlider
 @onready var speed_value_label = $ScrollContainer/VBoxContainer/SliderContainer/SpeedContainer/SpeedValueLabel
+@onready var cache_cleanup_option = $ScrollContainer/VBoxContainer/EnableContainer/OptionButton
 
 var _lang_index_map = {0: "zh", 1: "en", 2: "ja"}
 var _lang_name_map = {"zh": "汉语", "en": "英语", "ja": "日语"}
@@ -32,6 +33,7 @@ func _ready():
 	voice_option.item_selected.connect(_on_voice_selected)
 	delete_voice_button.pressed.connect(_on_delete_voice_pressed)
 	add_voice_button.pressed.connect(_on_add_voice_pressed)
+	cache_cleanup_option.item_selected.connect(_on_cache_cleanup_selected)
 	
 	# 初始化语言选项
 	language_option.clear()
@@ -72,6 +74,9 @@ func _load_settings():
 	
 	speed_slider.value = tts.speed
 	_update_speed_label(tts.speed)
+	
+	# 缓存清理设置
+	cache_cleanup_option.select(tts.cache_cleanup_days)
 
 	# 语言设置
 	var current_lang = tts.language
@@ -295,3 +300,15 @@ func _on_voice_ready(_voice_uri: String):
 	"""声音准备完成"""
 	status_label.text = "✓ TTS已就绪"
 	status_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.3))
+
+func _on_cache_cleanup_selected(index: int):
+	"""缓存清理选项改变"""
+	if not has_node("/root/TTSService"):
+		return
+	
+	var tts = get_node("/root/TTSService")
+	tts.set_cache_cleanup_days(index)
+	
+	var cleanup_text = ["不清理", "1个月", "7天", "1天"][index]
+	status_label.text = "缓存清理设置为: %s，下次启动游戏时生效" % cleanup_text
+	status_label.add_theme_color_override("font_color", Color(0.3, 0.8, 1.0))
