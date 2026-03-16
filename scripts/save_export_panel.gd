@@ -308,7 +308,7 @@ func _perform_cloud_backup():
 	
 	zip.close()
 
-	_show_status("正在上传到云端...", Color(0.3, 0.8, 1.0))
+	_show_status("正在上传到云端，请勿关闭此页面...", Color(0.3, 0.8, 1.0))
 	await get_tree().process_frame
 	
 	# 读取zip文件内容

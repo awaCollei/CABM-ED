@@ -109,18 +109,11 @@ text = "以下数据不会被包含：保存的语音、部分配置
 背景图片、日志文件等"
 clip_text = true
 
-[node name="Note3" type="Label" parent="MainHBox/RightPanel"]
+[node name="CloudBackupButton" type="Button" parent="MainHBox/RightPanel"]
+custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
-text = "如需恢复数据，请联系开发者"
-clip_text = true
-
-[node name="UUIDLabel" type="Label" parent="MainHBox/RightPanel"]
-custom_minimum_size = Vector2(0, 20)
-layout_mode = 2
-mouse_filter = 1
-theme_override_colors/font_color = Color(0.2, 1, 0.99607843, 1)
-theme_override_font_sizes/font_size = 16
-text = "未能获取UUID"
+theme = ExtResource("3_fa2e4")
+text = "上传到云端"
 
 [node name="Notice" type="Label" parent="MainHBox/RightPanel"]
 custom_minimum_size = Vector2(0, 20)
@@ -129,11 +122,25 @@ theme_override_colors/font_color = Color(1, 0.8, 0, 1)
 text = "注意：云端存储可能并不可靠，
 如果存档丢失或损坏概不负责"
 
-[node name="CloudBackupButton" type="Button" parent="MainHBox/RightPanel"]
-custom_minimum_size = Vector2(0, 40)
+[node name="LinkButton" type="LinkButton" parent="MainHBox/RightPanel"]
 layout_mode = 2
-theme = ExtResource("3_fa2e4")
-text = "上传到云端"
+text = "点击访问存档下载页面"
+uri = "https://cabm.shasnow.top/api/download"
+
+[node name="Space" type="Label" parent="MainHBox/RightPanel"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+mouse_filter = 1
+theme_override_colors/font_color = Color(0.2, 1, 0.99607843, 1)
+text = " "
+
+[node name="UUIDLabel" type="Label" parent="MainHBox/RightPanel"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+mouse_filter = 1
+theme_override_colors/font_color = Color(0.2, 1, 0.99607843, 1)
+theme_override_font_sizes/font_size = 16
+text = "未能获取UUID"
 
 [node name="StatusBar" type="HBoxContainer" parent="."]
 layout_mode = 2
