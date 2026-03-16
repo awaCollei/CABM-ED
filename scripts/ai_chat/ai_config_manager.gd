@@ -9,7 +9,7 @@ const CONFIG_PATH = "user://ai_keys.json"
 const CONFIG_TEMPLATES = {
     "free": {
         "name": "免费",
-        "description": "没有语音，而且有点不太聪明的样子，但是免费",
+        "description": "没有语音，而且不太聪明，但是免费",
         "chat_model": {
             "model": "Qwen/Qwen3-8B",
             "base_url": "https://api.siliconflow.cn/v1"
@@ -41,7 +41,7 @@ const CONFIG_TEMPLATES = {
     },
     "standard": {
         "name": "标准",
-        "description": "支持语音，以高性价比获得更佳的体验",
+        "description": "以高性价比获得更佳的体验",
         "chat_model": {
             "model": "deepseek-ai/DeepSeek-V3.2",
             "base_url": "https://api.siliconflow.cn/v1"
@@ -51,7 +51,7 @@ const CONFIG_TEMPLATES = {
             "base_url": "https://api.siliconflow.cn/v1"
         },
         "tts_model": {
-            "model": "FunAudioLLM/CosyVoice2-0.5B",
+            "model": "IndexTeam/IndexTTS-2",
             "base_url": "https://api.siliconflow.cn/v1"
         },
         "embedding_model": {
@@ -73,9 +73,9 @@ const CONFIG_TEMPLATES = {
     },
     "alternate": {
         "name": "备用",
-        "description": "比标准效果稍差，但更稳定一些",
+        "description": "比标准稍微差点，可以作为备选",
         "chat_model": {
-            "model": "Qwen/Qwen3-Next-80B-A3B-Instruct",
+            "model": "deepseek-ai/DeepSeek-V3",
             "base_url": "https://api.siliconflow.cn/v1"
         },
         "summary_model": {
@@ -83,7 +83,7 @@ const CONFIG_TEMPLATES = {
             "base_url": "https://api.siliconflow.cn/v1"
         },
         "tts_model": {
-            "model": "IndexTeam/IndexTTS-2",
+            "model": "FunAudioLLM/CosyVoice2-0.5B",
             "base_url": "https://api.siliconflow.cn/v1"
         },
         "embedding_model": {

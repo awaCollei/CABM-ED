@@ -239,7 +239,7 @@ func start_chat(user_message: String = "", trigger_mode: String = "passive", ite
 
 	# 检查API密钥是否为特殊字段（模型不合法）
 	if config_loader.api_key == "INVALID_MODEL_FOR_BUILTIN_KEY":
-		chat_error.emit("白嫖的还想用Pro？")
+		chat_error.emit("内置密钥不支持该模型")
 		return
 
 	if config_loader.api_key.is_empty():
