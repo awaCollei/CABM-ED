@@ -8,7 +8,10 @@ extends MarginContainer
 @onready var chk_logs: CheckBox = $MainHBox/LeftPanel/IncludeLogs
 @onready var chk_music: CheckBox = $MainHBox/LeftPanel/IncludeMusic
 @onready var chk_resources: CheckBox = $MainHBox/LeftPanel/IncludeResources
-@onready var cloud_backup_button: Button = $MainHBox/RightPanel/CloudBackupButton  # 新增云备份按钮引用
+@onready var cloud_backup_button: Button = $MainHBox/RightPanel/CloudBackupButton
+@onready var uuid_label: Label = $MainHBox/RightPanel/UUIDLabel  # 新增UUID标签
+
+var current_uuid: String = ""
 
 func _ready():
 	# 居中显示
@@ -17,6 +20,71 @@ func _ready():
 	# 连接信号
 	export_button.pressed.connect(_on_export_pressed)
 	cloud_backup_button.pressed.connect(_on_cloud_backup_pressed)
+	uuid_label.gui_input.connect(_on_uuid_label_gui_input)  # 连接UUID标签的输入事件
+
+	# 初始化UUID
+	_init_uuid()
+
+func _init_uuid():
+	"""初始化UUID：从文件读取或生成新的"""
+	var uuid_file_path = "user://uuid.txt"
+	
+	if FileAccess.file_exists(uuid_file_path):
+		# 读取现有UUID
+		var file = FileAccess.open(uuid_file_path, FileAccess.READ)
+		if file:
+			current_uuid = file.get_as_text().strip_edges()
+			file.close()
+	
+	# 如果UUID无效，生成新的
+	if current_uuid.is_empty():
+		current_uuid = _generate_uuid()
+		# 保存到文件
+		var file = FileAccess.open(uuid_file_path, FileAccess.WRITE)
+		if file:
+			file.store_string(current_uuid)
+			file.close()
+	
+	# 更新显示
+	uuid_label.text = "UUID(点击复制): " + _truncate_uuid(current_uuid)
+	uuid_label.tooltip_text = current_uuid  # 设置工具提示显示完整UUID
+
+func _generate_uuid() -> String:
+	"""生成简单的UUID（格式：xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx）"""
+	var hex_chars = "0123456789abcdef"
+	var uuid = ""
+	
+	for i in range(36):
+		match i:
+			8, 13, 18, 23:  # 添加连字符的位置
+				uuid += "-"
+			_:
+				uuid += hex_chars[randi() % hex_chars.length()]
+	
+	# 设置版本位（第14个字符应为4）
+	uuid = uuid.substr(0, 14) + "4" + uuid.substr(15)
+	# 设置变体位（第19个字符应为8、9、A或B）
+	var variant = ["8", "9", "a", "b"][randi() % 4]
+	uuid = uuid.substr(0, 19) + variant + uuid.substr(20)
+	
+	return uuid
+
+func _truncate_uuid(uuid: String, max_length: int = 16) -> String:
+	"""截断UUID显示（只显示前8个字符）"""
+	if uuid.length() > max_length:
+		return uuid.substr(0, max_length) + "..."
+	return uuid
+
+func _on_uuid_label_gui_input(event: InputEvent):
+	"""处理UUID标签的输入事件"""
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		# 复制UUID到剪贴板
+		DisplayServer.clipboard_set(current_uuid)
+		_show_status("✓ UUID已复制到剪贴板", Color(0.3, 1.0, 0.3))
+		
+		# 3秒后恢复状态显示
+		await get_tree().create_timer(3.0).timeout
+		status_label.text = ""
 
 func _on_export_pressed():
 	var input_key = api_key_input.text.strip_edges()
@@ -101,7 +169,6 @@ func _on_export_path_selected(export_path: String, user_path: String, dialog: Fi
 
 	var success = await _zip_directory(user_path, zip, exclusions)
 	zip.close()
-
 	if success:
 		_show_status("✓ 导出成功: " + export_path, Color(0.3, 1.0, 0.3))
 		print("存档导出成功: ", export_path)
@@ -175,6 +242,10 @@ func _show_status(message: String, color: Color):
 
 func _on_cloud_backup_pressed():
 	"""处理云备份按钮点击"""
+	# 确保UUID已初始化
+	if current_uuid.is_empty():
+		_init_uuid()
+	
 	# 禁用按钮
 	export_button.disabled = true
 	cloud_backup_button.disabled = true
@@ -198,7 +269,8 @@ func _perform_cloud_backup():
 	# 要打包的文件列表
 	var files_to_backup = [
 		"memory_main_memory.json",
-		"memory_graph.json"
+		"memory_graph.json",
+		"uuid.txt"  # 也备份UUID文件
 	]
 	
 	# 要打包的目录
@@ -235,7 +307,7 @@ func _perform_cloud_backup():
 			await _zip_directory_for_cloud(dir_path, dir_name, zip)
 	
 	zip.close()
-	
+
 	_show_status("正在上传到云端...", Color(0.3, 0.8, 1.0))
 	await get_tree().process_frame
 	
@@ -246,12 +318,13 @@ func _perform_cloud_backup():
 		DirAccess.remove_absolute(temp_zip_path)
 		return
 	
-	# 上传到服务器
+	# 上传到服务器（使用新的URL格式）
 	var http = HTTPRequest.new()
 	add_child(http)
 	
-	var url = "http://shasnow.top:39051"
-	var headers = ["Content-Type: application/zip"]
+	# 构建新的URL格式：api/upload/<uuid>
+	var url = "https://cabm.shasnow.top/api/upload/%s" % current_uuid
+	var headers = ["Content-Type: application/zip","Content-Length: " + str(zip_bytes.size())]
 	
 	http.request_completed.connect(_on_upload_completed.bind(http, temp_zip_path))
 	err = http.request_raw(url, headers, HTTPClient.METHOD_POST, zip_bytes)
@@ -312,7 +385,7 @@ func _on_upload_completed(result: int, response_code: int, _headers: PackedStrin
 	
 	if result == HTTPRequest.RESULT_SUCCESS and response_code == 200:
 		_show_status("✓ 云备份成功", Color(0.3, 1.0, 0.3))
-		print("云备份上传成功")
+		print("云备份上传成功，UUID: ", current_uuid)
 	else:
 		_show_status("✗ 云备份失败：服务器响应错误 (代码: %d)" % response_code, Color(1.0, 0.3, 0.3))
-		print("云备份失败: result=", result, " response_code=", response_code)
+		print("云备份失败: result=", result, " response_code=", response_code, " UUID=", current_uuid)

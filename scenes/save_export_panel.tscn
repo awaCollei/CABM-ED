@@ -114,6 +114,14 @@ layout_mode = 2
 text = "如需恢复数据，请联系开发者"
 clip_text = true
 
+[node name="UUIDLabel" type="Label" parent="MainHBox/RightPanel"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+mouse_filter = 1
+theme_override_colors/font_color = Color(0.2, 1, 0.99607843, 1)
+theme_override_font_sizes/font_size = 16
+text = "未能获取UUID"
+
 [node name="Notice" type="Label" parent="MainHBox/RightPanel"]
 custom_minimum_size = Vector2(0, 20)
 layout_mode = 2

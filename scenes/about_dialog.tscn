@@ -65,13 +65,13 @@ layout_mode = 2
 [node name="GitHubLink2" type="LinkButton" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "CABM官网"
-uri = "https://cabm.shasnow.top"
+uri = "https://cabm.shasnow.top/site"
 
 [node name="CustomerServiceLink" type="LinkButton" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.875, 0.875, 0.875, 1)
 text = "24小时在线客服"
-uri = "http://shasnow.top:5000/cabm-ed"
+uri = "https://cabm.shasnow.top/cabm-ed"
 
 [node name="GitHubLink3" type="LinkButton" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2

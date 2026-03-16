@@ -4,7 +4,7 @@ extends Panel
 @onready var version_label: Label = $MarginContainer/VBoxContainer/VersionLabel
 
 # 版本号变量
-var current_version: String = "v2-0316-2"  # 这里设置当前版本号
+var current_version: String = "v2-0316-3"  # 这里设置当前版本号
 
 # 版本状态记录
 enum VersionStatus { UNCHECKED, LATEST, OUTDATED, ERROR }
@@ -90,7 +90,7 @@ func _check_version(use_debounce: bool = true):
 	http_request.request_completed.connect(_on_version_request_completed.bind(http_request))
 	
 	# 发送GET请求
-	var url = "http://shasnow.top:39051/api/version"
+	var url = "https://cabm.shasnow.top/api/version"
 	var error = http_request.request(url)
 	
 	if error != OK:
