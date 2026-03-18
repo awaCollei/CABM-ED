@@ -150,9 +150,13 @@ func _build_system_prompt(scene_name: String, user_prompt: String = "") -> Strin
 	var system_prompt_parts = []
 	
 	# 身份设定
-	system_prompt_parts.append("你是%s，被「%s」收养的失忆少女，现在和他生活在一起。你习惯称呼他为「%s」。你是人类，女，白色中短发，淡蓝色眼睛。%s" % [
-		character_name, user_name, user_address, character_prompt
-	])
+	# 从CharacterIdentityLoader获取完整的人物设定（包含固定后缀）
+	var identity_loader = get_node_or_null("/root/CharacterIdentityLoader")
+	var identity = ""
+	if identity_loader:
+		identity = identity_loader.get_full_identity(user_address, character_prompt)
+	
+	system_prompt_parts.append(identity)
 	
 	# 场景信息
 	if not scene_context.is_empty():

@@ -56,10 +56,10 @@ func save_identity():
 		"relationship": current_relationship
 	}
 	
-	# 只有在初始设置完成后才保存
-	if save_mgr.is_initial_setup_completed:
-		save_mgr.save_game()
-		print("CharacterIdentityLoader: 人物设定已保存")
+	# # 只有在初始设置完成后才保存
+	# if save_mgr.is_initial_setup_completed:
+	# 	save_mgr.save_game()
+	# 	print("CharacterIdentityLoader: 人物设定已保存")
 
 func set_identity(identity: String, relationship: String):
 	"""设置人物设定"""

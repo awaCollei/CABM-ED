@@ -87,8 +87,8 @@ func _build_system_prompt(story_data: Dictionary, _current_node_id: String, stor
 	var save_mgr = get_node("/root/SaveManager")
 
 	# 获取基本信息
-	var character_name = save_mgr.get_character_name()
-	var user_name = save_mgr.get_user_name()
+	# var character_name = save_mgr.get_character_name()
+	# var user_name = save_mgr.get_user_name()
 	var user_address = save_mgr.get_user_address()
 
 	var prompt_parts = []
@@ -107,11 +107,12 @@ func _build_system_prompt(story_data: Dictionary, _current_node_id: String, stor
 			base_prompt += "用户的身份：" + user_role + "\n"
 	else:
 		# 使用全局身份
-		base_prompt += "你是人类，女，白色中短发，淡蓝色眼睛。你的名字是\"{character_name}\"。用户的名字是\"{user_name}\"，你喜欢称呼他为\"{user_address}\"\n".format({
-			"character_name": character_name,
-			"user_name": user_name,
-			"user_address": user_address
-		})
+		# 从CharacterIdentityLoader获取完整的人物设定（包含固定后缀）
+		var identity_loader = get_node_or_null("/root/CharacterIdentityLoader")
+		var identity = ""
+		if identity_loader:
+			identity = identity_loader.get_full_identity(user_address, "")	
+		base_prompt += identity
 	
 	prompt_parts.append(base_prompt)
 
