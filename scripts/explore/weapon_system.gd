@@ -294,6 +294,7 @@ func start_reload(player_position: Vector2) -> bool:
 	if player_inventory and player_inventory.container:
 		var available_ammo = player_inventory.container.count_item(ammo_item_id)
 		if available_ammo <= 0:
+			MessageDisplay.show_failure_message("背包中没有弹药")
 			print("背包中没有弹药")
 			return false
 	
