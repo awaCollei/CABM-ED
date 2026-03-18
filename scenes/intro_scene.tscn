@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3 uid="uid://intro001"]
+[gd_scene load_steps=4 format=3 uid="uid://intro001"]
 
-[ext_resource type="Script" path="res://scripts/intro_story.gd" id="1"]
-[ext_resource type="Texture2D" path="res://assets/images/index.png" id="2_index"]
+[ext_resource type="Script" uid="uid://cnv73kaxj6ksc" path="res://scripts/intro_story.gd" id="1"]
+[ext_resource type="Texture2D" uid="uid://pkdf5ab0ovl5" path="res://assets/images/index.png" id="2_index"]
+[ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="3_gsw8x"]
 
 [node name="IntroScene" type="Control"]
 layout_mode = 3
@@ -40,9 +41,8 @@ grow_vertical = 2
 [node name="StoryLabel" type="Label" parent="StoryContainer"]
 layout_mode = 2
 size_flags_vertical = 6
-theme_override_font_sizes/font_size = 28
 theme_override_colors/font_color = Color(255, 255, 255, 1)
-text = ""
+theme_override_font_sizes/font_size = 28
 horizontal_alignment = 1
 vertical_alignment = 1
 autowrap_mode = 2
@@ -50,5 +50,5 @@ autowrap_mode = 2
 [node name="ContinueButton" type="Button" parent="StoryContainer"]
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 20
+theme = ExtResource("3_gsw8x")
 text = "继续"

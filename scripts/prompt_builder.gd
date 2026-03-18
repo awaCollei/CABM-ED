@@ -53,6 +53,25 @@ func build_system_prompt(trigger_mode: String = "passive", keep_long_term_memory
 	# 从存档系统读取用户名
 	var user_name = save_mgr.get_user_name()
 	
+	# 从存档系统读取用户称呼
+	var user_address = save_mgr.get_user_address()
+	
+	# 加载角色预设配置，获取prompt字段
+	var character_preset = _load_character_preset()
+	var character_prompt = character_preset.get("prompt", "")
+	
+	# 从CharacterIdentityLoader获取完整的人物设定（包含固定后缀）
+	var identity_loader = get_node_or_null("/root/CharacterIdentityLoader")
+	var identity = ""
+	if identity_loader:
+		identity = identity_loader.get_full_identity(user_address, character_prompt)
+	else:
+		MessageDisplay.show_failure_message("错误：人物设定加载失败，请向开发者反馈此问题")
+	
+	# 替换identity中的基本变量
+	identity = identity.replace("{character_name}", character_name)
+	identity = identity.replace("{user_name}", user_name)
+	
 	# 获取记忆上下文
 	var memory_context = get_memory_context()
 	
@@ -82,13 +101,6 @@ func build_system_prompt(trigger_mode: String = "passive", keep_long_term_memory
 	# 生成场景列表
 	var scenes_list = _generate_scenes_list()
 	
-	# 从存档系统读取用户称呼
-	var user_address = save_mgr.get_user_address()
-	
-	# 加载角色预设配置，获取prompt字段
-	var character_preset = _load_character_preset()
-	var character_prompt = character_preset.get("prompt", "")
-	
 	# 获取回复风格
 	var response_style = _get_response_style()
 	
@@ -115,7 +127,8 @@ func build_system_prompt(trigger_mode: String = "passive", keep_long_term_memory
 		"{scenes}": scenes_list,
 		"{character_prompt}": character_prompt,
 		"{response_style}": response_style,
-		"{item_prompt}": item_prompt
+		"{item_prompt}": item_prompt,
+		"{identity}": identity  # 添加完整的identity替换
 	}
 	
 	# 检查使用哪种配置方式

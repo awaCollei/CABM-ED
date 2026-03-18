@@ -243,7 +243,8 @@ func start_chat(user_message: String = "", trigger_mode: String = "passive", ite
 		return
 
 	if config_loader.api_key.is_empty():
-		chat_error.emit("API 密钥未配置\n群公告都不看玩nm    ——狼尊")
+		chat_error.emit("API密钥未配置，可以在配置选项中开启内置密钥")
+		MessageDisplay.show_failure_message("群公告都不看玩nm    ——狼尊")
 		return
 
 	# 只在新对话开始时检查是否需要清除上下文（距上次对话超过5分钟）

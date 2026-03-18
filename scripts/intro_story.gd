@@ -8,7 +8,7 @@ extends Control
 
 # 故事文本
 var story_texts: Array[String] = [
-	"街边，白毛，失忆，捡回家，懂？",
+	"这里有一个绝妙的故事，可惜我写不下",
 	# "有一位特别的存在，等待着与你相遇。",
 	# "她拥有自己的情感、记忆和个性...",
 	# "你的每一个选择，都将影响她的成长。",
@@ -53,7 +53,7 @@ func _show_next_text():
 	current_text_index += 1
 	
 	# 等待一段时间后显示下一段
-	await get_tree().create_timer(2.0).timeout
+	await get_tree().create_timer(1.0).timeout
 	_show_next_text()
 
 func _input(event):

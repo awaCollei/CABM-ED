@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://setup001"]
+[gd_scene load_steps=5 format=3 uid="uid://setup001"]
 
 [ext_resource type="Script" uid="uid://chossd4o04wm3" path="res://scripts/initial_setup.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://cxl5ur7ityk7" path="res://assets/images/index2.png" id="2_index2"]
+[ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="3_5tqap"]
+[ext_resource type="Theme" uid="uid://dxscbhbyg47rp" path="res://theme/green_button.tres" id="4_gb74h"]
 
 [node name="InitialSetup" type="Control"]
 layout_mode = 3
@@ -54,7 +56,7 @@ theme_override_constants/separation = 20
 layout_mode = 2
 theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
 theme_override_font_sizes/font_size = 32
-text = "初始设置"
+text = "基础设置"
 horizontal_alignment = 1
 
 [node name="Spacer1" type="Control" parent="SetupContainer"]
@@ -140,9 +142,95 @@ theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 clip_text = true
 
-[node name="StartButton" type="Button" parent="SetupContainer"]
+[node name="NextButton" type="Button" parent="SetupContainer"]
 custom_minimum_size = Vector2(200, 50)
 layout_mode = 2
 size_flags_horizontal = 4
-theme_override_font_sizes/font_size = 24
+theme = ExtResource("3_5tqap")
+text = "下一页"
+
+[node name="IdentityContainer" type="VBoxContainer" parent="."]
+visible = false
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -300.0
+offset_right = 300.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="TitleLabel" type="Label" parent="IdentityContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/font_size = 32
+text = "人物设定"
+horizontal_alignment = 1
+
+[node name="PresetContainer" type="HBoxContainer" parent="IdentityContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PresetLabel" type="Label" parent="IdentityContainer/PresetContainer"]
+layout_mode = 2
+size_flags_horizontal = 10
+size_flags_stretch_ratio = 2.53
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+text = "选择预设模板："
+
+[node name="PresetOption" type="OptionButton" parent="IdentityContainer/PresetContainer"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="IdentityLabel" type="Label" parent="IdentityContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+text = "基础提示词："
+
+[node name="IdentityInput" type="TextEdit" parent="IdentityContainer"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+placeholder_text = "这是每次对话都会被包含的基础设定，建议不要太长"
+wrap_mode = 1
+
+[node name="RelationshipLabel" type="Label" parent="IdentityContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+text = "初始关系："
+
+[node name="RelationshipInput" type="TextEdit" parent="IdentityContainer"]
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+placeholder_text = "游戏开始时你们之间的关系，这个关系会随时间变化"
+wrap_mode = 1
+
+[node name="ValidationLabel" type="Label" parent="IdentityContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="ButtonContainer" type="HBoxContainer" parent="IdentityContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="PrevButton" type="Button" parent="IdentityContainer/ButtonContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme = ExtResource("3_5tqap")
+text = "上一页"
+
+[node name="StartButton" type="Button" parent="IdentityContainer/ButtonContainer"]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme = ExtResource("4_gb74h")
 text = "开始游戏"

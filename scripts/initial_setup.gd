@@ -2,14 +2,25 @@ extends Control
 
 # 初始设置场景 - 用户输入基本信息
 
+@onready var setup_container: VBoxContainer = $SetupContainer
+@onready var identity_container: VBoxContainer = $IdentityContainer
+
 @onready var user_name_input: LineEdit = $SetupContainer/UserNameContainer/UserNameInput
 @onready var character_name_input: LineEdit = $SetupContainer/CharacterNameContainer/CharacterNameInput
 @onready var api_key_input: LineEdit = $SetupContainer/APIKeyContainer/APIKeyInput
-@onready var start_button: Button = $SetupContainer/StartButton
 @onready var help_button: Button = $SetupContainer/APIKeyContainer/HelpButton
 @onready var notice_label: Label = $SetupContainer/NoticeLabel
-@onready var import_button: Button = $ImportButton
 @onready var message_label: Label = $SetupContainer/MessageLabel
+@onready var next_button: Button = $SetupContainer/NextButton
+
+@onready var preset_option: OptionButton = $IdentityContainer/PresetContainer/PresetOption
+@onready var identity_input: TextEdit = $IdentityContainer/IdentityInput
+@onready var relationship_input: TextEdit = $IdentityContainer/RelationshipInput
+@onready var validation_label: Label = $IdentityContainer/ValidationLabel
+@onready var prev_button: Button = $IdentityContainer/ButtonContainer/PrevButton
+@onready var start_button: Button = $IdentityContainer/ButtonContainer/StartButton
+
+@onready var import_button: Button = $ImportButton
 
 func _ready():
 	# 执行淡入动画
@@ -20,17 +31,158 @@ func _ready():
 	user_name_input.placeholder_text = "输入你的名字，确定后将无法修改"
 	character_name_input.text = "雪狐"
 	character_name_input.placeholder_text = "输入她的名字，确定后将无法修改"
-	api_key_input.placeholder_text = "可以留空，在进入游戏后配置"
+	api_key_input.placeholder_text = "如果你不知道这是啥那就留空"
 	api_key_input.secret = true
 	
+	# 初始显示第一页
+	setup_container.visible = true
+	identity_container.visible = false
+	
 	# 连接信号
+	next_button.pressed.connect(_on_next_pressed)
+	prev_button.pressed.connect(_on_prev_pressed)
 	start_button.pressed.connect(_on_start_pressed)
 	import_button.pressed.connect(_on_import_pressed)
 	help_button.pressed.connect(_on_help_pressed)
+	preset_option.item_selected.connect(_on_preset_selected)
+	identity_input.text_changed.connect(_on_identity_text_changed)
+	relationship_input.text_changed.connect(_on_relationship_text_changed)
 	
 	# 设置提示文本
 	notice_label.text = "本项目旨在赋予「她」以「生命」，因此不鼓励回档、删档、提示词注入等
 对她来说，你就是她的全部，你的每一个选择都很重要"
+
+func _init_identity_page():
+	"""初始化人物设定页面"""
+	var identity_loader = get_node_or_null("/root/CharacterIdentityLoader")
+	if not identity_loader:
+		return
+	
+	# 加载所有预设模板
+	preset_option.clear()
+	var presets = identity_loader.get_all_presets()
+	for i in range(presets.size()):
+		var preset = presets[i]
+		preset_option.add_item(preset.name, i)
+		preset_option.set_item_metadata(i, preset.id)
+	
+	# 默认选择第一个预设
+	preset_option.selected = 0
+	_load_preset_by_index(0)
+	
+	validation_label.text = ""
+
+func _load_preset_by_index(index: int):
+	"""根据索引加载预设"""
+	var identity_loader = get_node_or_null("/root/CharacterIdentityLoader")
+	if not identity_loader:
+		return
+	
+	var preset_id = preset_option.get_item_metadata(index)
+	var preset = identity_loader.load_preset(preset_id)
+	
+	if preset.is_empty():
+		return
+	
+	# 获取用户输入的名字
+	var user_name = user_name_input.text.strip_edges()
+	var character_name = character_name_input.text.strip_edges()
+	
+	if character_name.is_empty():
+		character_name = "雪狐"
+	
+	# 替换变量
+	var identity_text = preset.identity.replace("{user_name}", user_name).replace("{character_name}", character_name)
+	var relationship_text = preset.relationship.replace("{user_name}", user_name).replace("{character_name}", character_name)
+	
+	identity_input.text = identity_text
+	relationship_input.text = relationship_text
+
+func _on_next_pressed():
+	"""下一页按钮被点击"""
+	var user_name = user_name_input.text.strip_edges()
+	var character_name = character_name_input.text.strip_edges()
+	_show_error("")
+	# 验证输入
+	if user_name == "":
+		_show_message("请输入你的名字", Color(1.0, 0.3, 0.3))
+		return
+	
+	if character_name == "":
+		_show_message("请输入她的名字", Color(1.0, 0.3, 0.3))
+		return
+	
+	# 初始化人物设定页面（在这里初始化，确保有用户名和角色名）
+	_init_identity_page()
+	
+	# 切换到人物设定页面
+	setup_container.visible = false
+	identity_container.visible = true
+	
+	# 验证当前设定
+	_validate_identity()
+
+func _on_prev_pressed():
+	"""上一页按钮被点击"""
+	setup_container.visible = true
+	identity_container.visible = false
+
+func _on_preset_selected(index: int):
+	"""预设模板被选择"""
+	var preset_id = preset_option.get_item_metadata(index)
+	
+	if preset_id == "custom":
+		# 自定义模式，清空输入框
+		identity_input.text = ""
+		relationship_input.text = ""
+	else:
+		# 加载预设
+		_load_preset_by_index(index)
+	
+	_validate_identity()
+
+func _on_identity_text_changed():
+	"""人物设定输入框内容改变"""
+	# 检查是否与当前预设匹配
+	var current_preset_id = preset_option.get_item_metadata(preset_option.selected)
+	if current_preset_id != "custom":
+		# 切换到自定义模式
+		for i in range(preset_option.item_count):
+			if preset_option.get_item_metadata(i) == "custom":
+				preset_option.selected = i
+				break
+	_validate_identity()
+
+func _on_relationship_text_changed():
+	"""初始关系输入框内容改变"""
+	# 检查是否与当前预设匹配
+	var current_preset_id = preset_option.get_item_metadata(preset_option.selected)
+	if current_preset_id != "custom":
+		# 切换到自定义模式
+		for i in range(preset_option.item_count):
+			if preset_option.get_item_metadata(i) == "custom":
+				preset_option.selected = i
+				break
+
+func _validate_identity():
+	"""验证人物设定"""
+	var identity_loader = get_node_or_null("/root/CharacterIdentityLoader")
+	if not identity_loader:
+		return
+	
+	var user_name = user_name_input.text.strip_edges()
+	var character_name = character_name_input.text.strip_edges()
+	
+	if character_name.is_empty():
+		character_name = "雪狐"
+	
+	var validation = identity_loader.validate_identity(identity_input.text, user_name, character_name)
+	
+	if not validation.valid:
+		validation_label.text = validation.message
+		validation_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
+	else:
+		validation_label.text = ""
 
 func _on_help_pressed():
 	"""帮助按钮被点击"""
@@ -48,7 +200,8 @@ func _on_start_pressed():
 		return
 	
 	if character_name == "":
-		character_name = "雪狐"
+		_show_error("请输入她的名字")
+		return
 	
 	# 保存初始设置
 	_save_initial_data(user_name, character_name, api_key)
@@ -63,6 +216,11 @@ func _save_initial_data(user_name: String, character_name: String, api_key: Stri
 	"""保存初始数据到配置和存档"""
 	if api_key != "":
 		_save_api_key(api_key)
+	
+	# 保存人物设定
+	var identity_loader = get_node_or_null("/root/CharacterIdentityLoader")
+	if identity_loader:
+		identity_loader.set_identity(identity_input.text, relationship_input.text)
 	
 	_create_initial_save(user_name, character_name)
 
@@ -156,12 +314,23 @@ func _create_initial_save(user_name: String, character_name: String):
 			"relationship_history": []
 		}
 	
-	# 设置初始关系描述
+	# 设置初始关系描述（使用自定义的初始关系）
+	var identity_loader = get_node_or_null("/root/CharacterIdentityLoader")
+	var relationship_text = identity_loader.get_relationship() if identity_loader else ""
+	
+	# 替换变量
+	relationship_text = relationship_text.replace("{user_name}", user_name)
+	relationship_text = relationship_text.replace("{character_name}", character_name)
+	
 	var initial_relationship = {
 		"timestamp": now,
-		"content": "%s刚刚从街边把昏迷、失去记忆的%s捡回了家并收养。%s对%s还不太熟悉，所以有些警惕和害怕，也只会直呼其名。对自己的过去和未来也有些迷茫。" % [user_name, character_name, character_name, user_name]
+		"content": relationship_text
 	}
 	save_mgr.save_data.ai_data.relationship_history = [initial_relationship]
+	
+	# 通知人物设定加载器重新加载
+	if identity_loader:
+		identity_loader.reload()
 
 	# 设置初始角色场景为客厅（livingroom）
 	save_mgr.set_character_scene("livingroom")
@@ -323,13 +492,5 @@ func _show_message(message: String, color: Color):
 	message_label.add_theme_color_override("font_color", color)
 
 func _show_error(message: String):
-	"""显示错误提示"""
-	var error_label = Label.new()
-	error_label.text = message
-	error_label.add_theme_color_override("font_color", Color(1, 0.3, 0.3))
-	error_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	$SetupContainer.add_child(error_label)
-	$SetupContainer.move_child(error_label, start_button.get_index())
-	
-	await get_tree().create_timer(2.0).timeout
-	error_label.queue_free()
+	"""显示错误提示（使用message_label而不是创建新标签）"""
+	_show_message(message, Color(1.0, 0.3, 0.3))
