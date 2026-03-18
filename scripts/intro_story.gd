@@ -53,7 +53,7 @@ func _show_next_text():
 	current_text_index += 1
 	
 	# 等待一段时间后显示下一段
-	await get_tree().create_timer(1.0).timeout
+	await get_tree().create_timer(0.5).timeout
 	_show_next_text()
 
 func _input(event):

@@ -4,6 +4,7 @@ extends Control
 
 @onready var setup_container: VBoxContainer = $SetupContainer
 @onready var identity_container: VBoxContainer = $IdentityContainer
+@onready var import_container: VBoxContainer = $ImportContainer  # 新增
 
 @onready var user_name_input: LineEdit = $SetupContainer/UserNameContainer/UserNameInput
 @onready var character_name_input: LineEdit = $SetupContainer/CharacterNameContainer/CharacterNameInput
@@ -22,6 +23,12 @@ extends Control
 
 @onready var import_button: Button = $ImportButton
 
+# 导入容器相关节点
+@onready var import_message_label: Label = $ImportContainer/MessageLabel
+@onready var import_progress_bar: ProgressBar = $ImportContainer/ProgressBar
+@onready var import_title_label: Label = $ImportContainer/TitleLabel
+@onready var import_message_label2: Label = $ImportContainer/MessageLabel2
+
 func _ready():
 	# 执行淡入动画
 	if has_node("/root/SceneTransition"):
@@ -37,6 +44,7 @@ func _ready():
 	# 初始显示第一页
 	setup_container.visible = true
 	identity_container.visible = false
+	import_container.visible = false
 	
 	# 连接信号
 	next_button.pressed.connect(_on_next_pressed)
@@ -95,6 +103,10 @@ func _load_preset_by_index(index: int):
 	var identity_text = preset.identity.replace("{user_name}", user_name).replace("{character_name}", character_name)
 	var relationship_text = preset.relationship.replace("{user_name}", user_name).replace("{character_name}", character_name)
 	
+	# 如果角色名不是"雪狐"，则移除identity中的"人类，"
+	if character_name != "雪狐":
+		identity_text = identity_text.replace("人类，", "")
+	
 	identity_input.text = identity_text
 	relationship_input.text = relationship_text
 
@@ -118,6 +130,7 @@ func _on_next_pressed():
 	# 切换到人物设定页面
 	setup_container.visible = false
 	identity_container.visible = true
+	import_container.visible = false
 	
 	# 验证当前设定
 	_validate_identity()
@@ -126,6 +139,7 @@ func _on_prev_pressed():
 	"""上一页按钮被点击"""
 	setup_container.visible = true
 	identity_container.visible = false
+	import_container.visible = false
 
 func _on_preset_selected(index: int):
 	"""预设模板被选择"""
@@ -357,13 +371,32 @@ func _on_import_pressed():
 			_show_message("需要存储权限才能导入存档", Color(1.0, 0.3, 0.3))
 			return
 	
+	# 显示导入容器，隐藏其他容器
+	setup_container.visible = false
+	identity_container.visible = false
+	import_container.visible = true
+	
+	# 重置导入UI
+	import_progress_bar.value = 0
+	import_message_label.text = ""
+	import_message_label2.text = "正在选择存档文件..."
+	import_button.disabled = true
+	
 	var file_dialog = FileDialog.new()
 	file_dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	file_dialog.access = FileDialog.ACCESS_FILESYSTEM
 	file_dialog.add_filter("*.zip", "存档文件")
 	file_dialog.file_selected.connect(_on_import_file_selected.bind(file_dialog))
+	file_dialog.canceled.connect(_on_import_canceled.bind(file_dialog))
 	get_tree().root.add_child(file_dialog)
 	file_dialog.popup_centered(Vector2i(800, 600))
+
+func _on_import_canceled(dialog: FileDialog):
+	"""用户取消选择文件"""
+	dialog.queue_free()
+	import_container.visible = false
+	setup_container.visible = true
+	import_button.disabled = false
 
 func _on_import_file_selected(import_path: String, dialog: FileDialog):
 	"""用户选择了导入文件"""
@@ -373,8 +406,9 @@ func _on_import_file_selected(import_path: String, dialog: FileDialog):
 	await get_tree().process_frame
 	await get_tree().process_frame
 	
-	import_button.disabled = true
-	_show_message("正在导入存档...", Color(0.3, 0.8, 1.0))
+	import_message_label2.text = "正在导入存档，请勿熄屏或退出游戏..."
+	import_message_label.text = "准备导入..."
+	import_progress_bar.value = 5
 	
 	# 再等待一帧确保UI更新
 	await get_tree().process_frame
@@ -383,21 +417,34 @@ func _on_import_file_selected(import_path: String, dialog: FileDialog):
 	var user_path = OS.get_user_data_dir()
 	
 	# 备份现有存档（如果存在）
+	import_message_label.text = "正在备份现有存档..."
+	import_progress_bar.value = 10
 	await _backup_existing_save(user_path)
 	
 	# 解压导入文件
+	import_message_label.text = "正在解压存档..."
+	import_progress_bar.value = 20
 	var success = await _extract_save(import_path, user_path)
 	
 	if success:
-		_show_message("✓ 导入成功，请等待游戏重启...", Color(0.3, 1.0, 0.3))
+		import_progress_bar.value = 100
+		import_message_label.text = "✓ 导入成功！"
+		import_message_label2.text = "游戏即将重启..."
 		await get_tree().create_timer(2.0).timeout
 		# 重启游戏
 		var exe_path = OS.get_executable_path()
 		OS.create_process(exe_path, [])
 		get_tree().quit()
 	else:
-		_show_message("✗ 导入失败", Color(1.0, 0.3, 0.3))
+		import_message_label.text = "✗ 导入失败"
+		import_message_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
+		import_message_label2.text = "请重试或检查存档文件"
 		import_button.disabled = false
+		
+		# 3秒后返回主界面
+		await get_tree().create_timer(3.0).timeout
+		import_container.visible = false
+		setup_container.visible = true
 
 func _backup_existing_save(user_path: String):
 	"""备份现有存档"""
@@ -425,9 +472,10 @@ func _copy_directory(from_path: String, to_path: String, file_count: int):
 			else:
 				dir.copy(from_file, to_file)
 				file_count += 1
-				# 每复制10个文件让出一帧
+				# 每复制10个文件更新进度
 				if file_count % 10 == 0:
-					_show_message("正在读取存档... (%d 个文件)" % file_count, Color(0.3, 0.8, 1.0))
+					import_message_label.text = "正在备份存档... (%d 个文件)" % file_count
+					import_progress_bar.value = min(10 + file_count / 10, 20)  # 备份阶段占10%-20%
 					await get_tree().process_frame
 			
 			file_name = dir.get_next()
@@ -449,16 +497,22 @@ func _extract_save(import_path: String, user_path: String) -> bool:
 	var files = zip.get_files()
 	print("ZIP文件包含 ", files.size(), " 个文件")
 	
+	# 过滤掉目录条目，只保留实际文件
+	var file_paths = []
+	for file_path in files:
+		if not file_path.ends_with("/"):
+			file_paths.append(file_path)
+	
+	var total_files = file_paths.size()
+	import_progress_bar.max_value = 100
+	import_progress_bar.value = 20  # 解压阶段从20%开始
+	
 	# 解压所有文件
 	var file_count = 0
-	for file_path in files:
+	for file_path in file_paths:
 		var content = zip.read_file(file_path)
-		if content.size() == 0 and not file_path.ends_with("/"):
+		if content.size() == 0:
 			print("警告: 文件为空或读取失败: ", file_path)
-			continue
-		
-		# 跳过目录条目
-		if file_path.ends_with("/"):
 			continue
 		
 		var full_path = user_path + "/" + file_path
@@ -475,22 +529,29 @@ func _extract_save(import_path: String, user_path: String) -> bool:
 			file.close()
 			file_count += 1
 			
+			# 更新进度 (20% 到 90%)
+			var progress = 20 + (float(file_count) / total_files) * 70
+			import_progress_bar.value = progress
+			import_message_label.text = "正在解压... (%d/%d)" % [file_count, total_files]
+			
 			# 每解压10个文件让出一帧，让UI更新
 			if file_count % 10 == 0:
-				_show_message("正在导入存档... (%d/%d)" % [file_count, files.size()], Color(0.3, 0.8, 1.0))
 				await get_tree().process_frame
 		else:
 			print("无法写入文件: ", full_path)
 	
 	zip.close()
-	print("存档解压成功")
+	print("存档解压成功，共解压 ", file_count, " 个文件")
+	import_progress_bar.value = 90
+	import_message_label.text = "正在完成..."
+	await get_tree().process_frame
 	return true
 
 func _show_message(message: String, color: Color):
-	"""显示消息提示"""
+	"""显示消息提示（使用主界面的message_label）"""
 	message_label.text = message
 	message_label.add_theme_color_override("font_color", color)
 
 func _show_error(message: String):
-	"""显示错误提示（使用message_label而不是创建新标签）"""
+	"""显示错误提示（使用主界面的message_label）"""
 	_show_message(message, Color(1.0, 0.3, 0.3))
