@@ -921,11 +921,29 @@ func _load_composed_chat_image_for_mood(force_random: bool = false):
 		_load_default_composed_chat_image()
 		return
 	
-	# 加载表情图片
+	# 加载表情图片（支持外部服装的moods目录）
 	var expression_texture = null
-	var expression_image_path = "res://assets/images/moods/%s" % image_filename
-	if ResourceLoader.exists(expression_image_path):
-		expression_texture = load(expression_image_path) as Texture2D
+	var costume_config_path = _get_costume_config_path(costume_id)
+	
+	if costume_config_path.begins_with("user://"):
+		# 外部服装，优先从服装的moods目录加载
+		var custom_mood_path = "user://clothes/images/%s/moods/%s" % [costume_id, image_filename]
+		if FileAccess.file_exists(custom_mood_path):
+			var image = Image.load_from_file(custom_mood_path)
+			if image:
+				expression_texture = ImageTexture.create_from_image(image)
+				print("[自定义表情] 使用外部服装表情: ", custom_mood_path)
+		else:
+			# 外部服装没有自定义表情，回退到内置表情
+			var builtin_mood_path = "res://assets/images/moods/%s" % image_filename
+			if ResourceLoader.exists(builtin_mood_path):
+				expression_texture = load(builtin_mood_path) as Texture2D
+				print("[自定义表情] 外部服装无自定义表情，使用内置: ", builtin_mood_path)
+	else:
+		# 内置服装，从内置表情目录加载
+		var expression_image_path = "res://assets/images/moods/%s" % image_filename
+		if ResourceLoader.exists(expression_image_path):
+			expression_texture = load(expression_image_path) as Texture2D
 	
 	# 预合成纹理
 	var composed_texture = _compose_chat_texture(base_texture, expression_texture)
@@ -997,7 +1015,25 @@ func switch_expression_randomly():
 
 func _get_mood_image_filename(mood_name_en: String) -> String:
 	"""根据心情英文名从数组中随机获取图片文件名"""
-	var mood_config_path = "res://config/mood_config.json"
+	var costume_id = _get_costume_id()
+	var mood_config_path = ""
+	
+	# 检查是否是外部服装（user://路径）
+	var costume_config_path = _get_costume_config_path(costume_id)
+	if costume_config_path.begins_with("user://"):
+		# 外部服装，检查是否有自定义mood_config.json（在images目录下）
+		var custom_mood_config_path = "user://clothes/images/%s/mood_config.json" % costume_id
+		if FileAccess.file_exists(custom_mood_config_path):
+			mood_config_path = custom_mood_config_path
+			print("[自定义表情] 使用外部服装的mood_config: ", mood_config_path)
+		else:
+			# 外部服装但没有自定义配置，使用内置配置
+			mood_config_path = "res://config/mood_config.json"
+			print("[自定义表情] 外部服装无自定义配置，使用内置: ", mood_config_path)
+	else:
+		# 内置服装，使用内置配置
+		mood_config_path = "res://config/mood_config.json"
+	
 	if not FileAccess.file_exists(mood_config_path):
 		return ""
 	
