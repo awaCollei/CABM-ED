@@ -308,12 +308,12 @@ func start_chat(user_message: String = "", trigger_mode: String = "passive", ite
 	# 注意：这个占位符只用于API调用，不记录到历史中
 	var last_role = messages[-1].role if messages.size() > 0 else ""
 	if last_role == "assistant":
-		messages.append({"role": "user", "content": ""})
+		messages.append({"role": "user", "content": "……"})
 		print("检测到最后一条消息为assistant，添加user占位符以避免前缀读写")
 	elif last_role == "system":
 		# 主动对话时，如果没有历史记录，添加一个空的user消息作为触发
 		# 避免messages数组只有system消息导致API错误
-		messages.append({"role": "user", "content": ""})
+		messages.append({"role": "user", "content": "……"})
 		print("主动对话且无历史记录，添加空user消息作为触发")
 
 	if is_first_message:
@@ -436,6 +436,12 @@ func _finalize_stream_response():
 	is_chatting = false
 
 	var extracted_fields = response_parser.finalize_response()
+	
+	# 检查解析是否失败（返回空字典）
+	if extracted_fields.is_empty():
+		print("JSON解析失败，不保存此次对话")
+		return
+	
 	_apply_extracted_fields(extracted_fields)
 
 	var full_response = response_parser.get_full_response()

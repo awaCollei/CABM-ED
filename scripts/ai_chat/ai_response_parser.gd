@@ -201,7 +201,9 @@ func _extract_mood_from_buffer(buffer: String):
 	mood_extracted.emit(mood_id)
 
 func finalize_response() -> Dictionary:
-	"""完成流式响应处理，返回提取的所有字段"""
+	"""完成流式响应处理，返回提取的所有字段
+	返回: 成功时返回字段字典，失败时返回空字典（可以通过检查empty判断）
+	"""
 	print("流式响应完成，完整内容: ", json_response_buffer)
 
 	var clean_json = json_response_buffer
@@ -232,6 +234,7 @@ func finalize_response() -> Dictionary:
 		if full_response.has("item") and full_response.item != null:
 			extracted_fields["item"] = int(full_response.item)
 		print("提取的字段: ", extracted_fields)
+		return extracted_fields.duplicate()  # 成功时返回字段
 	else:
 		print("JSON解析失败: ", json.get_error_message())
 		print("尝试解析的内容: ", clean_json.substr(0, 200))
@@ -243,8 +246,8 @@ func finalize_response() -> Dictionary:
 		# 清空缓冲区，避免污染上下文
 		json_response_buffer = ""
 		msg_buffer = ""
-
-	return extracted_fields.duplicate()
+		
+		return {}  # 失败时返回空字典
 
 func get_full_response() -> String:
 	"""获取完整的响应内容"""

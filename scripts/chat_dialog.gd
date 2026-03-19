@@ -474,6 +474,19 @@ func _on_ai_error(error_message: String):
 	# 撤回用户消息：从历史中删除最后一条用户消息，并恢复到输入框
 	_retract_last_user_message()
 	
+	# 重置等待状态 
+	waiting_for_continue = false
+	if input_handler:
+		input_handler.set_waiting_for_continue(false)
+	
+	# 隐藏继续指示器
+	if continue_indicator:
+		continue_indicator.visible = false
+	
+	# 停止自动播放计时器
+	if auto_continue_timer:
+		auto_continue_timer.stop()
+	
 	# 显示错误提示
 	var error_text = ""
 	if error_message.contains("超时"):
