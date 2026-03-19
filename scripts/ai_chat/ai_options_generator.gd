@@ -132,19 +132,21 @@ func _build_system_prompt() -> String:
 	var user_name = save_mgr.get_user_name() if save_mgr else "用户"
 	var char_name = save_mgr.get_character_name() if save_mgr else "角色"
 	
-	return """你是一个对话选项生成助手。根据上面的对话历史，生成三个合适的对话选项供**%s**选择。
+	return """你是**%s**，正在与**%s**对话。请根据对话历史，思考接下来你要说的话。
+
+任务：生成三个你可能会说的对话选项，这些选项是你对**%s**说的话。
 
 要求：
-1. 生成3个选项，每个选项应该是%s可能会说的话
-2. 选项应该自然、符合对话情境
-3. 必须是%s可能会说的话，**而不是%s的**
+1. 生成3个自然、符合情境的对话选项
+2. 必须以你（即**%s**）的第一人称视角
+3. 每个选项是真实发言，而不是内心想法
 4. 每个选项控制在15字以内
-5. 直接输出三个选项，每行一个，不要编号，不要其他说明
+5. 直接输出三个选项，每行一个，不要编号，不要引号，不要其他说明
 
 示例格式：
 今天天气真不错呢
 你最近在忙什么？
-我们去散散步吧""" % [user_name, user_name, user_name, char_name]
+我们去散散步吧""" % [user_name, char_name, char_name, user_name]
 
 func _on_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray):
 	"""HTTP 请求完成回调"""
