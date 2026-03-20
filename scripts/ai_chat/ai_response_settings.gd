@@ -1,16 +1,19 @@
 # AI 回复设置模块
 # 负责：回复模式（语言表达/情景叙事）的设置
 
-extends Node
+extends MarginContainer
 
 var config_manager: Node
 var response_buttons: Dictionary = {}
-var response_status_label: Label
-var tab_container: TabContainer
-var expression_diff_checkbutton: CheckButton
-var generation_options_checkbutton: CheckButton
-var top_input_checkbutton: CheckButton
-var call_trigger_dialog_checkbutton: CheckButton
+
+@onready var response_status_label = $VBoxContainer/ResponseStatusLabel
+@onready var verbal_checkbox = $VBoxContainer/StylesHBox/VerbalContainer/VerbalCheckBox
+@onready var narrative_checkbox = $VBoxContainer/StylesHBox/NarrativeContainer/NarrativeCheckBox
+@onready var story_checkbox = $VBoxContainer/StylesHBox/StoryContainer/StoryCheckBox
+@onready var expression_diff_checkbutton = $VBoxContainer/ExpressionContainer/ExpressionDiffCheckButton
+@onready var generation_options_checkbutton = $VBoxContainer/GenerationContainer/GenerationOptionsCheckButton
+@onready var top_input_checkbutton = $VBoxContainer/TopInputContainer/TopInputCheckButton
+@onready var call_trigger_dialog_checkbutton = $VBoxContainer/CallTriggerContainer/CallTriggerDialogCheckButton
 
 # 回复风格配置
 var response_styles: Dictionary = {
@@ -31,162 +34,33 @@ var response_styles: Dictionary = {
 	}
 }
 
-func _init(cfg_mgr: Node) -> void:
+func set_config_manager(cfg_mgr: Node) -> void:
 	config_manager = cfg_mgr
 
-## 创建回复设置选项卡
-func setup_response_settings_tab() -> void:
-	# 创建选项卡
-	var response_tab = MarginContainer.new()
-	response_tab.name = "聊天设置"
-	response_tab.add_theme_constant_override("margin_left", 10)
-	response_tab.add_theme_constant_override("margin_top", 10)
-	response_tab.add_theme_constant_override("margin_right", 10)
-	response_tab.add_theme_constant_override("margin_bottom", 10)
-	
-	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 15)
-	response_tab.add_child(vbox)
-	
-	# 标题
-	var title_label = Label.new()
-	title_label.text = "回复风格"
-	title_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	vbox.add_child(title_label)
-	
-	# 按钮组
+func _ready() -> void:
+	# 设置按钮组
 	var button_group = ButtonGroup.new()
+	verbal_checkbox.button_group = button_group
+	narrative_checkbox.button_group = button_group
+	story_checkbox.button_group = button_group
 	
-	# 创建水平容器放置三个回复风格
-	var styles_hbox = HBoxContainer.new()
-	styles_hbox.add_theme_constant_override("separation", 10)
-	styles_hbox.alignment = BoxContainer.ALIGNMENT_CENTER
+	# 存储按钮引用
+	response_buttons["verbal"] = verbal_checkbox
+	response_buttons["narrative"] = narrative_checkbox
+	response_buttons["story"] = story_checkbox
 	
-	# 动态创建风格选项（横向排列）
-	for style_key in ["verbal", "narrative", "story"]:
-		_create_style_option_compact(style_key, response_styles[style_key], button_group, styles_hbox)
-	
-	vbox.add_child(styles_hbox)
-	
-	# 状态标签
-	response_status_label = Label.new()
-	response_status_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	response_status_label.add_theme_font_size_override("font_size", 12)
-	vbox.add_child(response_status_label)
-	
-	# 添加分隔线
-	var separator1 = HSeparator.new()
-	vbox.add_child(separator1)
-	
-	# 表情差分设置（紧凑布局）
-	var expression_container = VBoxContainer.new()
-	expression_container.add_theme_constant_override("separation", 3)
-	
-	expression_diff_checkbutton = CheckButton.new()
-	expression_diff_checkbutton.text = "启用表情差分"
+	# 连接信号
+	verbal_checkbox.toggled.connect(_on_response_mode_changed.bind("verbal"))
+	narrative_checkbox.toggled.connect(_on_response_mode_changed.bind("narrative"))
+	story_checkbox.toggled.connect(_on_response_mode_changed.bind("story"))
 	expression_diff_checkbutton.toggled.connect(_on_expression_diff_toggled)
-	expression_diff_checkbutton.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	expression_container.add_child(expression_diff_checkbutton)
-	
-	var expression_desc = Label.new()
-	expression_desc.text = "更丰富的表情变化"
-	expression_desc.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-	expression_desc.add_theme_font_size_override("font_size", 12)
-	expression_desc.add_theme_constant_override("margin_left", 20)
-	expression_container.add_child(expression_desc)
-	
-	vbox.add_child(expression_container)
-	
-	# 生成选项设置（紧凑布局）
-	var generation_container = VBoxContainer.new()
-	generation_container.add_theme_constant_override("separation", 3)
-	
-	generation_options_checkbutton = CheckButton.new()
-	generation_options_checkbutton.text = "生成回复选项"
 	generation_options_checkbutton.toggled.connect(_on_generation_options_toggled)
-	generation_options_checkbutton.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	generation_container.add_child(generation_options_checkbutton)
-	
-	var generation_desc = Label.new()
-	generation_desc.text = "旮旯给木里就是这样的"
-	generation_desc.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-	generation_desc.add_theme_font_size_override("font_size", 12)
-	generation_desc.add_theme_constant_override("margin_left", 20)
-	generation_container.add_child(generation_desc)
-	
-	vbox.add_child(generation_container)
-	
-	# 上方输入框设置（紧凑布局）
-	var top_input_container = VBoxContainer.new()
-	top_input_container.add_theme_constant_override("separation", 3)
-	
-	top_input_checkbutton = CheckButton.new()
-	top_input_checkbutton.text = "上方输入区域"
 	top_input_checkbutton.toggled.connect(_on_top_input_toggled)
-	top_input_checkbutton.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	top_input_container.add_child(top_input_checkbutton)
-	
-	var top_input_desc = Label.new()
-	top_input_desc.text = "或许对移动端会更友好一些"
-	top_input_desc.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-	top_input_desc.add_theme_font_size_override("font_size", 12)
-	top_input_desc.add_theme_constant_override("margin_left", 20)
-	top_input_container.add_child(top_input_desc)
-	
-	vbox.add_child(top_input_container)
-	
-	# 呼唤触发对话设置（紧凑布局）
-	var call_trigger_container = VBoxContainer.new()
-	call_trigger_container.add_theme_constant_override("separation", 3)
-	
-	call_trigger_dialog_checkbutton = CheckButton.new()
-	call_trigger_dialog_checkbutton.text = "呼唤触发对话"
 	call_trigger_dialog_checkbutton.toggled.connect(_on_call_trigger_dialog_toggled)
-	call_trigger_dialog_checkbutton.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
-	call_trigger_container.add_child(call_trigger_dialog_checkbutton)
-	
-	var call_trigger_desc = Label.new()
-	call_trigger_desc.text = "跨场景呼唤角色时触发对话"
-	call_trigger_desc.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-	call_trigger_desc.add_theme_font_size_override("font_size", 12)
-	call_trigger_desc.add_theme_constant_override("margin_left", 20)
-	call_trigger_container.add_child(call_trigger_desc)
-	
-	vbox.add_child(call_trigger_container)
-	
-	# 添加到TabContainer（在"语音设置"之后）
-	tab_container.add_child(response_tab)
-	# 将回复设置移到第二个位置（快速配置之后）
-	tab_container.move_child(response_tab, 2)
 	
 	# 加载设置
-	load_response_settings()
-
-## 创建单个风格选项（紧凑版，用于横向排列）
-func _create_style_option_compact(style_key: String, style_data: Dictionary, button_group: ButtonGroup, parent: Control) -> void:
-	var container = VBoxContainer.new()
-	container.add_theme_constant_override("separation", 3)
-	container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	
-	# 创建复选框
-	var check_button = CheckBox.new()
-	check_button.text = style_data.name
-	check_button.button_group = button_group
-	check_button.toggled.connect(_on_response_mode_changed.bind(style_key))
-	check_button.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	container.add_child(check_button)
-	
-	# 创建描述标签（更小字体）
-	var desc_label = Label.new()
-	desc_label.text = style_data.description
-	desc_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-	desc_label.add_theme_font_size_override("font_size", 12)
-	desc_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
-	desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	container.add_child(desc_label)
-	
-	parent.add_child(container)
-	response_buttons[style_key] = check_button
+	if config_manager:
+		load_response_settings()
 
 ## 加载回复设置
 func load_response_settings() -> void:

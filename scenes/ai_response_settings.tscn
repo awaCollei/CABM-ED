@@ -1,0 +1,142 @@
+[gd_scene load_steps=2 format=3 uid="uid://c5h8k9m2n3p4q"]
+
+[ext_resource type="Script" path="res://scripts/ai_chat/ai_response_settings.gd" id="1"]
+
+[node name="聊天设置" type="MarginContainer"]
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+script = ExtResource("1")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "回复风格"
+
+[node name="StylesHBox" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="VerbalContainer" type="VBoxContainer" parent="VBoxContainer/StylesHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="VerbalCheckBox" type="CheckBox" parent="VBoxContainer/StylesHBox/VerbalContainer"]
+layout_mode = 2
+text = "语言表达"
+
+[node name="VerbalDescLabel" type="Label" parent="VBoxContainer/StylesHBox/VerbalContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "简洁的对话，保持自然交流风格"
+autowrap_mode = 2
+
+[node name="NarrativeContainer" type="VBoxContainer" parent="VBoxContainer/StylesHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="NarrativeCheckBox" type="CheckBox" parent="VBoxContainer/StylesHBox/NarrativeContainer"]
+layout_mode = 2
+text = "情景叙事"
+
+[node name="NarrativeDescLabel" type="Label" parent="VBoxContainer/StylesHBox/NarrativeContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "详细的叙述，包含动作、神态等"
+autowrap_mode = 2
+
+[node name="StoryContainer" type="VBoxContainer" parent="VBoxContainer/StylesHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 3
+
+[node name="StoryCheckBox" type="CheckBox" parent="VBoxContainer/StylesHBox/StoryContainer"]
+layout_mode = 2
+text = "长篇叙述"
+
+[node name="StoryDescLabel" type="Label" parent="VBoxContainer/StylesHBox/StoryContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "长对话，内容更加丰富完整"
+autowrap_mode = 2
+
+[node name="ResponseStatusLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+
+[node name="Separator1" type="HSeparator" parent="VBoxContainer"]
+layout_mode = 2
+
+[node name="ExpressionContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="ExpressionDiffCheckButton" type="CheckButton" parent="VBoxContainer/ExpressionContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "启用表情差分"
+
+[node name="ExpressionDescLabel" type="Label" parent="VBoxContainer/ExpressionContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_constants/margin_left = 20
+theme_override_font_sizes/font_size = 12
+text = "更丰富的表情变化"
+
+[node name="GenerationContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="GenerationOptionsCheckButton" type="CheckButton" parent="VBoxContainer/GenerationContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "生成回复选项"
+
+[node name="GenerationDescLabel" type="Label" parent="VBoxContainer/GenerationContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_constants/margin_left = 20
+theme_override_font_sizes/font_size = 12
+text = "旮旯给木里就是这样的"
+
+[node name="TopInputContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="TopInputCheckButton" type="CheckButton" parent="VBoxContainer/TopInputContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "上方输入区域"
+
+[node name="TopInputDescLabel" type="Label" parent="VBoxContainer/TopInputContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_constants/margin_left = 20
+theme_override_font_sizes/font_size = 12
+text = "或许对移动端会更友好一些"
+
+[node name="CallTriggerContainer" type="VBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="CallTriggerDialogCheckButton" type="CheckButton" parent="VBoxContainer/CallTriggerContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "呼唤触发对话"
+
+[node name="CallTriggerDescLabel" type="Label" parent="VBoxContainer/CallTriggerContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_constants/margin_left = 20
+theme_override_font_sizes/font_size = 12
+text = "跨场景呼唤角色时触发对话"

@@ -52,6 +52,7 @@ extends Panel
 @onready var repair_progress_bar = $MarginContainer/VBoxContainer/TabContainer/修复记忆/ScrollContainer/VBoxContainer/ProgressBar
 @onready var repair_log_label = $MarginContainer/VBoxContainer/TabContainer/修复记忆/ScrollContainer/VBoxContainer/LogScrollContainer/LogLabel
 @onready var voice_panel = $MarginContainer/VBoxContainer/TabContainer/语音设置
+@onready var response_settings = $MarginContainer/VBoxContainer/TabContainer/聊天设置
 # 各功能模块
 
 var config_manager: Node
@@ -59,7 +60,6 @@ var template_handler: Node
 var voice_settings: Node
 var log_exporter: Node
 var memory_repair: Node
-var response_settings: Node
 var _last_saved_detail: Dictionary = {}
 
 func _ready():
@@ -97,10 +97,8 @@ func _ready():
 	add_child(memory_repair)
 	memory_repair.init_repair_tool()
 	
-	# 初始化回复设置
-	response_settings = load("res://scripts/ai_chat/ai_response_settings.gd").new(config_manager)
-	response_settings.tab_container = tab_container
-	add_child(response_settings)
+	# 设置回复设置的config_manager
+	response_settings.set_config_manager(config_manager)
 
 	# 初始化记忆系统配置
 	memory_config.initialize(config_manager)
@@ -142,10 +140,6 @@ func _ready():
 	
 	# 应用样式
 	template_handler.style_template_buttons()
-	
-	# 创建回复设置选项卡
-	response_settings.setup_response_settings_tab()
-
 
 	# 加载现有配置
 	_load_builtin_key_setting()  # 先加载内置密钥设置
