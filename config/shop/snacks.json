@@ -3,6 +3,7 @@
   {"item_id": "bread", "price": 30},
   {"item_id": "pumpkin_pie", "price": 60},
   {"item_id": "cake", "price": 150},
+  {"item_id": "spicy_salted_duck", "price": 40},
   {"item_id": "corn_cup", "price": 15},
   {"item_id": "chicken_nuggets", "price": 25},
   {"item_id": "french_fries", "price": 20},
