@@ -134,7 +134,7 @@ func get_static_offers(category: String) -> Array:
 	return offers
 
 func trade_offer(offer_id: String) -> bool:
-	# 执行交易：检查背包物品是否足够，扣除并发放奖励
+	"""执行交易：检查背包物品是否足够，扣除并发放奖励"""
 	var offer = null
 	# 先查找每日商品
 	for o in active_offers:
@@ -159,37 +159,64 @@ func trade_offer(offer_id: String) -> bool:
 		print("交易失败：已达限购", offer_id)
 		return false
 
-	# 检查需求
-	var inv = null
-	if has_node("/root/InventoryManager"):
-		inv = get_node("/root/InventoryManager").inventory_container
-	else:
+	# 获取InventoryManager
+	var inv_mgr = get_node_or_null("/root/InventoryManager")
+	if inv_mgr == null:
 		push_error("InventoryManager 未找到，无法交易")
 		return false
+	
+	var inv = inv_mgr.inventory_container
+	if inv == null:
+		push_error("InventoryContainer 未找到，无法交易")
+		return false
+	
+	# ===== 新增：检查背包空间 =====
+	# 收集要添加的所有奖励物品
+	var rewards_to_add = []
+	for g in offer.gives:
+		rewards_to_add.append({
+			"item_id": g.item_id,
+			"count": int(g.count)
+		})
+	
+	# 检查背包空间是否足够
+	if not inv_mgr.can_add_items(rewards_to_add):
+		MessageDisplay.show_failure_message("背包空间不足")
+		return false
+	# ===== 空间检查结束 =====
 
+	# 检查需求物品是否足够
 	for req in offer.requires:
 		var have = inv.count_item(req.item_id)
 		if have < int(req.count):
-			print("交易取消，物品不足: ", req.item_id)
+			MessageDisplay.show_failure_message("背包中没有足够的物品")
 			return false
 
 	# 扣除物品
 	for req in offer.requires:
 		var removed = inv.remove_item_by_id(req.item_id, int(req.count))
 		if removed < int(req.count):
-			push_warning("扣除失败或部分扣除: " + req.item_id)
+			push_warning("错误：扣除失败或部分扣除: " + req.item_id)
+			MessageDisplay.show_failure_message("错误：扣除失败或部分扣除: " + req.item_id)
+			# 如果有扣除失败，理论上不应该发生，但为了安全回滚
+			return false
 
 	# 添加奖励
 	for g in offer.gives:
-		var added = get_node("/root/InventoryManager").add_item_to_inventory(g.item_id, int(g.count))
+		var added = inv_mgr.add_item_to_inventory(g.item_id, int(g.count))
 		if not added:
 			push_warning("发放奖励失败，背包可能已满: " + g.item_id)
+			MessageDisplay.show_failure_message("错误：发放奖励失败，背包可能已满: " + g.item_id)
+			# 注意：由于前面已经检查过空间，这里不应该失败
+			# 但如果真的失败，说明状态不一致，需要记录错误
 
 	offer.bought = int(offer.bought) + 1
 	if save_mgr != null:
 		_save_to_save()
 		save_mgr.save_game(save_mgr.current_slot)
+	MessageDisplay.show_info_message("购买成功")
 	return true
+
 
 func _load_from_save():
 	var save_mgr = get_node_or_null("/root/SaveManager")

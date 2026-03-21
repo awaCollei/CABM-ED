@@ -391,3 +391,119 @@ func load_storage_data(data: Dictionary):
 	
 	# 加载后检查并管理唯一物品
 	_manage_unique_items()
+
+# 在 InventoryManager 类中添加此方法
+func can_add_item(item_id: String, count: int = 1) -> bool:
+	"""检查是否能添加指定数量的物品到背包"""
+	if inventory_container == null:
+		return false
+	
+	# 获取物品配置
+	var item_config = get_item_config(item_id)
+	var is_stackable = item_config.get("stackable", true)
+	var max_stack = item_config.get("max_stack", 99)
+	
+	# 计算当前背包中该物品的剩余空间
+	var remaining_space = 0
+	var empty_slots = 0
+	
+	for i in range(inventory_container.storage.size()):
+		var slot = inventory_container.storage[i]
+		if slot == null or slot.is_empty():
+			empty_slots += 1
+		elif slot.item_id == item_id and is_stackable:
+			var current_count = slot.count
+			remaining_space += max_stack - current_count
+	
+	# 计算需要多少空间
+	var needed_space = count
+	
+	if is_stackable:
+		# 可堆叠物品：优先使用现有堆叠的剩余空间
+		if remaining_space >= needed_space:
+			return true
+		else:
+			needed_space -= remaining_space
+			# 剩余部分需要新格子
+			return empty_slots >= needed_space
+	else:
+		# 不可堆叠物品：每个物品需要一个空格子
+		return empty_slots >= needed_space
+
+func can_add_items(items: Array) -> bool:
+	"""检查是否能添加一组物品到背包
+	items: [{"item_id": "xxx", "count": 1}, ...]
+	"""
+	if inventory_container == null:
+		return false
+	
+	# 创建一个临时计数器来模拟添加
+	var temp_storage = []
+	# 复制当前背包状态
+	for slot in inventory_container.storage:
+		if slot == null or slot.is_empty():
+			temp_storage.append(null)
+		else:
+			temp_storage.append({
+				"item_id": slot.item_id,
+				"count": slot.count,
+				"is_empty": false
+			})
+	
+	# 模拟添加物品
+	for item in items:
+		var item_id = item.item_id
+		var count = int(item.count)
+		var item_config = get_item_config(item_id)
+		var is_stackable = item_config.get("stackable", true)
+		var max_stack = item_config.get("max_stack", 99)
+		
+		if is_stackable:
+			# 先找相同物品的格子
+			for i in range(temp_storage.size()):
+				if count <= 0:
+					break
+				var slot = temp_storage[i]
+				if slot != null and slot.item_id == item_id:
+					var can_add = min(count, max_stack - slot.count)
+					if can_add > 0:
+						slot.count += can_add
+						count -= can_add
+			
+			# 如果还有剩余，找空格子
+			while count > 0:
+				var empty_index = -1
+				for i in range(temp_storage.size()):
+					if temp_storage[i] == null:
+						empty_index = i
+						break
+				
+				if empty_index == -1:
+					return false  # 没有空格子了
+				
+				var add_count = min(count, max_stack)
+				temp_storage[empty_index] = {
+					"item_id": item_id,
+					"count": add_count,
+					"is_empty": false
+				}
+				count -= add_count
+		else:
+			# 不可堆叠物品，每个占一个格子
+			for _i in range(count):
+				var empty_index = -1
+				for j in range(temp_storage.size()):
+					if temp_storage[j] == null:
+						empty_index = j
+						break
+				
+				if empty_index == -1:
+					return false
+				
+				temp_storage[empty_index] = {
+					"item_id": item_id,
+					"count": 1,
+					"is_empty": false
+				}
+	
+	return true
