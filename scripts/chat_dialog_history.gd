@@ -233,9 +233,11 @@ func hide_history():
 	is_animating = false
 
 func _update_history_content():
+	# 清空现有历史显示
 	for child in history_vbox.get_children():
 		child.queue_free()
 	
+	# 检查AIService是否存在
 	if not parent_dialog.has_node("/root/AIService"):
 		var empty_label = Label.new()
 		empty_label.text = "暂无对话历史"
@@ -255,9 +257,13 @@ func _update_history_content():
 		history_vbox.add_child(empty_label)
 		return
 	
+	# 获取保存的玩家和角色名称
 	var save_mgr = parent_dialog.get_node("/root/SaveManager")
 	var character_name = save_mgr.get_character_name() if save_mgr else "角色"
 	var user_name = save_mgr.get_user_name() if save_mgr else "用户"
+	
+	# 创建解析器实例（可以复用，但每次新建更安全）
+	var parser = load("res://scripts/ai_chat/ai_response_parser.gd").new()
 	
 	for msg in conversation:
 		var history_item = Label.new()
@@ -265,33 +271,57 @@ func _update_history_content():
 		history_item.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 		
 		var speaker_name = ""
-		var content = msg.content
+		var display_content = msg.content
 		
 		if msg.role == "user":
 			speaker_name = user_name
 		elif msg.role == "assistant":
 			speaker_name = character_name
-			var clean_content = content
-			if clean_content.contains("```json"):
-				var json_start = clean_content.find("```json") + 7
-				clean_content = clean_content.substr(json_start)
-			elif clean_content.contains("```"):
-				var json_start = clean_content.find("```") + 3
-				clean_content = clean_content.substr(json_start)
 			
-			if clean_content.contains("```"):
-				var json_end = clean_content.find("```")
-				clean_content = clean_content.substr(0, json_end)
-			
-			clean_content = clean_content.strip_edges()
-			
-			var json = JSON.new()
-			if json.parse(clean_content) == OK:
-				var data = json.data
-				if data.has("msg"):
-					content = data.msg
+			# 使用解析器提取msg字段
+			var extracted_msg = _extract_msg_from_response(msg.content, parser)
+			if not extracted_msg.is_empty():
+				display_content = extracted_msg
+			# 如果提取失败，保持原内容（会显示完整JSON）
 		else:
 			continue
 		
-		history_item.text = "%s：%s" % [speaker_name, content]
+		history_item.text = "%s：%s" % [speaker_name, display_content]
 		history_vbox.add_child(history_item)
+
+func _extract_msg_from_response(response: String, parser) -> String:
+	"""从AI响应中提取msg字段，支持畸形JSON"""
+	if response.is_empty():
+		return ""
+	
+	# 使用解析器的完整解析能力
+	# 注意：解析器设计用于流式响应，但也可以处理完整响应
+	parser.reset()
+	
+	# 模拟将完整响应作为流式数据传入
+	# 由于解析器期望的是SSE格式，我们需要直接设置缓冲区
+	var clean_json = response
+	
+	# 移除markdown代码块标记
+	if clean_json.contains("```json"):
+		var json_start = clean_json.find("```json") + 7
+		clean_json = clean_json.substr(json_start)
+	elif clean_json.contains("```"):
+		var json_start = clean_json.find("```") + 3
+		clean_json = clean_json.substr(json_start)
+	
+	if clean_json.contains("```"):
+		var json_end = clean_json.find("```")
+		clean_json = clean_json.substr(0, json_end)
+	
+	clean_json = clean_json.strip_edges()
+	
+	# 尝试使用解析器的缓冲提取方法
+	parser.json_response_buffer = clean_json
+	parser._extract_msg_from_buffer()
+	
+	var extracted_msg = parser.get_msg_content()
+	if not extracted_msg.is_empty():
+		return extracted_msg
+
+	return response

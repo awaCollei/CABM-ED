@@ -6,6 +6,7 @@ extends Node
 signal content_received(content: String)
 signal mood_extracted(mood_id: int)
 signal parse_error(error_message: String)
+signal warning(message: String)  # 新增：警告信号
 
 var sse_buffer: String = ""
 var json_response_buffer: String = ""
@@ -150,7 +151,7 @@ func _extract_msg_from_buffer():
 				content_received.emit(new_content)
 		# 如果msg字段是空字符串，也记录一下
 		elif extracted_content.is_empty() and old_length == 0:
-			print("警告: msg字段为空字符串")
+			warning.emit("msg字段为空字符串")
 
 func _extract_mood_from_buffer(buffer: String):
 	"""从缓冲中提取mood字段"""
@@ -220,38 +221,234 @@ func finalize_response() -> Dictionary:
 
 	clean_json = clean_json.strip_edges()
 
+	# 先尝试正常解析JSON
 	var json = JSON.new()
 	if json.parse(clean_json) == OK:
 		var full_response = json.data
-		if full_response.has("mood") and full_response.mood != null:
-			extracted_fields["mood"] = int(full_response.mood)
-		if full_response.has("will"):
-			extracted_fields["will"] = _extract_and_validate_numeric_field(full_response.will, -30, 30, "will")
-		if full_response.has("like"):
-			extracted_fields["like"] = _extract_and_validate_numeric_field(full_response.like, -10, 10, "like")
-		if full_response.has("goto") and full_response.goto != null:
-			extracted_fields["goto"] = int(full_response.goto)
-		if full_response.has("item") and full_response.item != null:
-			extracted_fields["item"] = int(full_response.item)
+		_extract_fields_from_json(full_response)
 		print("提取的字段: ", extracted_fields)
-		return extracted_fields.duplicate()  # 成功时返回字段
+		return extracted_fields.duplicate()
 	else:
-		print("JSON解析失败: ", json.get_error_message())
-		print("尝试解析的内容: ", clean_json.substr(0, 200))
-
-		# 发送错误信号，由上层处理撤回操作
-		var error_msg = "JSON解析失败: " + json.get_error_message()
-		parse_error.emit(error_msg)
+		# JSON解析失败，尝试容错提取
+		warning.emit("JSON解析失败: " + json.get_error_message())
+		print("尝试容错提取...")
+		_attempt_fallback_extraction(clean_json)
 		
-		# 清空缓冲区，避免污染上下文
-		json_response_buffer = ""
-		msg_buffer = ""
-		
-		return {}  # 失败时返回空字典
+		# 如果有任何字段被提取出来，也返回成功（部分成功）
+		if not extracted_fields.is_empty():
+			print("容错提取的字段: ", extracted_fields)
+			return extracted_fields.duplicate()
+		else:
+			# 完全失败，发送错误信号
+			var error_msg = "JSON解析错误，无法从响应中提取任何有效字段"
+			parse_error.emit(error_msg)
+			
+			# 清空缓冲区，避免污染上下文
+			json_response_buffer = ""
+			msg_buffer = ""
+			
+			return {}
 
-func get_full_response() -> String:
-	"""获取完整的响应内容"""
-	return json_response_buffer
+func _extract_fields_from_json(data):
+	"""从正常JSON中提取字段"""
+	if data.has("mood") and data.mood != null:
+		var mood_val = int(data.mood) if typeof(data.mood) != TYPE_STRING or data.mood.is_valid_int() else -1
+		if mood_val >= 0 and mood_val <= 10:
+			extracted_fields["mood"] = mood_val
+		else:
+			extracted_fields["mood"] = 0  # 默认平静
+			warning.emit("mood字段值无效: " + str(data.mood))
+	
+	if data.has("will"):
+		extracted_fields["will"] = _extract_and_validate_numeric_field(data.will, -30, 30, "will")
+	else:
+		extracted_fields["will"] = 0  # 默认will增量
+	
+	if data.has("like"):
+		extracted_fields["like"] = _extract_and_validate_numeric_field(data.like, -10, 10, "like")
+	else:
+		extracted_fields["like"] = 0  # 默认like增量
+	
+	if data.has("goto") and data.goto != null:
+		var goto_val = int(data.goto) if typeof(data.goto) != TYPE_STRING or data.goto.is_valid_int() else -1
+		if goto_val >= -1 and goto_val <= 7:
+			extracted_fields["goto"] = goto_val
+		else:
+			extracted_fields["goto"] = -1  # 默认不移动
+			warning.emit("goto字段值无效: " + str(data.goto))
+	else:
+		extracted_fields["goto"] = -1  # 默认不移动
+	
+	if data.has("item") and data.item != null:
+		extracted_fields["item"] = int(data.item) if typeof(data.item) != TYPE_STRING or data.item.is_valid_int() else -1
+
+func _attempt_fallback_extraction(clean_json: String):
+	"""当JSON解析失败时的容错提取"""
+	# 重置字段（保留已有的mood和msg）
+	if not extracted_fields.has("mood"):
+		extracted_fields["mood"] = 0  # 默认平静
+	if not extracted_fields.has("will"):
+		extracted_fields["will"] = 0
+	if not extracted_fields.has("like"):
+		extracted_fields["like"] = 0
+	if not extracted_fields.has("goto"):
+		extracted_fields["goto"] = -1
+	if not extracted_fields.has("item"):
+		extracted_fields["item"] = 1
+	
+	# 尝试提取msg（如果还没有）
+	if msg_buffer.is_empty():
+		msg_buffer = _extract_msg_fallback(clean_json)
+		if not msg_buffer.is_empty():
+			content_received.emit(msg_buffer)
+	
+	# 尝试提取mood（如果还没有）
+	if not extracted_fields.has("mood") or extracted_fields["mood"] == 0:
+		var mood_val = _extract_mood_fallback(clean_json)
+		if mood_val >= 0 and mood_val <= 10:
+			extracted_fields["mood"] = mood_val
+			mood_extracted.emit(mood_val)
+	
+	# 尝试提取will
+	var will_val = _extract_numeric_field_fallback(clean_json, "will")
+	if will_val != null:
+		extracted_fields["will"] = clamp(will_val, -30, 30)
+	
+	# 尝试提取like
+	var like_val = _extract_numeric_field_fallback(clean_json, "like")
+	if like_val != null:
+		extracted_fields["like"] = clamp(like_val, -10, 10)
+	
+	# 尝试提取goto
+	var goto_val = _extract_numeric_field_fallback(clean_json, "goto")
+	if goto_val != null:
+		extracted_fields["goto"] = clamp(goto_val, -1, 7)
+
+	# 尝试提取item
+	var item_val = _extract_numeric_field_fallback(clean_json, "item")
+	if item_val != null:
+		extracted_fields["item"] = item_val
+
+func _extract_msg_fallback(text: String) -> String:
+	"""容错提取msg字段"""
+	var msg_start = text.find('"msg"')
+	if msg_start == -1:
+		return ""
+	
+	var colon_pos = text.find(':', msg_start)
+	if colon_pos == -1:
+		return ""
+	
+	var quote_start = -1
+	for i in range(colon_pos + 1, text.length()):
+		if text[i] == '"':
+			quote_start = i
+			break
+		elif text[i] not in [' ', '\t', '\n']:
+			break
+	
+	if quote_start == -1:
+		return ""
+	
+	var content_start = quote_start + 1
+	var current_pos = content_start
+	var extracted_content = ""
+	var escape_next = false
+	
+	while current_pos < text.length():
+		var ch = text[current_pos]
+		
+		if escape_next:
+			if ch == 'n':
+				extracted_content += '\n'
+			elif ch == 't':
+				extracted_content += '\t'
+			elif ch == '"':
+				extracted_content += '"'
+			elif ch == '\\':
+				extracted_content += '\\'
+			else:
+				extracted_content += ch
+			escape_next = false
+			current_pos += 1
+		elif ch == '\\':
+			escape_next = true
+			current_pos += 1
+		elif ch == '"':
+			break
+		else:
+			extracted_content += ch
+			current_pos += 1
+	
+	return extracted_content
+
+func _extract_mood_fallback(text: String) -> int:
+	"""容错提取mood字段"""
+	var mood_start = text.find('"mood"')
+	if mood_start == -1:
+		return -1
+	
+	var colon_pos = text.find(':', mood_start)
+	if colon_pos == -1:
+		return -1
+	
+	var value_start = -1
+	for i in range(colon_pos + 1, text.length()):
+		if text[i] not in [' ', '\t', '\n']:
+			value_start = i
+			break
+	
+	if value_start == -1:
+		return -1
+	
+	var value_str = ""
+	for i in range(value_start, min(value_start + 10, text.length())):
+		var ch = text[i]
+		if ch in [',', '\n', ' ', '\t', '}', '\r']:
+			break
+		if ch.is_valid_int() or ch == '-':
+			value_str += ch
+		else:
+			break
+	
+	if value_str.is_empty() or not value_str.is_valid_int():
+		return -1
+	
+	return int(value_str)
+
+func _extract_numeric_field_fallback(text: String, field_name: String):
+	"""容错提取数值字段"""
+	var field_start = text.find('"' + field_name + '"')
+	if field_start == -1:
+		return null
+	
+	var colon_pos = text.find(':', field_start)
+	if colon_pos == -1:
+		return null
+	
+	var value_start = -1
+	for i in range(colon_pos + 1, text.length()):
+		if text[i] not in [' ', '\t', '\n']:
+			value_start = i
+			break
+	
+	if value_start == -1:
+		return null
+	
+	var value_str = ""
+	for i in range(value_start, min(value_start + 10, text.length())):
+		var ch = text[i]
+		if ch in [',', '\n', ' ', '\t', '}', '\r']:
+			break
+		if ch.is_valid_int() or ch == '-':
+			value_str += ch
+		else:
+			break
+	
+	if value_str.is_empty() or not value_str.is_valid_int():
+		return null
+	
+	return int(value_str)
 
 func _extract_and_validate_numeric_field(value, min_val: int, max_val: int, field_name: String):
 	"""提取并验证数值字段，支持从复杂文本中提取数字"""
@@ -278,11 +475,11 @@ func _extract_and_validate_numeric_field(value, min_val: int, max_val: int, fiel
 			return clamp(extracted_num, min_val, max_val)
 
 		# 如果都失败了，返回边界值（取0或最小值）
-		print("警告: 无法从%s字段提取有效数字，使用默认值0" % field_name)
+		warning.emit("无法从%s字段提取有效数字，使用默认值0" % field_name)
 		return 0
 
 	# 其他类型，返回边界值
-	print("警告: %s字段类型异常，使用默认值0" % field_name)
+	warning.emit("%s字段类型异常，使用默认值0" % field_name)
 	return 0
 
 func _extract_number_from_string(text: String) -> int:
@@ -317,6 +514,18 @@ func _extract_number_from_string(text: String) -> int:
 
 	return 0
 
+func get_full_response() -> String:
+	"""获取完整的响应内容"""
+	return json_response_buffer
+
 func get_msg_content() -> String:
 	"""获取提取的msg内容"""
 	return msg_buffer
+
+func has_field(field_name: String) -> bool:
+	"""检查是否提取到了指定字段"""
+	return extracted_fields.has(field_name)
+
+func get_field(field_name: String, default_value = null):
+	"""获取指定字段的值"""
+	return extracted_fields.get(field_name, default_value)
