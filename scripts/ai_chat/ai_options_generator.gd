@@ -78,6 +78,7 @@ func generate_options(conversation_history: Array):
 	
 	var error = http_request.request(url, headers, HTTPClient.METHOD_POST, json_body)
 	if error != OK:
+		MessageDisplay.show_failure_message("选项生成失败: " + str(error))
 		push_error("选项生成请求失败: " + str(error))
 		options_error.emit("请求失败")
 

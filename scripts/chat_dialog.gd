@@ -497,11 +497,11 @@ func _on_ai_error(error_message: String):
 		auto_continue_timer.stop()
 	
 	# 显示错误提示
-	var error_text = ""
-	if error_message.contains("超时"):
-		error_text = "请求超时（错误代码：408）"
-	else:
-		error_text = "请求出错：" + error_message
+	# var error_text = ""
+	# if error_message.contains("超时"):
+	# 	error_text = "请求超时（错误代码：408）"
+	# else:
+	var error_text = "请求出错：" + error_message
 	
 	await _show_error_notification(error_text)
 
