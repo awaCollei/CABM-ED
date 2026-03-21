@@ -4,7 +4,7 @@ extends Panel
 @onready var version_label: Label = $MarginContainer/VBoxContainer/VersionLabel
 
 # 版本号变量
-var current_version: String = "v2-0321-3"  # 这里设置当前版本号
+var current_version: String = "v2-0321-4"  # 这里设置当前版本号
 
 # 版本状态记录
 enum VersionStatus { UNCHECKED, LATEST, OUTDATED, ERROR }

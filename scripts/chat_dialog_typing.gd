@@ -6,7 +6,7 @@ signal sentence_completed
 signal all_sentences_completed
 signal sentence_ready_for_tts(text: String) # 句子准备好进行TTS处理
 
-const TYPING_SPEED = 0.05
+var typing_speed: float = 0.05
 var parent_dialog: Panel
 var message_label: Label
 var typing_timer: Timer
@@ -35,6 +35,9 @@ func _ready():
 func setup(dialog: Panel, msg_label: Label):
 	parent_dialog = dialog
 	message_label = msg_label
+
+func set_typing_speed(speed: float) -> void:
+	typing_speed = clampf(speed, 0.01, 0.09)
 
 func start_stream():
 	is_receiving_stream = true
@@ -158,7 +161,7 @@ func _show_next_sentence():
 	displayed_text = ""
 	display_buffer = sentence_entry.text
 
-	typing_timer.start(TYPING_SPEED)
+	typing_timer.start(typing_speed)
 
 func _on_typing_timer_timeout():
 	if displayed_text.length() < display_buffer.length():

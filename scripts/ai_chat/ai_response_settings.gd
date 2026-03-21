@@ -5,15 +5,21 @@ extends MarginContainer
 
 var config_manager: Node
 var response_buttons: Dictionary = {}
+var typing_speed_seconds: float = 0.05
+var _typing_preview_generation: int = 0
+var _is_loading_typing_speed: bool = false
+const TYPING_PREVIEW_TEXT = "这是一段示例文本，你可以拖动滑杆观察输出速度的变化。"
 
 @onready var response_status_label = $VBoxContainer/ResponseStatusLabel
 @onready var verbal_checkbox = $VBoxContainer/StylesHBox/VerbalContainer/VerbalCheckBox
 @onready var narrative_checkbox = $VBoxContainer/StylesHBox/NarrativeContainer/NarrativeCheckBox
 @onready var story_checkbox = $VBoxContainer/StylesHBox/StoryContainer/StoryCheckBox
-@onready var expression_diff_checkbutton = $VBoxContainer/ExpressionContainer/ExpressionDiffCheckButton
-@onready var generation_options_checkbutton = $VBoxContainer/GenerationContainer/GenerationOptionsCheckButton
-@onready var top_input_checkbutton = $VBoxContainer/TopInputContainer/TopInputCheckButton
-@onready var call_trigger_dialog_checkbutton = $VBoxContainer/CallTriggerContainer/CallTriggerDialogCheckButton
+@onready var expression_diff_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/ExpressionContainer/ExpressionDiffCheckButton
+@onready var generation_options_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/GenerationContainer/GenerationOptionsCheckButton
+@onready var top_input_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/TopInputContainer/TopInputCheckButton
+@onready var call_trigger_dialog_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/CallTriggerContainer/CallTriggerDialogCheckButton
+@onready var typing_speed_slider: HSlider = $VBoxContainer/HBoxContainer/RightContainer/HSlider
+@onready var typing_speed_preview_text_edit: TextEdit = $VBoxContainer/HBoxContainer/RightContainer/TextEdit
 
 # 回复风格配置
 var response_styles: Dictionary = {
@@ -57,10 +63,13 @@ func _ready() -> void:
 	generation_options_checkbutton.toggled.connect(_on_generation_options_toggled)
 	top_input_checkbutton.toggled.connect(_on_top_input_toggled)
 	call_trigger_dialog_checkbutton.toggled.connect(_on_call_trigger_dialog_toggled)
+	typing_speed_slider.value_changed.connect(_on_typing_speed_slider_changed)
 	
 	# 加载设置
 	if config_manager:
 		load_response_settings()
+	
+	_restart_typing_speed_preview()
 
 ## 加载回复设置
 func load_response_settings() -> void:
@@ -91,6 +100,14 @@ func load_response_settings() -> void:
 	
 	# 加载呼唤触发对话设置
 	call_trigger_dialog_checkbutton.button_pressed = config_manager.load_call_trigger_dialog()
+	
+	# 加载文本输出速度设置
+	_is_loading_typing_speed = true
+	typing_speed_seconds = config_manager.load_typing_speed()
+	typing_speed_slider.value = typing_speed_seconds
+	_is_loading_typing_speed = false
+	_apply_typing_speed_to_chat_dialog(typing_speed_seconds)
+	_restart_typing_speed_preview()
 
 ## 回复模式改变
 func _on_response_mode_changed(enabled: bool, mode: String) -> void:
@@ -142,3 +159,44 @@ func _on_top_input_toggled(enabled: bool) -> void:
 func _on_call_trigger_dialog_toggled(enabled: bool) -> void:
 	config_manager.save_call_trigger_dialog(enabled)
 	print("呼唤触发对话已%s" % ("开启" if enabled else "关闭"))
+
+func _on_typing_speed_slider_changed(value: float) -> void:
+	typing_speed_seconds = clampf(value, 0.01, 0.09)
+	if _is_loading_typing_speed:
+		return
+	
+	config_manager.save_typing_speed(typing_speed_seconds)
+	_apply_typing_speed_to_chat_dialog(typing_speed_seconds)
+	# _restart_typing_speed_preview()
+
+func _apply_typing_speed_to_chat_dialog(speed: float) -> void:
+	var main_scene = get_tree().current_scene
+	if main_scene == null:
+		return
+	var chat_dialog = main_scene.get_node_or_null("ChatDialog")
+	if chat_dialog and chat_dialog.has_method("set_typing_speed"):
+		chat_dialog.set_typing_speed(speed)
+
+func _restart_typing_speed_preview() -> void:
+	_typing_preview_generation += 1
+	var generation = _typing_preview_generation
+	_run_typing_speed_preview_loop(generation)
+
+func _run_typing_speed_preview_loop(generation: int) -> void:
+	if typing_speed_preview_text_edit == null:
+		return
+	
+	while generation == _typing_preview_generation and is_inside_tree():
+		typing_speed_preview_text_edit.text = ""
+		for i in range(TYPING_PREVIEW_TEXT.length()):
+			if generation != _typing_preview_generation or not is_inside_tree():
+				return
+			typing_speed_preview_text_edit.text += TYPING_PREVIEW_TEXT[i]
+			await get_tree().create_timer(typing_speed_seconds).timeout
+		
+		if generation != _typing_preview_generation or not is_inside_tree():
+			return
+		await get_tree().create_timer(1.0).timeout
+		if generation != _typing_preview_generation or not is_inside_tree():
+			return
+		typing_speed_preview_text_edit.text = ""

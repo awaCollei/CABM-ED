@@ -197,6 +197,10 @@ func _load_config():
 		var config_mgr = get_node("/root/AIConfigManager")
 		top_input_enabled = config_mgr.load_top_input_box()
 		print("ChatDialog: 加载顶部输入框设置 = %s" % top_input_enabled)
+		if typing_manager and typing_manager.has_method("set_typing_speed"):
+			var typing_speed = config_mgr.load_typing_speed()
+			typing_manager.set_typing_speed(typing_speed)
+			print("ChatDialog: 加载文本输出速度 = %.2f" % typing_speed)
 		
 		# 加载自动播放设置
 		auto_continue_enabled = config_mgr.load_auto_continue()
@@ -205,6 +209,11 @@ func _load_config():
 	else:
 		print("ChatDialog: 警告 - AIConfigManager未找到，使用默认值 false")
 		top_input_enabled = false
+
+func set_typing_speed(speed: float) -> void:
+	if typing_manager and typing_manager.has_method("set_typing_speed"):
+		typing_manager.set_typing_speed(speed)
+		print("ChatDialog: 文本输出速度更新为 %.2f" % speed)
 
 func _on_auto_button_pressed():
 	auto_continue_enabled = not auto_continue_enabled

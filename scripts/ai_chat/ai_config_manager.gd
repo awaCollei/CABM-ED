@@ -283,6 +283,20 @@ func load_call_trigger_dialog() -> bool:
     var config = load_config()
     return config.get("call_trigger_dialog", true) # 默认开启
 
+## 保存文本输出速度（秒/字）
+func save_typing_speed(speed: float) -> bool:
+    var config = load_config()
+    # 防止异常值写入配置
+    var clamped_speed = clampf(speed, 0.01, 0.09)
+    config["typing_speed"] =clamped_speed
+    return save_config(config)
+
+## 加载文本输出速度（秒/字）
+func load_typing_speed() -> float:
+    var config = load_config()
+    var speed = float(config.get("typing_speed", 0.05))
+    return clampf(speed, 0.01, 0.09)
+
 ## 保存自动播放设置
 func save_auto_continue(enabled: bool) -> bool:
     var config = load_config()
