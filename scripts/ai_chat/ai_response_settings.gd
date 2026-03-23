@@ -77,7 +77,7 @@ func load_response_settings() -> void:
 	
 	# 确保模式有效，否则使用默认值
 	if not response_styles.has(response_mode):
-		response_mode = "verbal"
+		response_mode = "narrative"
 	
 	# 设置按钮状态
 	for style_key in response_buttons:
@@ -126,7 +126,7 @@ func _on_response_mode_changed(enabled: bool, mode: String) -> void:
 func get_current_response_style() -> Dictionary:
 	var current_mode = config_manager.load_response_mode()
 	if not response_styles.has(current_mode):
-		current_mode = "verbal"
+		current_mode = "narrative"
 	return response_styles[current_mode]
 
 ## 获取所有可用风格（用于其他模块）

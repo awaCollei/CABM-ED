@@ -38,7 +38,6 @@ grow_horizontal = 0
 text = "导入存档"
 
 [node name="SetupContainer" type="VBoxContainer" parent="."]
-visible = false
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -173,6 +172,13 @@ theme_override_font_sizes/font_size = 32
 text = "人物设定"
 horizontal_alignment = 1
 
+[node name="Notice" type="Label" parent="IdentityContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_font_sizes/font_size = 20
+text = "请注意：一旦设定将无法修改"
+horizontal_alignment = 1
+
 [node name="PresetContainer" type="HBoxContainer" parent="IdentityContainer"]
 layout_mode = 2
 theme_override_constants/separation = 10
@@ -237,6 +243,7 @@ theme = ExtResource("4_gb74h")
 text = "开始游戏"
 
 [node name="ImportContainer" type="VBoxContainer" parent="."]
+visible = false
 layout_mode = 0
 offset_left = 340.0
 offset_top = 250.0

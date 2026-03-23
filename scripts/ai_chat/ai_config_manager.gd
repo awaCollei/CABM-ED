@@ -194,7 +194,7 @@ func save_response_mode(mode: String) -> bool:
 ## 加载响应模式
 func load_response_mode() -> String:
     var config = load_config()
-    return config.get("response_mode", "verbal")
+    return config.get("response_mode", "narrative")
 
 ## 保存记忆系统配置
 func save_memory_config(memory_config: Dictionary) -> bool:

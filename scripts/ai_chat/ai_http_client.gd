@@ -73,13 +73,13 @@ func _process(_delta):
 	var elapsed_since_start = current_time - request_start_time
 
 	# 全局总超时检查（防止请求无限挂起）
-	# 总超时时间 = 连接超时 + 响应超时 + 缓冲时间(100秒)
-	var total_timeout = connection_timeout + response_timeout + 100.0
+	# 总超时时间 = 连接超时 + 响应超时 + 缓冲时间(60秒)
+	var total_timeout = connection_timeout + response_timeout + 60.0
 	if elapsed_since_start > total_timeout:
 		print("请求总超时（%.1f秒 > %.1f秒）" % [elapsed_since_start, total_timeout])
 		is_streaming = false
 		http_client.close()
-		stream_error.emit("请求总超时")
+		stream_error.emit("请求全局超时")
 		return
 
 	# 根据当前状态检查特定的超时
