@@ -260,7 +260,7 @@ func stop_background_music():
 func get_bgm_volume() -> float:
 	"""获取背景音乐音量 (0.0 - 1.0)"""
 	if not bgm_player:
-		return 0.5  # 返回默认值
+		return 0.05  # 返回默认值
 	return db_to_linear(bgm_player.volume_db)
 
 func set_bgm_volume(volume: float):
@@ -280,7 +280,7 @@ func set_ambient_volume(volume: float):
 func get_ambient_volume() -> float:
 	"""获取环境音音量 (0.0 - 1.0)"""
 	if not ambient_player:
-		return 0.3  # 返回默认值
+		return 0.8  # 返回默认值
 	return db_to_linear(ambient_player.volume_db)
 
 func play_playlist(playlist: Array, play_mode: PlayMode = PlayMode.SEQUENTIAL, start_index: int = 0, lock_bgm: bool = true):

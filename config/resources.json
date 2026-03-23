@@ -6,10 +6,10 @@
 			"source": "res://resources/BGM.zip",
 			"destination": "user://custom_bgm/",
 			"description": "背景音乐资源包",
-			"filesize":"16.4MB",
+			"filesize":"19.2MB",
 			"limitation": "预设的背景音乐，当然你可以自己导入",
 			"supported_extensions": ["mp3", "ogg", "wav"],
-			"version": "1.0.0"
+			"version": "1.1.2"
 		},
 		{
 			"id": "jieba_dict",
