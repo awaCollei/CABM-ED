@@ -219,6 +219,18 @@ theme_override_font_sizes/font_size = 20
 placeholder_text = "游戏开始时你们之间的关系，这个关系会随时间变化"
 wrap_mode = 1
 
+[node name="RichTextLabel" type="RichTextLabel" parent="IdentityContainer"]
+layout_mode = 2
+theme_override_font_sizes/normal_font_size = 22
+theme_override_font_sizes/bold_font_size = 22
+theme_override_font_sizes/bold_italics_font_size = 22
+theme_override_font_sizes/italics_font_size = 22
+theme_override_font_sizes/mono_font_size = 22
+bbcode_enabled = true
+text = "ℹ进入游戏即代表您已认真阅读并同意[url=https://cabm.shasnow.top/site/CABM-ED/docs/agreement.html][color=blue]《CABM-ED用户协议》[/color][/url]"
+fit_content = true
+autowrap_mode = 0
+
 [node name="ValidationLabel" type="Label" parent="IdentityContainer"]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20

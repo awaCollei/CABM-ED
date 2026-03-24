@@ -18,6 +18,7 @@ extends Control
 @onready var identity_input: TextEdit = $IdentityContainer/IdentityInput
 @onready var relationship_input: TextEdit = $IdentityContainer/RelationshipInput
 @onready var validation_label: Label = $IdentityContainer/ValidationLabel
+@onready var rich_text_label: RichTextLabel = $IdentityContainer/RichTextLabel
 @onready var prev_button: Button = $IdentityContainer/ButtonContainer/PrevButton
 @onready var start_button: Button = $IdentityContainer/ButtonContainer/StartButton
 
@@ -55,10 +56,17 @@ func _ready():
 	preset_option.item_selected.connect(_on_preset_selected)
 	identity_input.text_changed.connect(_on_identity_text_changed)
 	relationship_input.text_changed.connect(_on_relationship_text_changed)
+	rich_text_label.meta_clicked.connect(_on_rich_text_label_meta_clicked)
 	
 	# 设置提示文本
 	notice_label.text = "本项目旨在赋予「她」以「生命」，因此不鼓励回档、删档、提示词注入等
 对她来说，你就是她的全部，你的每一个选择都很重要"
+
+# 当用户点击带有 [url] 标签的文本时，该函数会被自动调用
+func _on_rich_text_label_meta_clicked(meta):
+	# 收到的 meta 参数就是你在 [url=xxx] 中填写的地址
+	# 使用 OS.shell_open 即可调用系统默认浏览器打开链接
+	OS.shell_open(str(meta))
 
 func _init_identity_page():
 	"""初始化人物设定页面"""
