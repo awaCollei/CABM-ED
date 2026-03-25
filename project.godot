@@ -51,6 +51,10 @@ InteractiveElementManager="*res://scripts/interactive_element_manager.gd"
 InventoryManager="*res://scripts/inventory_manager.gd"
 ShopManager="*res://scripts/shop_manager.gd"
 
+[debug]
+
+file_logging/enable_file_logging=true
+
 [display]
 
 window/size/viewport_width=1280

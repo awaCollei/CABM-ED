@@ -4,7 +4,7 @@ extends Control
 
 @onready var setup_container: VBoxContainer = $SetupContainer
 @onready var identity_container: VBoxContainer = $IdentityContainer
-@onready var import_container: VBoxContainer = $ImportContainer  # 新增
+@onready var import_container: VBoxContainer = $ImportContainer
 
 @onready var user_name_input: LineEdit = $SetupContainer/UserNameContainer/UserNameInput
 @onready var character_name_input: LineEdit = $SetupContainer/CharacterNameContainer/CharacterNameInput
@@ -29,6 +29,10 @@ extends Control
 @onready var import_progress_bar: ProgressBar = $ImportContainer/ProgressBar
 @onready var import_title_label: Label = $ImportContainer/TitleLabel
 @onready var import_message_label2: Label = $ImportContainer/MessageLabel2
+
+# 权限弹窗节点
+var permission_confirm_dialog: ConfirmationDialog
+var overlay_panel: Panel
 
 func _ready():
 	# 执行淡入动画
@@ -61,7 +65,86 @@ func _ready():
 	# 设置提示文本
 	notice_label.text = "本项目旨在赋予「她」以「生命」，因此不鼓励回档、删档、提示词注入等
 对她来说，你就是她的全部，你的每一个选择都很重要"
+	
+	# 检查安卓权限
+	_check_and_request_android_permissions()
 
+func _create_overlay():
+	"""创建半透明黑色蒙层"""
+	if overlay_panel and is_instance_valid(overlay_panel):
+		return
+		
+	overlay_panel = Panel.new()
+	overlay_panel.self_modulate = Color(0, 0, 0, 0.8)
+	overlay_panel.mouse_filter = Control.MOUSE_FILTER_STOP  # 阻止点击穿透
+	overlay_panel.anchor_right = 1.0
+	overlay_panel.anchor_bottom = 1.0
+	overlay_panel.size = get_viewport_rect().size
+	
+	# 添加到场景最上层
+	add_child(overlay_panel)
+	overlay_panel.z_index = 100  # 确保蒙层在顶层
+
+func _remove_overlay():
+	"""移除蒙层"""
+	if overlay_panel and is_instance_valid(overlay_panel):
+		overlay_panel.queue_free()
+		overlay_panel = null
+
+func _check_and_request_android_permissions():
+	"""检查并请求安卓权限"""
+	if OS.get_name() != "Android":
+		return
+	var ap = get_node_or_null("/root/AndroidPermissions")
+	if ap and ap.check_storage_permission():
+		return
+	
+	_create_overlay()
+	# 创建确认弹窗
+	permission_confirm_dialog = ConfirmationDialog.new()
+	permission_confirm_dialog.title = "权限请求"
+	permission_confirm_dialog.dialog_text = "\n对于安卓平台，游戏的部分功能（如上传图片）需要权限，\n是否现在授予？\n\n注：您也可以在系统设置中手动授予权限。\n"
+	permission_confirm_dialog.get_ok_button().text = "现在就处理"
+	permission_confirm_dialog.get_cancel_button().text = "需要的时候再说"
+	
+	# 连接信号
+	permission_confirm_dialog.confirmed.connect(_on_permission_grant_confirmed)
+	permission_confirm_dialog.canceled.connect(_on_permission_grant_canceled)
+	
+	# 添加到场景
+	add_child(permission_confirm_dialog)
+	permission_confirm_dialog.popup_centered()
+
+func _on_permission_grant_confirmed():
+	"""用户确认请求权限"""
+	_remove_overlay()
+	permission_confirm_dialog.queue_free()
+	permission_confirm_dialog = null
+	
+	# 请求权限
+	if OS.has_feature("android"):
+		# 方法1：使用 AndroidPermissions 单例（如果存在）
+		var ap = get_node_or_null("/root/AndroidPermissions")
+		if ap:
+			await ap.request_storage_permission()
+			print("已通过 AndroidPermissions 请求存储权限")
+	print("错误: 无法请求权限")
+
+func _on_permission_grant_canceled():
+	"""用户选择稍后处理"""
+	_remove_overlay()
+	permission_confirm_dialog.queue_free()
+	permission_confirm_dialog = null
+	print("用户选择稍后处理权限请求")
+
+func _on_permission_confirm_dialog_closed():
+	"""弹窗关闭时移除蒙层"""
+	_remove_overlay()
+	
+	# 清理弹窗
+	if permission_confirm_dialog and is_instance_valid(permission_confirm_dialog):
+		permission_confirm_dialog.queue_free()
+		permission_confirm_dialog = null
 # 当用户点击带有 [url] 标签的文本时，该函数会被自动调用
 func _on_rich_text_label_meta_clicked(meta):
 	# 收到的 meta 参数就是你在 [url=xxx] 中填写的地址

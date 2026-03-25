@@ -258,9 +258,9 @@ text = "开始游戏"
 visible = false
 layout_mode = 0
 offset_left = 340.0
-offset_top = 250.0
+offset_top = 220.0
 offset_right = 940.0
-offset_bottom = 500.0
+offset_bottom = 470.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 20
@@ -275,7 +275,8 @@ horizontal_alignment = 1
 [node name="MessageLabel2" type="Label" parent="ImportContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.13803187, 0.6747886, 0.91980475, 1)
-text = "正在导入存档，请勿熄屏或退出游戏..."
+text = "正在导入存档，请勿熄屏或退出游戏...
+（移动端可能需要较长的时间）"
 horizontal_alignment = 1
 clip_text = true
 
