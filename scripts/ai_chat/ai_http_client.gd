@@ -20,11 +20,44 @@ var last_chunk_time: float = 0.0     # 最后接收数据块的时间
 func _ready():
 	http_client = HTTPClient.new()
 
+## 从完整 HTTP(S) URL 解析主机、端口、请求路径（含 query）。
+## 必须与 HTTPRequest 使用的完整 URL 一致；不可硬编码 "/chat/completions"，
+## 否则 base_url 含路径前缀时（如 .../v1/chat/completions）会请求错误路径并收到 HTML。
+func _parse_stream_url(url: String) -> Dictionary:
+	var use_tls = url.begins_with("https://")
+	var rest = url
+	if use_tls:
+		rest = rest.substr("https://".length())
+	elif rest.begins_with("http://"):
+		rest = rest.substr("http://".length())
+	else:
+		return {"ok": false}
+
+	var path_start = rest.find("/")
+	var host_port = rest
+	var path = "/"
+	if path_start >= 0:
+		host_port = rest.substr(0, path_start)
+		path = rest.substr(path_start)
+
+	stream_host = host_port
+	stream_port = 443 if use_tls else 80
+	if host_port.contains(":"):
+		var colon = host_port.rfind(":")
+		var tail = host_port.substr(colon + 1)
+		if tail.is_valid_int():
+			stream_host = host_port.substr(0, colon)
+			stream_port = int(tail)
+
+	return {"ok": true, "path": path, "use_tls": use_tls}
+
+
 func start_stream_request(url: String, headers: Array, json_body: String, timeout: float = 30.0):
 	"""启动流式HTTP请求"""
 	print("=== 开始流式请求 ===")
 	print("URL: %s" % url)
-	print("超时设置: %.1f 秒" % timeout)
+	print("Headers: %s" % str(headers))  # 打印所有请求头
+	print("Body: %s" % json_body)
 	
 	# 设置连接超时（较短）和响应超时（正常）
 	connection_timeout = min(timeout * 0.5, 15.0)  # 连接超时不超过15秒
@@ -32,14 +65,15 @@ func start_stream_request(url: String, headers: Array, json_body: String, timeou
 	
 	print("连接超时: %.1f 秒, 响应超时: %.1f 秒, 总超时限制: %.1f 秒" % [connection_timeout, response_timeout, connection_timeout + response_timeout + 5.0])
 
-	# 解析URL
-	var base_url = url.split("/chat/completions")[0]
-	var url_parts = base_url.replace("https://", "").replace("http://", "").split("/")
-	stream_host = url_parts[0]
-	stream_use_tls = url.begins_with("https://")
-	stream_port = 443 if stream_use_tls else 80
-	
-	print("连接到: %s:%d (TLS: %s)" % [stream_host, stream_port, stream_use_tls])
+	var parsed = _parse_stream_url(url)
+	if not parsed.get("ok", false):
+		stream_error.emit("无效的请求 URL")
+		return
+
+	stream_use_tls = parsed["use_tls"]
+	set_meta("stream_request_path", parsed["path"])
+
+	print("连接到: %s:%d (TLS: %s), 路径: %s" % [stream_host, stream_port, stream_use_tls, parsed["path"]])
 
 	var tls_options = null
 	if stream_use_tls:
@@ -150,7 +184,7 @@ func _send_stream_request():
 	var headers_array = get_meta("stream_headers", [])
 	var body = get_meta("stream_body", "")
 
-	var path = "/chat/completions"
+	var path = get_meta("stream_request_path", "/chat/completions")
 
 	var err = http_client.request(HTTPClient.METHOD_POST, path, headers_array, body)
 	if err != OK:
@@ -241,5 +275,7 @@ func stop_streaming():
 	# 清理元数据
 	remove_meta("stream_state")
 	remove_meta("last_status_log_time")
+	if has_meta("stream_request_path"):
+		remove_meta("stream_request_path")
 	last_chunk_time = 0.0
 	stream_completed.emit()

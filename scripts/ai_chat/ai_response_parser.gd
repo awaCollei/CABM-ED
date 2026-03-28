@@ -25,7 +25,6 @@ func reset():
 func process_stream_data(data: String):
 	"""处理流式响应数据（SSE格式）"""
 	sse_buffer += data
-
 	var lines = sse_buffer.split("\n")
 
 	if not sse_buffer.ends_with("\n"):
