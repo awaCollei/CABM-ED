@@ -4,10 +4,10 @@ extends Panel
 @onready var version_label: Label = $MarginContainer/VBoxContainer/VersionLabel
 
 # 版本号变量
-var current_version: String = "v2-0329-2"  # 这里设置当前版本号
+var current_version: String = "v2-0329-3"  # 这里设置当前版本号
 
 # 版本状态记录
-enum VersionStatus { UNCHECKED, LATEST, OUTDATED, ERROR }
+enum VersionStatus { UNCHECKED, LATEST, OUTDATED, BETA, ERROR }
 var version_status: VersionStatus = VersionStatus.UNCHECKED
 
 # 防抖相关变量
@@ -42,6 +42,8 @@ func _update_label_color():
 			version_label.add_theme_color_override("font_color", Color.GREEN)
 		VersionStatus.OUTDATED:
 			version_label.add_theme_color_override("font_color", Color.YELLOW)
+		VersionStatus.BETA:
+			version_label.add_theme_color_override("font_color", Color.SKY_BLUE)
 		VersionStatus.ERROR:
 			version_label.add_theme_color_override("font_color", Color.WHITE)
 		VersionStatus.UNCHECKED:
@@ -54,7 +56,7 @@ func _check_version_if_needed():
 		VersionStatus.UNCHECKED, VersionStatus.ERROR:
 			# 未检查或上次失败，需要重新检查
 			_check_version(true)
-		VersionStatus.LATEST, VersionStatus.OUTDATED:
+		VersionStatus.LATEST, VersionStatus.OUTDATED, VersionStatus.BETA:
 			# 已经有有效状态，不需要请求
 			print("使用内存中的版本状态: ", version_status)
 
@@ -101,6 +103,30 @@ func _check_version(use_debounce: bool = true):
 		if use_debounce:
 			can_request = true  # 失败时重置防抖，允许重试
 
+# 比较版本号
+# 返回: 1 表示当前版本高于服务器版本, 0 表示相等, -1 表示当前版本低于服务器版本
+func _compare_versions(current: String, server: String) -> int:
+	# 提取版本号部分，去掉开头的'v'
+	var current_parts = current.trim_prefix("v").split("-")
+	var server_parts = server.trim_prefix("v").split("-")
+	
+	# 确保两个版本号都有3个部分
+	if current_parts.size() != 3 or server_parts.size() != 3:
+		print("版本号格式错误: 当前=", current, " 服务器=", server)
+		return 0
+	
+	# 逐部分比较（作为整数比较）
+	for i in range(3):
+		var current_num = current_parts[i].to_int()
+		var server_num = server_parts[i].to_int()
+		
+		if current_num > server_num:
+			return 1  # 当前版本更高
+		elif current_num < server_num:
+			return -1  # 服务器版本更高
+	
+	return 0  # 相等
+
 # 请求完成处理
 func _on_version_request_completed(result: int, response_code: int, headers: PackedStringArray, body: PackedByteArray, http_request: HTTPRequest):
 	# 清理HTTP请求节点
@@ -138,15 +164,16 @@ func _on_version_request_completed(result: int, response_code: int, headers: Pac
 		print("当前版本: ", current_version)
 		print("服务器版本: ", server_version)
 		
-		# 检测是否与当前版本一致
-		if server_version == current_version:
-			version_status = VersionStatus.LATEST
-			# 版本一致时的逻辑（仅颜色变化，由_update_label_color处理）
-			pass
-		else:
-			version_status = VersionStatus.OUTDATED
-			# 版本不一致时的逻辑（仅颜色变化，由_update_label_color处理）
-			pass
+		# 比较版本号
+		var comparison = _compare_versions(current_version, server_version)
+		
+		match comparison:
+			0:  # 版本一致
+				version_status = VersionStatus.LATEST
+			1:  # 当前版本高于服务器版本（Beta版本）
+				version_status = VersionStatus.BETA
+			-1: # 当前版本低于服务器版本（过期版本）
+				version_status = VersionStatus.OUTDATED
 	else:
 		print("响应数据格式错误")
 		version_status = VersionStatus.ERROR
@@ -169,6 +196,12 @@ func _on_version_label_clicked():
 			# 版本过期时的点击额外操作
 			print("点击了过期版本标签")
 			MessageDisplay.show_failure_message("当前不是最新版本，可以前往QQ群获取最新版本")
+			pass
+			
+		VersionStatus.BETA:
+			# Beta版本的点击额外操作
+			print("点击了Beta版本标签")
+			MessageDisplay.show_info_message("当前为beta版本")
 			pass
 			
 		VersionStatus.ERROR:
