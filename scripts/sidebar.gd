@@ -84,7 +84,7 @@ func _ready():
 	# 设置初始状态为收起
 	custom_minimum_size.x = collapsed_width
 	size.x = collapsed_width
-	toggle_button.text = "▶"
+	toggle_button.text = ">"
 	$MarginContainer.visible = false
 	
 	# 启动时钟更新定时器
@@ -425,12 +425,12 @@ func set_expanded(expand: bool):
 	if is_expanded:
 		tween.tween_property(self, "custom_minimum_size:x", expanded_width, 0.3)
 		tween.parallel().tween_property(self, "size:x", expanded_width, 0.3)
-		toggle_button.text = "◀"
+		toggle_button.text = "<"
 		$MarginContainer.visible = true
 	else:
 		tween.tween_property(self, "custom_minimum_size:x", collapsed_width, 0.3)
 		tween.parallel().tween_property(self, "size:x", collapsed_width, 0.3)
-		toggle_button.text = "▶"
+		toggle_button.text = ">"
 		$MarginContainer.visible = false
 
 func _input(event: InputEvent):

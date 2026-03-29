@@ -497,9 +497,9 @@ func _update_play_mode_ui(play_mode: int):
 	
 	# 创建播放模式按钮
 	var modes = [
-		{"id": 0, "text": "单曲循环"},
-		{"id": 1, "text": "顺序播放"},
-		{"id": 2, "text": "随机播放"}
+		{"id": 0, "text": "🔂单曲循环"},
+		{"id": 1, "text": "🔁顺序播放"},
+		{"id": 2, "text": "🔀随机播放"}
 	]
 	
 	for mode_data in modes:
