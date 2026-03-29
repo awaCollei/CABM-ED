@@ -55,9 +55,9 @@ func _parse_stream_url(url: String) -> Dictionary:
 func start_stream_request(url: String, headers: Array, json_body: String, timeout: float = 30.0):
 	"""启动流式HTTP请求"""
 	print("=== 开始流式请求 ===")
-	print("URL: %s" % url)
-	print("Headers: %s" % str(headers))  # 打印所有请求头
-	print("Body: %s" % json_body)
+	# print("URL: %s" % url)
+	# print("Headers: %s" % str(headers))  # 打印所有请求头
+	# print("Body: %s" % json_body)
 	
 	# 设置连接超时（较短）和响应超时（正常）
 	connection_timeout = min(timeout * 0.5, 15.0)  # 连接超时不超过15秒
