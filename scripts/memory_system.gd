@@ -19,29 +19,12 @@ class MemoryItem:
 	static func _get_local_datetime_string() -> String:
 		"""获取本地时间字符串（带时区转换）"""
 		var unix_time = Time.get_unix_time_from_system()
-		var timezone_offset = _get_timezone_offset()
+		var timezone_offset = TimeUtil.get_timezone_offset()
 		var local_dict = Time.get_datetime_dict_from_unix_time(int(unix_time + timezone_offset))
 		return "%04d-%02d-%02dT%02d:%02d:%02d" % [
 			local_dict.year, local_dict.month, local_dict.day,
 			local_dict.hour, local_dict.minute, local_dict.second
 		]
-	
-	static func _get_timezone_offset() -> int:
-		"""获取本地时区相对于UTC的偏移（秒）"""
-		var local_time = Time.get_datetime_dict_from_system()
-		var unix_time = Time.get_unix_time_from_system()
-		var utc_time = Time.get_datetime_dict_from_unix_time(int(unix_time))
-		
-		# 计算小时差
-		var hour_diff = local_time.hour - utc_time.hour
-		
-		# 处理跨日情况
-		if hour_diff > 12:
-			hour_diff -= 24
-		elif hour_diff < -12:
-			hour_diff += 24
-		
-		return hour_diff * 3600
 	
 	func to_dict() -> Dictionary:
 		return {
@@ -54,7 +37,13 @@ class MemoryItem:
 	
 	static func from_dict(data: Dictionary) -> MemoryItem:
 		var item = MemoryItem.new()
-		item.text = data.get("text", "")
+		var raw_text: String = data.get("text", "")
+		# 兼容旧版：历史数据可能在文本开头带有类似 "[02-02 20:26] " 的绝对时间前缀
+		if raw_text.begins_with("["):
+			var close_idx := raw_text.find("] ")
+			if close_idx != -1:
+				raw_text = raw_text.substr(close_idx + 2)
+		item.text = raw_text
 		item.vector = data.get("vector", [])
 		item.timestamp = data.get("timestamp", "")
 		item.type = data.get("type", "conversation")
@@ -250,8 +239,8 @@ func add_text(text: String, item_type: String = "conversation", metadata: Dictio
 	else:
 		timestamp = MemoryItem._get_local_datetime_string()
 
-	var time_str = _format_timestamp_for_display(timestamp)
-	var formatted_text = "[%s] %s" % [time_str, text]
+	# 保存记忆时不再把绝对时间前缀拼进文本
+	var formatted_text = text
 
 	# 获取文本的向量表示（使用队列系统，可能有延迟）
 	var vector = await get_embedding(formatted_text)
@@ -682,7 +671,11 @@ func get_relevant_memory(query: String, top_k: int, _timeout: float, min_similar
 	# 格式化记忆
 	var memory_texts = []
 	for result in results:
-		memory_texts.append(result.text)
+		# 每条记忆在进入提示词时再添加“相对时间前缀”
+		if result.has("timestamp") and not str(result.timestamp).is_empty():
+			memory_texts.append("%s %s" % [TimeUtil.to_relative_time_prefix(result.timestamp), result.text])
+		else:
+			memory_texts.append(result.text)
 	
 	var memory_prompt = prefix + "\n".join(memory_texts) + suffix
 	
@@ -769,7 +762,13 @@ func load_from_file(file_path: String = "") -> void:
 		for i in range(min(texts.size(), vectors.size())):
 			var text_data = texts[i]
 			var item = MemoryItem.new()
-			item.text = text_data.get("text", "")
+			var raw_text: String = text_data.get("text", "")
+			# 兼容旧版：历史数据可能在文本开头带有类似 "[02-02 20:26] " 的绝对时间前缀
+			if raw_text.begins_with("["):
+				var close_idx := raw_text.find("] ")
+				if close_idx != -1:
+					raw_text = raw_text.substr(close_idx + 2)
+			item.text = raw_text
 			item.vector = vectors[i].duplicate()  # 强制复制
 			item.timestamp = text_data.get("timestamp", "")
 			item.type = text_data.get("type", "conversation")
