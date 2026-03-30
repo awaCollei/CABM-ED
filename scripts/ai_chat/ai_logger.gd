@@ -137,7 +137,7 @@ func save_to_diary(summary: String, conversation_text: String, custom_timestamp 
 	var datetime: Dictionary
 	if custom_timestamp != null:
 		# 将UTC时间戳转换为本地时间
-		var timezone_offset = _get_timezone_offset()
+		var timezone_offset = TimeUtil.get_timezone_offset()
 		datetime = Time.get_datetime_dict_from_unix_time(int(custom_timestamp + timezone_offset))
 	else:
 		datetime = Time.get_datetime_dict_from_system()
@@ -193,20 +193,3 @@ func _open_log_file(log_path: String):
 	else:
 		log_file.seek_end()
 	return log_file
-
-func _get_timezone_offset() -> int:
-	"""获取本地时区相对于UTC的偏移（秒）"""
-	var local_time = Time.get_datetime_dict_from_system()
-	var unix_time = Time.get_unix_time_from_system()
-	var utc_time = Time.get_datetime_dict_from_unix_time(int(unix_time))
-
-	# 计算小时差
-	var hour_diff = local_time.hour - utc_time.hour
-
-	# 处理跨日情况
-	if hour_diff > 12:
-		hour_diff -= 24
-	elif hour_diff < -12:
-		hour_diff += 24
-
-	return hour_diff * 3600

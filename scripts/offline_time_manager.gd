@@ -48,7 +48,7 @@ func check_and_apply_offline_changes():
 	var current_time = Time.get_unix_time_from_system()
 	
 	# 获取本地时间用于显示
-	var timezone_offset = _get_timezone_offset()
+	var timezone_offset = TimeUtil.get_timezone_offset()
 	var last_played_local = Time.get_datetime_dict_from_unix_time(int(last_played_unix + timezone_offset))
 	var current_local = Time.get_datetime_dict_from_unix_time(int(current_time + timezone_offset))
 	
@@ -228,23 +228,6 @@ func _change_mood_randomly():
 	
 	print("心情变化: %s -> %s" % [current_mood, new_mood])
 
-func _get_timezone_offset() -> int:
-	"""获取本地时区相对于UTC的偏移（秒）"""
-	var local_time = Time.get_datetime_dict_from_system()
-	var unix_time = Time.get_unix_time_from_system()
-	var utc_time = Time.get_datetime_dict_from_unix_time(int(unix_time))
-	
-	# 计算小时差
-	var hour_diff = local_time.hour - utc_time.hour
-	
-	# 处理跨日情况
-	if hour_diff > 12:
-		hour_diff -= 24
-	elif hour_diff < -12:
-		hour_diff += 24
-	
-	return hour_diff * 3600
-
 func _parse_datetime(datetime_str: String) -> float:
 	"""解析日期时间字符串为Unix时间戳（兼容旧格式）"""
 	var parts = datetime_str.split("T")
@@ -271,7 +254,7 @@ func _parse_datetime(datetime_str: String) -> float:
 	}
 	
 	var unix_time = Time.get_unix_time_from_datetime_dict(datetime_dict)
-	unix_time -= _get_timezone_offset()
+	unix_time -= TimeUtil.get_timezone_offset()
 	
 	return unix_time
 
@@ -286,7 +269,7 @@ func _generate_character_diary(offline_minutes: float, event_count: int):
 	
 	# 获取当前时间和时区偏移
 	var current_unix = Time.get_unix_time_from_system()
-	var timezone_offset = _get_timezone_offset()
+	var timezone_offset = TimeUtil.get_timezone_offset()
 	
 	# 计算开始和结束的 Unix 时间戳
 	var start_unix = current_unix - (offline_minutes * 60)
@@ -599,7 +582,7 @@ func _save_diary_entry(time_str: String, event_text: String, start_datetime: Dic
 	}
 	
 	var unix_time = Time.get_unix_time_from_datetime_dict(datetime_dict)
-	var timezone_offset = _get_timezone_offset()
+	var timezone_offset = TimeUtil.get_timezone_offset()
 	unix_time -= timezone_offset # 转换为UTC
 	
 	# 使用统一记忆保存器
@@ -659,7 +642,7 @@ func _save_diary_entry_legacy(time_str: String, event_text: String, date_str: St
 		}
 	
 	var current_unix = Time.get_unix_time_from_system()
-	var timezone_offset = _get_timezone_offset()
+	var timezone_offset = TimeUtil.get_timezone_offset()
 	var local_dict = Time.get_datetime_dict_from_unix_time(int(current_unix + timezone_offset))
 	var current_timestamp = "%04d-%02d-%02dT%02d:%02d:%02d" % [
 		local_dict.year, local_dict.month, local_dict.day,

@@ -1042,29 +1042,12 @@ func _flatten_conversation_from_data(conversation_data: Array) -> String:
 func _get_local_datetime_string() -> String:
 	"""获取本地时间字符串（带时区转换）"""
 	var unix_time = Time.get_unix_time_from_system()
-	var timezone_offset = _get_timezone_offset()
+	var timezone_offset = TimeUtil.get_timezone_offset()
 	var local_dict = Time.get_datetime_dict_from_unix_time(int(unix_time + timezone_offset))
 	return "%04d-%02d-%02dT%02d:%02d:%02d" % [
 		local_dict.year, local_dict.month, local_dict.day,
 		local_dict.hour, local_dict.minute, local_dict.second
 	]
-
-func _get_timezone_offset() -> int:
-	"""获取本地时区相对于UTC的偏移（秒）"""
-	var local_time = Time.get_datetime_dict_from_system()
-	var unix_time = Time.get_unix_time_from_system()
-	var utc_time = Time.get_datetime_dict_from_unix_time(int(unix_time))
-
-	# 计算小时差
-	var hour_diff = local_time.hour - utc_time.hour
-
-	# 处理跨日情况
-	if hour_diff > 12:
-		hour_diff -= 24
-	elif hour_diff < -12:
-		hour_diff += 24
-
-	return hour_diff * 3600
 
 func _handle_summary_failure(error_msg: String):
 	"""处理总结失败，尝试重试"""

@@ -188,7 +188,7 @@ func _save_tuple_to_file(custom_timestamp, _summary_text, tuples_data):
 	var ts_string = null
 	if custom_timestamp != null:
 		if typeof(custom_timestamp) == TYPE_INT or typeof(custom_timestamp) == TYPE_FLOAT:
-			var timezone_offset = owner_service._get_timezone_offset()
+			var timezone_offset = TimeUtil.get_timezone_offset()
 			var local_dict = Time.get_datetime_dict_from_unix_time(int(custom_timestamp + timezone_offset))
 			ts_string = "%04d-%02d-%02dT%02d:%02d:%02d" % [local_dict.year, local_dict.month, local_dict.day, local_dict.hour, local_dict.minute, local_dict.second]
 		else:
