@@ -200,6 +200,7 @@
         "model": "",
         "base_url": "",
         "timeout": 5,
-        "top_n": 5
+        "top_n": 5,
+        "instruction":"能唤醒的回忆"
     }
 }
