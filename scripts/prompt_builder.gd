@@ -629,12 +629,13 @@ func _retrieve_knowledge_memory(query: String) -> String:
 	# 格式化为提示词段落
 	var lines = []
 	for r in graph_results:
-		var t = r.get("T", "")
+		#var t = r.get("T", "")
 		var s = r.get("S", "")
 		var p = r.get("P", "")
 		var o = r.get("O", "")
 		var i = r.get("I", 1)
-		lines.append("[%s] %s %s %s (权重：%s)" % [t, s, p, o, str(i)])
+		#lines.append("[%s] %s %s %s (权重：%s)" % [t, s, p, o, str(i)])
+		lines.append("%s %s %s (权重：%s)" % [s, p, o, str(i)])#不加时间戳了
 
 	var mem_prompts = config.get("knowledge_memory", {}).get("prompts", {})
 	var prefix = mem_prompts.get("memory_prefix", "")
