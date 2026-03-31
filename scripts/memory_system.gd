@@ -462,7 +462,7 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 			continue
 
 		# 使用最大堆维护top_k*2个最相似的结果（因为有多路查询）
-		var max_candidates_per_query = top_k * 2
+		var max_candidates_per_query = top_k * 5
 		var top_similarities = []
 
 		for i in range(memory_items.size()):
