@@ -788,6 +788,7 @@ func _add_initial_items_to_warehouse():
 		["9mm_ammo", 64],
 		["UMP45", 1],
 		[".45_ammo", 64],
+		["credit", 1024],
 	]
 	
 	print("[SaveManager] 准备添加 ", initial_items.size(), " 种初始物品")

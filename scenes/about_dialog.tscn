@@ -97,7 +97,7 @@ uri = "https://qm.qq.com/q/BrrfZDi5sA"
 
 [node name="QQLink2" type="LinkButton" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
-text = "二群（满）：813734786"
+text = "二群：813734786"
 uri = "https://qm.qq.com/q/pqgOnzn8Gs"
 
 [node name="CloseButton" type="Button" parent="MarginContainer/VBoxContainer"]
