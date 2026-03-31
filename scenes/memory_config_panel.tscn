@@ -34,6 +34,14 @@ text = "记忆系统"
 horizontal_alignment = 1
 autowrap_mode = 3
 
+[node name="LinkButton" type="LinkButton" parent="ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.40784314, 0.6745098, 1, 1)
+theme_override_colors/font_focus_color = Color(0.9411765, 0.94509804, 0, 1)
+theme_override_colors/font_hover_color = Color(0.9411765, 0.94509804, 0, 1)
+text = "❓了解更多"
+uri = "https://cabm.shasnow.top/site/CABM-ED/docs/memory-system.html"
+
 [node name="HSeparator" type="HSeparator" parent="ScrollContainer/VBoxContainer"]
 layout_mode = 2
 
@@ -73,6 +81,13 @@ layout_mode = 2
 size_flags_horizontal = 0
 tooltip_text = "优化检索结果"
 text = "    └启用重排序"
+
+[node name="TimeAwareEnhanceCheckBox" type="CheckBox" parent="ScrollContainer/VBoxContainer/VectorContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 0
+tooltip_text = "重排序时加入时间，但是提升有限"
+text = "        └时间感知增强"
 
 [node name="HSeparator2" type="HSeparator" parent="ScrollContainer/VBoxContainer"]
 layout_mode = 2

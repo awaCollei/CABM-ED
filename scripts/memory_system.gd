@@ -70,6 +70,10 @@ func _should_perform_reranking() -> bool:
 	"""检查是否应该进行重排序"""
 	return _check_memory_config("enable_reranking", true)
 
+func _should_enable_time_aware_reranking() -> bool:
+	"""检查是否启用时间感知增强（在重排序前添加相对时间前缀）"""
+	return _check_memory_config("enable_time_aware_reranking", true)
+
 func _should_perform_pre_recall_reasoning() -> bool:
 	"""检查是否应该进行召回前推理"""
 	return _check_memory_config("enable_pre_recall_reasoning", false)
@@ -529,11 +533,17 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 		return results_without_reranking
 
 	# 获取前top_k*5个结果用于重排序
+	var use_time_aware_reranking := _should_enable_time_aware_reranking()
 	var initial_results = []
 	var num_candidates = min(top_k * 5, similarities.size())  # 为重排序准备更多候选文档
 	for i in range(num_candidates):
+		var base_text: String = similarities[i].item.text
+		if use_time_aware_reranking:
+			var ts = str(similarities[i].item.timestamp)
+			if not ts.is_empty():
+				base_text = "%s %s" % [TimeUtil.to_relative_time_prefix(ts), base_text]
 		initial_results.append({
-			"text": similarities[i].item.text,
+			"text": base_text,
 			"similarity": similarities[i].similarity,
 			"timestamp": similarities[i].item.timestamp,
 			"type": similarities[i].item.type
@@ -668,14 +678,19 @@ func get_relevant_memory(query: String, top_k: int, _timeout: float, min_similar
 	var prefix = prompts.get("memory_prefix", "这是唤醒的记忆，可以作为参考：\n```\n")
 	var suffix = prompts.get("memory_suffix", "\n```\n以上是记忆而不是最近的对话，可以不使用。")
 	
-	# 格式化记忆
+	# 格式化记忆：
+	# - 未启用“时间感知增强”时：在进入提示词时添加相对时间前缀（保持原行为）
+	# - 启用“时间感知增强”时：已在重排序前添加过，不再重复添加
+	var use_time_aware_reranking := _should_perform_reranking() and _should_enable_time_aware_reranking()
 	var memory_texts = []
 	for result in results:
-		# 每条记忆在进入提示词时再添加“相对时间前缀”
-		if result.has("timestamp") and not str(result.timestamp).is_empty():
-			memory_texts.append("%s %s" % [TimeUtil.to_relative_time_prefix(result.timestamp), result.text])
-		else:
+		if use_time_aware_reranking:
 			memory_texts.append(result.text)
+		else:
+			if result.has("timestamp") and not str(result.timestamp).is_empty():
+				memory_texts.append("%s %s" % [TimeUtil.to_relative_time_prefix(result.timestamp), result.text])
+			else:
+				memory_texts.append(result.text)
 	
 	var memory_prompt = prefix + "\n".join(memory_texts) + suffix
 	
