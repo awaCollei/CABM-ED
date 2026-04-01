@@ -145,23 +145,20 @@ theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_font_sizes/font_size = 12
 text = "跨场景呼唤角色时触发对话"
 
-[node name="ErrorContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer"]
+[node name="StatusContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer"]
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="CallTriggerDialogCheckButton" type="CheckButton" parent="VBoxContainer/HBoxContainer/LeftContainer/ErrorContainer"]
+[node name="StatusCheckButton" type="CheckButton" parent="VBoxContainer/HBoxContainer/LeftContainer/StatusContainer"]
 layout_mode = 2
 size_flags_horizontal = 0
-tooltip_text = "但可能会使错误累积导致更严重的错误"
-disabled = true
-button_pressed = true
-text = "静默处理错误"
+text = "显示请求状态"
 
-[node name="CallTriggerDescLabel" type="Label" parent="VBoxContainer/HBoxContainer/LeftContainer/ErrorContainer"]
+[node name="StatusDescLabel" type="Label" parent="VBoxContainer/HBoxContainer/LeftContainer/StatusContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_font_sizes/font_size = 12
-text = "出现错误时尝试恢复有效信息"
+text = "聊天时显示后台状态"
 
 [node name="RightContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2

@@ -272,7 +272,7 @@ func _setup_scrollbar_style():
 	v_scroll.add_theme_stylebox_override("scroll", scroll_style)
 
 	# 设置滚动条宽度（加粗）
-	v_scroll.custom_minimum_size.x = 20
+	v_scroll.custom_minimum_size.x = 18
 
 func _create_back_button_container():
 	"""创建返回按钮容器（固定在ScrollContainer上方）"""

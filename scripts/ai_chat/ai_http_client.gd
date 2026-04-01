@@ -14,7 +14,7 @@ var stream_port: int = 443
 var stream_use_tls: bool = true
 var request_start_time: float = 0.0
 var connection_timeout: float = 15.0  # 连接超时时间（较短）
-var response_timeout: float = 30.0   # 响应超时时间（正常超时）
+var response_timeout: float = 20.0   # 响应超时时间（正常超时）
 var last_chunk_time: float = 0.0     # 最后接收数据块的时间
 
 func _ready():
@@ -107,8 +107,8 @@ func _process(_delta):
 	var elapsed_since_start = current_time - request_start_time
 
 	# 全局总超时检查（防止请求无限挂起）
-	# 总超时时间 = 连接超时 + 响应超时 + 缓冲时间(60秒)
-	var total_timeout = connection_timeout + response_timeout + 60.0
+	# 总超时时间 = 连接超时 + 响应超时 + 缓冲时间(180秒)
+	var total_timeout = connection_timeout + response_timeout + 180.0
 	if elapsed_since_start > total_timeout:
 		print("请求总超时（%.1f秒 > %.1f秒）" % [elapsed_since_start, total_timeout])
 		is_streaming = false

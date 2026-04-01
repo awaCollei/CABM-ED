@@ -18,6 +18,7 @@ const TYPING_PREVIEW_TEXT = "这是一段示例文本，你可以拖动滑杆观
 @onready var generation_options_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/GenerationContainer/GenerationOptionsCheckButton
 @onready var top_input_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/TopInputContainer/TopInputCheckButton
 @onready var call_trigger_dialog_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/CallTriggerContainer/CallTriggerDialogCheckButton
+@onready var status_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/StatusContainer/StatusCheckButton
 @onready var typing_speed_slider: HSlider = $VBoxContainer/HBoxContainer/RightContainer/HSlider
 @onready var typing_speed_preview_text_edit: TextEdit = $VBoxContainer/HBoxContainer/RightContainer/TextEdit
 
@@ -63,6 +64,7 @@ func _ready() -> void:
 	generation_options_checkbutton.toggled.connect(_on_generation_options_toggled)
 	top_input_checkbutton.toggled.connect(_on_top_input_toggled)
 	call_trigger_dialog_checkbutton.toggled.connect(_on_call_trigger_dialog_toggled)
+	status_checkbutton.toggled.connect(_on_status_check_toggled)
 	typing_speed_slider.value_changed.connect(_on_typing_speed_slider_changed)
 	
 	# 加载设置
@@ -100,6 +102,9 @@ func load_response_settings() -> void:
 	
 	# 加载呼唤触发对话设置
 	call_trigger_dialog_checkbutton.button_pressed = config_manager.load_call_trigger_dialog()
+	
+	# 加载显示请求状态设置
+	status_checkbutton.button_pressed = config_manager.load_status_check()
 	
 	# 加载文本输出速度设置
 	_is_loading_typing_speed = true
@@ -159,6 +164,18 @@ func _on_top_input_toggled(enabled: bool) -> void:
 func _on_call_trigger_dialog_toggled(enabled: bool) -> void:
 	config_manager.save_call_trigger_dialog(enabled)
 	print("呼唤触发对话已%s" % ("开启" if enabled else "关闭"))
+
+## 显示请求状态开关切换
+func _on_status_check_toggled(enabled: bool) -> void:
+	config_manager.save_status_check(enabled)
+	print("显示请求状态已%s" % ("开启" if enabled else "关闭"))
+	
+	# 通知聊天对话框更新状态显示
+	var main_scene = get_tree().current_scene
+	if main_scene:
+		var chat_dialog = main_scene.get_node_or_null("ChatDialog")
+		if chat_dialog and chat_dialog.has_method("set_status_check_enabled"):
+			chat_dialog.set_status_check_enabled(enabled)
 
 func _on_typing_speed_slider_changed(value: float) -> void:
 	typing_speed_seconds = clampf(value, 0.01, 0.09)
