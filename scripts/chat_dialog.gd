@@ -696,11 +696,6 @@ func _on_continue_clicked():
 	
 	if typing_manager.has_more_sentences():
 		# 有更多句子，显示下一句
-		# 切换表情（随机选择当前mood的一个图片）
-		var character = get_tree().current_scene.get_node_or_null("Background/Character")
-		if character and character.has_method("switch_expression_randomly"):
-			character.switch_expression_randomly()
-		
 		var next_sentence_hash = typing_manager.show_next_sentence()
 		if next_sentence_hash != "":
 			print("显示句子 hash:%s" % next_sentence_hash.substr(0,8))
@@ -709,6 +704,10 @@ func _on_continue_clicked():
 				var tts = get_node("/root/TTSService")
 				tts.on_new_sentence_displayed(next_sentence_hash)
 				print("已通知TTS系统显示句子 hash:%s" % next_sentence_hash.substr(0,8))
+		# 文字显示后再切换表情，避免合成阻塞文字响应
+		var character = get_tree().current_scene.get_node_or_null("Background/Character")
+		if character and character.has_method("switch_expression_randomly"):
+			character.switch_expression_randomly()
 	elif typing_manager.is_receiving_stream:
 		# 流还在继续，但暂时没有新句子
 		# 重新设置等待状态，等待新句子到来

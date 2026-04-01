@@ -838,44 +838,15 @@ func _compose_chat_texture(base_texture: Texture2D, expression_texture: Texture2
 	var base_size = base_image.get_size()
 	var expr_size = expression_image.get_size()
 
-	# 创建结果图像（与base图片大小相同）
-	var result_image = Image.create(base_size.x, base_size.y, false, Image.FORMAT_RGBA8)
+	# 创建结果图像（与base图片大小相同），先复制base
+	var result_image = base_image.duplicate()
 
 	# 计算居中位置
 	var offset_x = int((base_size.x - expr_size.x) / 2)
 	var offset_y = int((base_size.y - expr_size.y) / 2)
 
-	# 首先复制base图片的所有像素
-	for x in range(base_size.x):
-		for y in range(base_size.y):
-			result_image.set_pixel(x, y, base_image.get_pixel(x, y))
-
-	# 然后在居中位置叠加表情图片
-	for x in range(expr_size.x):
-		for y in range(expr_size.y):
-			var base_x = x + offset_x
-			var base_y = y + offset_y
-
-			# 确保不超出base图片边界
-			if base_x >= 0 and base_x < base_size.x and base_y >= 0 and base_y < base_size.y:
-				var base_pixel = result_image.get_pixel(base_x, base_y)
-				var expr_pixel = expression_image.get_pixel(x, y)
-
-				# 表情层覆盖在基础层上
-				if expr_pixel.a < 0.01:  # 基本完全透明
-					# 保持base像素不变
-					pass
-				elif expr_pixel.a > 0.99:  # 基本完全不透明
-					result_image.set_pixel(base_x, base_y, expr_pixel)
-				else:
-					# Alpha混合
-					var alpha = expr_pixel.a
-					var blended_color = Color()
-					blended_color.r = base_pixel.r * (1.0 - alpha) + expr_pixel.r * alpha
-					blended_color.g = base_pixel.g * (1.0 - alpha) + expr_pixel.g * alpha
-					blended_color.b = base_pixel.b * (1.0 - alpha) + expr_pixel.b * alpha
-					blended_color.a = base_pixel.a * (1.0 - alpha) + expr_pixel.a  # 累积alpha
-					result_image.set_pixel(base_x, base_y, blended_color)
+	# 使用内置 blend_rect 进行 alpha 混合叠加，比逐像素循环快几十倍
+	result_image.blend_rect(expression_image, Rect2i(0, 0, expr_size.x, expr_size.y), Vector2i(offset_x, offset_y))
 	
 	# 创建纹理
 	var composed_texture = ImageTexture.create_from_image(result_image)
@@ -905,8 +876,8 @@ func _load_composed_chat_image_for_mood(force_random: bool = false):
 	# 缓存键包含图片文件名，支持同一mood的多个图片变体
 	var cache_key = "%s_%s_%s" % [costume_id, mood_name_en, image_filename]
 	
-	# 如果不需要强制随机，检查缓存
-	if not force_random and chat_texture_cache.has(cache_key):
+	# 无论是否 force_random，只要缓存命中就直接使用（图片名已在上面随机选好）
+	if chat_texture_cache.has(cache_key):
 		texture_normal = chat_texture_cache[cache_key]
 		custom_minimum_size = texture_normal.get_size()
 		size = texture_normal.get_size()
