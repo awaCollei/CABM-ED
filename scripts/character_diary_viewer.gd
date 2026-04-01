@@ -9,9 +9,11 @@ signal diary_closed
 @onready var search_button: Button = $MarginContainer/VBoxContainer/SearchContainer/SearchButton
 @onready var clear_search_button: Button = $MarginContainer/VBoxContainer/SearchContainer/ClearSearchButton
 @onready var date_selector: HBoxContainer = $MarginContainer/VBoxContainer/DateSelector
+@onready var prev_month_button: Button = $MarginContainer/VBoxContainer/DateSelector/PrevMonthButton
 @onready var prev_date_button: Button = $MarginContainer/VBoxContainer/DateSelector/PrevButton
 @onready var date_label: Label = $MarginContainer/VBoxContainer/DateSelector/DateLabel
 @onready var next_date_button: Button = $MarginContainer/VBoxContainer/DateSelector/NextButton
+@onready var next_month_button: Button = $MarginContainer/VBoxContainer/DateSelector/NextMonthButton
 @onready var scroll_container: ScrollContainer = $MarginContainer/VBoxContainer/ScrollContainer
 @onready var content_vbox: VBoxContainer = $MarginContainer/VBoxContainer/ScrollContainer/ContentVBox
 
@@ -49,10 +51,14 @@ func _ready():
 	# 连接信号
 	if close_button:
 		close_button.pressed.connect(_on_close_button_pressed)
+	if prev_month_button:
+		prev_month_button.pressed.connect(_on_prev_month_pressed)
 	if prev_date_button:
 		prev_date_button.pressed.connect(_on_prev_date_pressed)
 	if next_date_button:
 		next_date_button.pressed.connect(_on_next_date_pressed)
+	if next_month_button:
+		next_month_button.pressed.connect(_on_next_month_pressed)
 	if search_button:
 		search_button.pressed.connect(_on_search_button_pressed)
 	if clear_search_button:
@@ -391,6 +397,7 @@ func _load_date_content(date_str: String):
 		prev_date_button.disabled = (current_date_index >= available_dates.size() - 1)
 	if next_date_button:
 		next_date_button.disabled = (current_date_index <= 0)
+	_update_month_buttons()
 
 	# 读取日记文件
 	var diary_path = "user://diary/" + date_str + ".jsonl"
@@ -966,6 +973,109 @@ func _on_back_to_list():
 	await get_tree().process_frame
 	if scroll_container:
 		scroll_container.scroll_vertical = saved_scroll_position
+
+func _get_year_month(date_str: String) -> Array:
+	"""从 'YYYY-MM-DD' 提取 [year, month] 整数"""
+	var parts = date_str.split("-")
+	if parts.size() >= 2:
+		return [parts[0].to_int(), parts[1].to_int()]
+	return [0, 0]
+
+func _update_month_buttons():
+	"""根据当前日期更新上/下个月按钮的置灰状态"""
+	if available_dates.is_empty():
+		if prev_month_button:
+			prev_month_button.disabled = true
+		if next_month_button:
+			next_month_button.disabled = true
+		return
+	var cur_ym = _get_year_month(available_dates[current_date_index])
+	# 上个月：available_dates 降序，index 越大越旧
+	# 找是否存在比当前月份更早的记录
+	var has_prev_month = false
+	for i in range(current_date_index + 1, available_dates.size()):
+		var ym = _get_year_month(available_dates[i])
+		if ym[0] < cur_ym[0] or (ym[0] == cur_ym[0] and ym[1] < cur_ym[1]):
+			has_prev_month = true
+			break
+	# 下个月：找是否存在比当前月份更新的记录
+	var has_next_month = false
+	for i in range(0, current_date_index):
+		var ym = _get_year_month(available_dates[i])
+		if ym[0] > cur_ym[0] or (ym[0] == cur_ym[0] and ym[1] > cur_ym[1]):
+			has_next_month = true
+			break
+	if prev_month_button:
+		prev_month_button.disabled = not has_prev_month
+	if next_month_button:
+		next_month_button.disabled = not has_next_month
+
+func _on_prev_month_pressed():
+	"""跳到上一个月第一条有记录的日期（月份-1，跳过空月）"""
+	if available_dates.is_empty():
+		return
+	if view_mode == "detail":
+		view_mode = "list"
+	var cur_ym = _get_year_month(available_dates[current_date_index])
+	var target_year = cur_ym[0]
+	var target_month = cur_ym[1] - 1
+	if target_month < 1:
+		target_month = 12
+		target_year -= 1
+	# 从当前往后（更旧）找第一个月份 <= target 的记录，取该月最早（index最大）
+	# available_dates 降序，所以往后找更旧的
+	while true:
+		var found_index = -1
+		for i in range(current_date_index + 1, available_dates.size()):
+			var ym = _get_year_month(available_dates[i])
+			if ym[0] == target_year and ym[1] == target_month:
+				found_index = i # 继续找同月更早的（index更大）
+		if found_index != -1:
+			current_date_index = found_index
+			_load_date_content(available_dates[current_date_index])
+			return
+		# 该月没有记录，继续往前一个月
+		target_month -= 1
+		if target_month < 1:
+			target_month = 12
+			target_year -= 1
+		# 检查是否已经超出所有记录范围
+		var oldest_ym = _get_year_month(available_dates[available_dates.size() - 1])
+		if target_year < oldest_ym[0] or (target_year == oldest_ym[0] and target_month < oldest_ym[1]):
+			break
+
+func _on_next_month_pressed():
+	"""跳到下一个月第一条有记录的日期（月份+1，跳过空月）"""
+	if available_dates.is_empty():
+		return
+	if view_mode == "detail":
+		view_mode = "list"
+	var cur_ym = _get_year_month(available_dates[current_date_index])
+	var target_year = cur_ym[0]
+	var target_month = cur_ym[1] + 1
+	if target_month > 12:
+		target_month = 1
+		target_year += 1
+	# available_dates 降序，往前（index更小）找更新的记录
+	while true:
+		var found_index = -1
+		for i in range(0, current_date_index):
+			var ym = _get_year_month(available_dates[i])
+			if ym[0] == target_year and ym[1] == target_month:
+				found_index = i # 继续找同月更新的（index更小）
+		if found_index != -1:
+			current_date_index = found_index
+			_load_date_content(available_dates[current_date_index])
+			return
+		# 该月没有记录，继续往后一个月
+		target_month += 1
+		if target_month > 12:
+			target_month = 1
+			target_year += 1
+		# 检查是否已经超出所有记录范围
+		var newest_ym = _get_year_month(available_dates[0])
+		if target_year > newest_ym[0] or (target_year == newest_ym[0] and target_month > newest_ym[1]):
+			break
 
 func _on_prev_date_pressed():
 	"""切换到前一天"""

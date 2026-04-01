@@ -16,7 +16,7 @@ corner_radius_bottom_left = 8
 shadow_size = 3
 
 [node name="CharacterDiaryViewer" type="Panel"]
-custom_minimum_size = Vector2(800, 600)
+custom_minimum_size = Vector2(900, 650)
 offset_right = 800.0
 offset_bottom = 600.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_rbi45")
@@ -39,6 +39,10 @@ layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="HBoxContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/HBoxContainer"]
+custom_minimum_size = Vector2(56, 38)
 layout_mode = 2
 
 [node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/HBoxContainer"]
@@ -77,12 +81,16 @@ layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
+[node name="PrevMonthButton" type="Button" parent="MarginContainer/VBoxContainer/DateSelector"]
+layout_mode = 2
+text = "⏪ 上个月"
+
 [node name="PrevButton" type="Button" parent="MarginContainer/VBoxContainer/DateSelector"]
 layout_mode = 2
 text = "◀ 前一天"
 
 [node name="DateLabel" type="Label" parent="MarginContainer/VBoxContainer/DateSelector"]
-custom_minimum_size = Vector2(150, 0)
+custom_minimum_size = Vector2(180, 0)
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 0, 0, 1)
 text = "2025-10-21"
@@ -91,6 +99,10 @@ horizontal_alignment = 1
 [node name="NextButton" type="Button" parent="MarginContainer/VBoxContainer/DateSelector"]
 layout_mode = 2
 text = "后一天 ▶"
+
+[node name="NextMonthButton" type="Button" parent="MarginContainer/VBoxContainer/DateSelector"]
+layout_mode = 2
+text = "下个月⏩"
 
 [node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 300)
