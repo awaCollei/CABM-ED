@@ -569,6 +569,8 @@ func _retrieve_long_term_memory(query: String) -> String:
 	Returns:
 		格式化的长期记忆提示词
 	"""
+	if has_node("/root/AIService"):
+		get_node("/root/AIService").emit_chat_status("唤醒记忆...")
 	# 首先尝试使用 MemoryManager（如果存在）
 	var memory_prompt = ""
 	if has_node("/root/MemoryManager"):
@@ -603,7 +605,8 @@ func _retrieve_knowledge_memory(query: String) -> String:
 	if not should_perform_kg_search:
 		print("配置已禁用知识图谱检索，跳过KG检索")
 		return ""
-
+	if has_node("/root/AIService"):
+		get_node("/root/AIService").emit_chat_status("回忆知识...")
 	if query.strip_edges().is_empty():
 		query = _get_recent_context_for_query()
 

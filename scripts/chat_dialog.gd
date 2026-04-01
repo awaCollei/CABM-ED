@@ -5,6 +5,7 @@ signal chat_ended
 @onready var margin_container: MarginContainer = $MarginContainer
 @onready var vbox: VBoxContainer = $MarginContainer/VBoxContainer
 @onready var character_name_label: Label = $MarginContainer/VBoxContainer/CharacterNameLabel
+@onready var status_label: Label = $MarginContainer/StatusLabel
 @onready var message_label: Label = $MarginContainer/VBoxContainer/MessageLabel
 @onready var end_button: Button = $MarginContainer/VBoxContainer/EndButton
 @onready var auto_button: Button = get_parent().get_node("AutoButton")
@@ -43,6 +44,10 @@ var voice_input: Node
 const GOTO_COOLDOWN_DURATION = 60.0
 var goto_cooldown_end_time: float = 0.0
 var goto_notification_label: Label = null
+
+# 状态显示
+
+var _status_check_enabled: bool = false
 
 func _ensure_ui_structure():
 	"""简化的UI结构检查"""
@@ -92,6 +97,7 @@ func _ready():
 		ai_service.chat_response_completed.connect(_on_ai_response_completed)
 		ai_service.chat_error.connect(_on_ai_error)
 		ai_service.options_generated.connect(_on_options_generated)
+		ai_service.chat_status_changed.connect(_on_chat_status_changed)
 	
 	# 连接事件管理器信号
 	if has_node("/root/EventManager"):
@@ -206,6 +212,9 @@ func _load_config():
 		auto_continue_enabled = config_mgr.load_auto_continue()
 		_update_auto_button_style()
 		print("ChatDialog: 加载自动播放设置 = %s" % auto_continue_enabled)
+		
+		# 加载状态显示设置
+		_status_check_enabled = config_mgr.load_status_check()
 	else:
 		print("ChatDialog: 警告 - AIConfigManager未找到，使用默认值 false")
 		top_input_enabled = false
@@ -479,6 +488,7 @@ func _on_options_generated(options: Array):
 func _on_ai_error(error_message: String):
 	"""AI 错误回调 - 撤回用户消息"""
 	print("AI 错误: ", error_message)
+	_on_chat_status_changed("")
 	
 	# 撤回用户消息：从历史中删除最后一条用户消息，并恢复到输入框
 	_retract_last_user_message()
@@ -597,6 +607,7 @@ func _on_input_submitted(text: String):
 	# 检查是否有选中的图片
 	var img_node = get_node_or_null("ImageInput")
 	if img_node and img_node.has_selected_image():
+		_on_chat_status_changed("查看图片...")
 		var desc = await img_node.describe_selected_image()
 		if not String(desc).strip_edges().is_empty():
 			final_text = "【图片：" + String(desc).strip_edges() + "】" + final_text
@@ -1215,3 +1226,19 @@ func set_top_input_enabled(enabled: bool):
 	top_input_enabled = enabled
 	_update_top_input_visibility(visible and enabled and is_input_mode)
 	print("顶部输入框已%s" % ("启用" if enabled else "禁用"))
+
+## 设置状态显示开关（由设置面板调用）
+func set_status_check_enabled(enabled: bool):
+	_status_check_enabled = enabled
+	if not enabled and status_label != null:
+		status_label.visible = false
+
+## 响应状态变化信号
+func _on_chat_status_changed(status: String):
+	if not _status_check_enabled:
+		return
+	if status.is_empty():
+		status_label.visible = false
+	else:
+		status_label.text = status
+		status_label.visible = true

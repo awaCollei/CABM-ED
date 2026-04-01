@@ -271,7 +271,7 @@ func save_status_check(enabled: bool) -> bool:
 ## 加载显示请求状态设置
 func load_status_check() -> bool:
 	var config = load_config()
-	return config.get("status_check", false) # 默认关闭
+	return config.get("status_check", true) # 默认开启
 
 ## 保存使用内置密钥设置
 func save_use_builtin_key(enabled: bool) -> bool:

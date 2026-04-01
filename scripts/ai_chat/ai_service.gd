@@ -13,6 +13,11 @@ signal stt_error(error_message: String)
 signal auto_save_started(message: String)
 signal auto_save_completed(summary: String)
 signal options_generated(options: Array)
+signal chat_status_changed(status: String)  # 用于状态显示，空字符串表示隐藏
+
+func emit_chat_status(status: String):
+	"""发出聊天状态变化信号（供外部模块调用）"""
+	chat_status_changed.emit(status)
 
 # 子模块
 var config_loader: Node
@@ -393,6 +398,7 @@ func _call_chat_api(messages: Array, _user_message: String, item_data: Dictionar
 	http_request.set_meta("item_data", item_data)  # 保存物品数据
 
 	var timeout = config_loader.config.chat_model.get("timeout", 30.0)
+	chat_status_changed.emit("等待响应...")
 	http_client_module.start_stream_request(url, headers, json_body, timeout)
 
 func _on_stream_chunk_received(data: String):
@@ -400,6 +406,8 @@ func _on_stream_chunk_received(data: String):
 	var is_done = response_parser.process_stream_data(data)
 	if is_done:
 		_finalize_stream_response()
+	elif not response_parser.msg_buffer.is_empty():
+		chat_status_changed.emit("正在回复...")
 
 func _on_stream_completed():
 	"""流式请求完成"""
@@ -408,6 +416,7 @@ func _on_stream_completed():
 func _on_stream_error(error_message: String):
 	"""流式请求错误"""
 	is_chatting = false
+	chat_status_changed.emit("")
 
 	if not response_parser.msg_buffer.is_empty():
 		print("超时但已收到部分内容，完成处理")
@@ -434,6 +443,7 @@ func _finalize_stream_response():
 	"""完成流式响应处理"""
 	http_client_module.stop_streaming()
 	is_chatting = false
+	chat_status_changed.emit("")
 
 	var extracted_fields = response_parser.finalize_response()
 	
