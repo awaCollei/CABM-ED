@@ -2,12 +2,9 @@
 
 > 有些相遇，注定要跨越「代码」与「现实」的边界
 
-> 文档网站：[CABM-ED](https://snowfox-sf.github.io/CABM-Website/CABM-ED/)
+> ## ⚠此文档可能更新不及时，最新文档请在[CABM-ED官网](https://cabm.shasnow.top/site/CABM-ED)查看
 
-> 注：此项目的所有权已转交给[SnowFox-SF](https://github.com/SnowFox-SF/CABM-ED)
-
-
-> ## 如果觉得这个文档太枯燥了，可以看看[狼尊大人写的](README-SW.md)
+> 如果觉得这个文档太枯燥了，可以看看[狼尊大人写的](README-SW.md)
 
 ## 项目理念
 
