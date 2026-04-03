@@ -26,12 +26,21 @@ texture = ExtResource("2_background")
 expand_mode = 1
 stretch_mode = 5
 
+[node name="Label" type="Label" parent="."]
+layout_mode = 0
+offset_left = 960.0
+offset_top = 695.0
+offset_right = 1175.0
+offset_bottom = 713.0
+theme_override_font_sizes/font_size = 14
+text = "Copyright © 2026 awaCollei "
+
 [node name="VBoxContainer" type="VBoxContainer" parent="."]
 layout_mode = 0
-offset_left = 800.0
+offset_left = 790.0
 offset_top = 100.0
-offset_right = 1084.0
-offset_bottom = 388.0
+offset_right = 1095.0
+offset_bottom = 605.0
 
 [node name="Title" type="Label" parent="VBoxContainer"]
 layout_mode = 2
@@ -91,9 +100,9 @@ text = "退出游戏"
 [node name="DevButton" type="Button" parent="."]
 custom_minimum_size = Vector2(150, 50)
 layout_mode = 0
-offset_left = 466.0
-offset_top = 32.0
-offset_right = 616.0
-offset_bottom = 82.0
+offset_left = 120.0
+offset_top = 655.0
+offset_right = 270.0
+offset_bottom = 705.0
 size_flags_horizontal = 4
 text = "开发者选项"
