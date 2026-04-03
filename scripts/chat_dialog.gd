@@ -951,14 +951,11 @@ func _hide_goto_notification():
 	print("ChatDialog: 隐藏goto提示")
 
 func _handle_reply_refusal(user_message: String, refusal_message: String):
-	typing_manager.start_stream()
-	typing_manager.add_stream_content("……")
-	typing_manager.end_stream()
-	
-	while not typing_manager.is_showing_sentence:
-		await get_tree().process_frame
-	
+	# 直接显示拒绝消息，不依赖打字机状态
 	await _show_refusal_message(refusal_message)
+	
+	# 切换回输入模式
+	await ui_manager.transition_to_input_mode()
 	
 	if has_node("/root/AIService"):
 		var ai_service = get_node("/root/AIService")
@@ -966,14 +963,13 @@ func _handle_reply_refusal(user_message: String, refusal_message: String):
 		ai_service.add_to_history("assistant", "……")
 
 func _handle_empty_msg_response(message: String):
-	typing_manager.start_stream()
-	typing_manager.add_stream_content("……")
-	typing_manager.end_stream()
-	
-	while not typing_manager.is_showing_sentence:
-		await get_tree().process_frame
-	
 	await _show_refusal_message(message)
+	
+	await ui_manager.transition_to_input_mode()
+	
+	if has_node("/root/AIService"):
+		var ai_service = get_node("/root/AIService")
+		ai_service.add_to_history("assistant", "……")
 	
 	if has_node("/root/AIService"):
 		var ai_service = get_node("/root/AIService")
