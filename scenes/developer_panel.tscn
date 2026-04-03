@@ -1,7 +1,9 @@
-[gd_scene load_steps=3 format=3 uid="uid://dhesogekrelis"]
+[gd_scene load_steps=5 format=3 uid="uid://dhesogekrelis"]
 
 [ext_resource type="Script" uid="uid://c012n2j4j1gw7" path="res://scripts/developer_panel.gd" id="1_dev"]
+[ext_resource type="Texture2D" uid="uid://ggcwannq4ov6" path="res://logo.png" id="2_oopbr"]
 [ext_resource type="Theme" uid="uid://c6gyciuad8n1j" path="res://theme/red_button.tres" id="2_theme"]
+[ext_resource type="Theme" uid="uid://dxscbhbyg47rp" path="res://theme/green_button.tres" id="3_green_theme"]
 
 [node name="DeveloperPanel" type="Control"]
 layout_mode = 3
@@ -12,14 +14,21 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_dev")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="ColorRect" type="TextureRect" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.15, 0.15, 0.15, 1)
+texture = ExtResource("2_oopbr")
+expand_mode = 2
+
+[node name="ColorRect2" type="ColorRect" parent="."]
+layout_mode = 0
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(1, 1, 1, 0.27058825)
 
 [node name="MarginContainer" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -29,9 +38,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/margin_left = 40
-theme_override_constants/margin_top = 40
+theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 40
-theme_override_constants/margin_bottom = 40
+theme_override_constants/margin_bottom = 20
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
 layout_mode = 2
@@ -43,24 +52,121 @@ theme_override_font_sizes/font_size = 40
 text = "开发者选项"
 horizontal_alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+[node name="TabContainer" type="TabContainer" parent="MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 520)
 layout_mode = 2
+current_tab = 0
 
-[node name="InfoLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="人物设定" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
 layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+metadata/_tab_index = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/人物设定"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="IdentityLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/人物设定/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "基础提示词"
+
+[node name="IdentityTextEdit" type="TextEdit" parent="MarginContainer/VBoxContainer/TabContainer/人物设定/VBoxContainer"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+placeholder_text = "请输入角色的基础提示词..."
+wrap_mode = 1
+autowrap_mode = 1
+
+[node name="存档" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+metadata/_tab_index = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/存档"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="UUIDLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/存档/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "UUID"
+
+[node name="UUIDLineEdit" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/存档/VBoxContainer"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+placeholder_text = "请输入UUID..."
+
+[node name="CheckButton" type="CheckButton" parent="MarginContainer/VBoxContainer/TabContainer/存档/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+disabled = true
+text = "存档加密"
+
+[node name="BottomPanel" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="SaveStatusLabel" type="Label" parent="MarginContainer/VBoxContainer/BottomPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 20
-text = "此页面用于开发者调试和测试功能
-（但是还没做）"
+text = "● 已保存"
+
+[node name="SaveButton" type="Button" parent="MarginContainer/VBoxContainer/BottomPanel"]
+custom_minimum_size = Vector2(150, 60)
+layout_mode = 2
+theme = ExtResource("3_green_theme")
+theme_override_font_sizes/font_size = 26
+text = "保存"
+
+[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer/BottomPanel"]
+custom_minimum_size = Vector2(150, 60)
+layout_mode = 2
+theme = ExtResource("2_theme")
+theme_override_font_sizes/font_size = 26
+text = "返回"
+
+[node name="ConfirmDialog" type="ConfirmationDialog" parent="."]
+title = "未保存的更改"
+initial_position = 2
+size = Vector2i(400, 150)
+ok_button_text = "保存"
+cancel_button_text = "取消"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ConfirmDialog"]
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 392.0
+offset_bottom = 101.0
+
+[node name="Label" type="Label" parent="ConfirmDialog/VBoxContainer"]
+layout_mode = 2
+text = "您有未保存的更改，是否保存？"
 horizontal_alignment = 1
 
-[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 100)
+[node name="HSeparator" type="HSeparator" parent="ConfirmDialog/VBoxContainer"]
 layout_mode = 2
 
-[node name="BackButton" type="Button" parent="MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(200, 60)
-layout_mode = 2
-size_flags_horizontal = 4
-theme = ExtResource("2_theme")
-theme_override_font_sizes/font_size = 30
-text = "返回主菜单"
+[node name="DontSaveButton" type="Button" parent="ConfirmDialog"]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -60.0
+offset_top = -40.0
+offset_right = 60.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 0
+text = "不保存"
