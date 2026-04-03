@@ -122,10 +122,18 @@ layout_mode = 2
 [node name="ScrollContainer" type="ScrollContainer" parent="Sidebar/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
+horizontal_scroll_mode = 0
 
 [node name="SceneList" type="VBoxContainer" parent="Sidebar/MarginContainer/VBoxContainer/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="Exit" type="Button" parent="Sidebar/MarginContainer/VBoxContainer"]
+modulate = Color(1, 1, 1, 0.7254902)
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 8
+text = "🚪退出"
 
 [node name="ToggleButton" type="Button" parent="Sidebar"]
 layout_mode = 1

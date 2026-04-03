@@ -1,0 +1,99 @@
+[gd_scene load_steps=6 format=3 uid="uid://butqi1kfd0dh"]
+
+[ext_resource type="Script" uid="uid://c03sbm5pymsp8" path="res://scripts/main_menu.gd" id="1_main_menu"]
+[ext_resource type="Texture2D" uid="uid://pkdf5ab0ovl5" path="res://assets/images/index.png" id="2_background"]
+[ext_resource type="Theme" uid="uid://dxscbhbyg47rp" path="res://theme/green_button.tres" id="3_wu84c"]
+[ext_resource type="Theme" uid="uid://c6gyciuad8n1j" path="res://theme/red_button.tres" id="4_8ln24"]
+[ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="4_rtw2f"]
+
+[node name="MainMenu" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main_menu")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_background")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 0
+offset_left = 800.0
+offset_top = 100.0
+offset_right = 1084.0
+offset_bottom = 388.0
+
+[node name="Title" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.50980395)
+theme_override_constants/shadow_offset_x = 3
+theme_override_constants/shadow_offset_y = 3
+theme_override_constants/shadow_outline_size = 6
+theme_override_font_sizes/font_size = 55
+text = "CABM-ED"
+horizontal_alignment = 1
+
+[node name="Intro" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0.73333335, 1, 1, 0.35686275)
+theme_override_font_sizes/font_size = 18
+text = "Code Afflatus & Beyond Matter
+Everlasting Days"
+horizontal_alignment = 1
+
+[node name="Spacer2" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+
+[node name="EnterGameButton" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(250, 60)
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("3_wu84c")
+theme_override_font_sizes/font_size = 35
+text = "进入游戏"
+
+[node name="Spacer" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+
+[node name="AbouteButton" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(250, 60)
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("4_rtw2f")
+theme_override_font_sizes/font_size = 35
+text = "关于游戏"
+
+[node name="Spacer3" type="Control" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 60)
+layout_mode = 2
+
+[node name="ExitGameButton" type="Button" parent="VBoxContainer"]
+custom_minimum_size = Vector2(250, 60)
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("4_8ln24")
+theme_override_font_sizes/font_size = 35
+text = "退出游戏"
+
+[node name="DevButton" type="Button" parent="."]
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 0
+offset_left = 466.0
+offset_top = 32.0
+offset_right = 616.0
+offset_bottom = 82.0
+size_flags_horizontal = 4
+text = "开发者选项"

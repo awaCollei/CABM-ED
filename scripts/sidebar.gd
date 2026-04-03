@@ -4,6 +4,7 @@ signal scene_changed(scene_id: String, weather_id: String, time_id: String)
 
 @onready var scene_list: VBoxContainer = $MarginContainer/VBoxContainer/ScrollContainer/SceneList
 @onready var toggle_button: Button = $ToggleButton
+@onready var exit_button: Button = $MarginContainer/VBoxContainer/Exit
 
 var is_expanded: bool = false # 默认收起
 var collapsed_width: float = 50.0
@@ -57,6 +58,7 @@ var auto_save_timer: Timer
 
 func _ready():
 	toggle_button.pressed.connect(_on_toggle_pressed)
+	exit_button.pressed.connect(_on_exit_button_pressed)
 	_load_scenes_config()
 	
 	# 从存档加载天气
@@ -635,7 +637,7 @@ func _setup_ai_settings(container: VBoxContainer):
 	
 	# 关于按钮
 	var about_button = Button.new()
-	about_button.text = "ⓘ 关于  "
+	about_button.text = " ⓘ 关于  "
 	about_button.pressed.connect(_on_about_pressed)
 	container.add_child(about_button)
 
@@ -775,3 +777,67 @@ func _setup_experimental_section():
 	exp_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	exp_label.add_theme_color_override("font_color", Color(1.0, 0.8, 0.3))
 	scene_list.add_child(exp_label)
+
+func _on_exit_button_pressed():
+	"""退出按钮按下，显示确认对话框"""
+	print("[Sidebar] 退出按钮按下")
+	
+	# 创建确认对话框（使用 ConfirmationDialog 自带取消按钮）
+	var dialog = ConfirmationDialog.new()
+	dialog.title = "退出游戏"
+	dialog.dialog_text = "保存并返回主页面？"
+	dialog.ok_button_text = "确定"
+	dialog.cancel_button_text = "取消"
+	
+	# 连接确认信号
+	dialog.confirmed.connect(_on_exit_confirmed)
+	
+	# 添加到场景树并显示
+	get_tree().root.add_child(dialog)
+	dialog.popup_centered()
+
+func _on_exit_confirmed():
+	"""确认退出游戏"""
+	print("[Sidebar] 确认退出游戏")
+	
+	# 停止所有定时器
+	if time_update_timer:
+		time_update_timer.stop()
+	if auto_save_timer:
+		auto_save_timer.stop()
+	
+	# 停止主场景中的定时器（如果存在）
+	var main_scene = get_tree().current_scene
+	if main_scene:
+		# 停止音频管理器
+		if main_scene.has_node("AudioManager"):
+			var audio_mgr = main_scene.get_node("AudioManager")
+			if audio_mgr.has_method("stop_all"):
+				audio_mgr.stop_all()
+		
+		# 停止所有定时器
+		for child in main_scene.get_children():
+			if child is Timer:
+				child.stop()
+	
+	# 使用场景过渡管理器进行淡出
+	if has_node("/root/SceneTransition"):
+		var transition = get_node("/root/SceneTransition")
+		await transition.fade_out()
+	
+	# 保存游戏
+	if has_node("/root/SaveManager"):
+		var save_mgr = get_node("/root/SaveManager")
+		save_mgr.save_game(save_mgr.current_slot)
+		print("[Sidebar] 游戏已保存")
+		
+		# 等待保存完成
+		await get_tree().create_timer(0.5).timeout
+	
+	# 淡入主菜单
+	if has_node("/root/SceneTransition"):
+		var transition = get_node("/root/SceneTransition")
+		transition.change_scene_with_fade("res://scenes/main_menu.tscn")
+	else:
+		# 如果没有过渡管理器，直接切换
+		get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
