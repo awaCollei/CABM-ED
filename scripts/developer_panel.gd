@@ -4,8 +4,10 @@ extends Control
 ## 用于开发者调试和测试功能
 
 # UI节点引用
-@onready var identity_text_edit: TextEdit = $MarginContainer/VBoxContainer/TabContainer/人物设定/VBoxContainer/IdentityTextEdit
-@onready var uuid_line_edit: LineEdit = $MarginContainer/VBoxContainer/TabContainer/存档/VBoxContainer/UUIDLineEdit
+@onready var identity_text_edit: TextEdit = $MarginContainer/VBoxContainer/TabContainer/基础设定/ScrollContainer/VBoxContainer/IdentityTextEdit
+@onready var user_name_line_edit: LineEdit = $MarginContainer/VBoxContainer/TabContainer/基础设定/ScrollContainer/VBoxContainer/UserNameLineEdit
+@onready var character_name_line_edit: LineEdit = $MarginContainer/VBoxContainer/TabContainer/基础设定/ScrollContainer/VBoxContainer/CharacterNameLineEdit
+@onready var uuid_line_edit: LineEdit = $MarginContainer/VBoxContainer/TabContainer/存档/ScrollContainer/VBoxContainer/UUIDLineEdit
 @onready var save_status_label: Label = $MarginContainer/VBoxContainer/BottomPanel/SaveStatusLabel
 @onready var save_button: Button = $MarginContainer/VBoxContainer/BottomPanel/SaveButton
 @onready var back_button: Button = $MarginContainer/VBoxContainer/BottomPanel/BackButton
@@ -15,6 +17,8 @@ extends Control
 # 状态变量
 var original_identity: String = ""
 var original_uuid: String = ""
+var original_user_name: String = ""
+var original_character_name: String = ""
 var has_unsaved_changes: bool = false
 
 func _ready():
@@ -25,6 +29,8 @@ func _ready():
 	# 连接文本编辑信号
 	identity_text_edit.text_changed.connect(_on_text_changed)
 	uuid_line_edit.text_changed.connect(_on_uuid_changed)
+	user_name_line_edit.text_changed.connect(_on_text_field_changed)
+	character_name_line_edit.text_changed.connect(_on_text_field_changed)
 	
 	# 连接确认对话框信号
 	confirm_dialog.confirmed.connect(_on_confirm_save)
@@ -37,6 +43,7 @@ func _ready():
 	# 加载数据
 	_load_identity_data()
 	_load_uuid_data()
+	_load_name_data()
 	
 	print("[DeveloperPanel] 开发者选项面板已加载")
 	
@@ -70,6 +77,18 @@ func _load_uuid_data():
 		print("[DeveloperPanel] UUID文件不存在")
 	_update_save_status()
 
+func _load_name_data():
+	"""从存档加载用户名和角色名"""
+	var save_mgr = get_node_or_null("/root/SaveManager")
+	if save_mgr:
+		original_user_name = save_mgr.get_user_name()
+		original_character_name = save_mgr.get_character_name()
+		user_name_line_edit.text = original_user_name
+		character_name_line_edit.text = original_character_name
+	else:
+		push_error("[DeveloperPanel] SaveManager未找到")
+	_update_save_status()
+
 func _on_text_changed():
 	"""文本内容改变时"""
 	_check_changes()
@@ -78,11 +97,17 @@ func _on_uuid_changed(_new_text: String):
 	"""UUID改变时"""
 	_check_changes()
 
+func _on_text_field_changed(_new_text: String):
+	"""单行文本字段改变时"""
+	_check_changes()
+
 func _check_changes():
 	"""检查是否有未保存的更改"""
 	var identity_changed = (identity_text_edit.text != original_identity)
 	var uuid_changed = (uuid_line_edit.text != original_uuid)
-	has_unsaved_changes = identity_changed or uuid_changed
+	var user_name_changed = (user_name_line_edit.text != original_user_name)
+	var character_name_changed = (character_name_line_edit.text != original_character_name)
+	has_unsaved_changes = identity_changed or uuid_changed or user_name_changed or character_name_changed
 	_update_save_status()
 
 func _update_save_status():
@@ -122,14 +147,20 @@ func _save_changes():
 	else:
 		push_error("[DeveloperPanel] 无法写入UUID文件")
 	
+	# 保存用户名和角色名
+	var save_mgr2 = get_node_or_null("/root/SaveManager")
+	if save_mgr2:
+		save_mgr2.set_user_name(user_name_line_edit.text)
+		save_mgr2.set_character_name(character_name_line_edit.text)
+		original_user_name = user_name_line_edit.text
+		original_character_name = character_name_line_edit.text
+		save_mgr2.save_game()
+	else:
+		push_error("[DeveloperPanel] SaveManager未找到，无法保存用户名/角色名")
+	
 	# 更新状态
 	has_unsaved_changes = false
 	_update_save_status()
-	
-	# 保存存档
-	var save_mgr = get_node_or_null("/root/SaveManager")
-	if save_mgr:
-		save_mgr.save_game()
 	
 	print("[DeveloperPanel] 所有更改已保存")
 
