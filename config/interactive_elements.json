@@ -114,7 +114,7 @@
       "enabled": true,
       "options": [
         {
-          "text": "🏪 商店",
+          "text": "🛒 商店",
           "action": "enter_shop",
           "signal": "enter_shop"
         }

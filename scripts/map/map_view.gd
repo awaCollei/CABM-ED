@@ -252,10 +252,7 @@ func _build_base_points(base_id: String):
 		var offset_y = c.get("y", 0)
 		var pos = Vector2(center_x + offset_x, center_y + offset_y)
 		var btn = Button.new()
-		var title = c.get("name", cid)
-		if scenes_config.has(cid):
-			title = scenes_config[cid].get("name", title)
-		btn.text = title
+		btn.text = c.get("name", cid)
 		btn.position = pos
 		btn.pressed.connect(_on_point_pressed.bind(cid))
 		canvas.add_child(btn)

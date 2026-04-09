@@ -57,8 +57,8 @@ func setup_scenes(scenes_config: Dictionary, current_scene: String):
 		var scene_data = scenes_config[scene_id]
 		var button = Button.new()
 		
-		# 根据场景类型选择图标
-		var icon = _get_scene_icon(scene_data.get("class", ""))
+		# 使用场景数据获取图标
+		var icon = _get_scene_icon(scene_data)
 		button.text = icon + " 前往" + scene_data.get("name", scene_id)
 		button.pressed.connect(_on_scene_button_pressed.bind(scene_id))
 		
@@ -134,9 +134,11 @@ func _get_character_name() -> String:
 		return helpers.get_character_name()
 	return "角色"
 
-func _get_scene_icon(scene_class: String) -> String:
-	"""根据场景类型返回对应的图标"""
-	match scene_class:
+func _get_scene_icon(scene_data: Dictionary) -> String:
+	"""返回场景图标，优先使用配置中的 icon 字段，否则按 class 回退"""
+	if scene_data.has("icon") and scene_data["icon"] != "":
+		return scene_data["icon"]
+	match scene_data.get("class", ""):
 		"home":
 			return "🏠"
 		"outdoor":

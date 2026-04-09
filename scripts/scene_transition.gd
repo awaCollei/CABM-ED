@@ -48,7 +48,7 @@ func _ready():
 	# 创建加载标签 (右下角)
 	loading_label = Label.new()
 	# 初始文本为 "少女祈祷中... "
-	loading_label.text =  "少女祈祷中... "
+	loading_label.text =  "✨少女祈祷中... "
 	loading_label.add_theme_font_size_override("font_size", 24)
 	loading_label.add_theme_color_override("font_color", Color.WHITE)
 
@@ -347,7 +347,7 @@ func _update_dots():
 
 func _update_label_text():
 	"""统一更新标签文本，合并点号和进度"""
-	var text = "少女祈祷中"
+	var text = "✨少女祈祷中"
 	for i in range(current_dots):
 		text += "."
 	if current_progress >= 0:
