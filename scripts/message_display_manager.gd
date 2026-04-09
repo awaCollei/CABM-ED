@@ -32,6 +32,14 @@ func _setup_ui():
 	message_label.add_theme_constant_override("outline_size", 2)
 	message_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	message_label.z_index = 100
+	# 半透明黑色背景
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0, 0, 0, 0.4)
+	style.content_margin_left = 8
+	style.content_margin_right = 8
+	style.content_margin_top = 2
+	style.content_margin_bottom = 2
+	message_label.add_theme_stylebox_override("normal", style)
 	canvas_layer.add_child(message_label)
 
 func initialize(scene_mgr: SceneManager, _parent: Node = null):

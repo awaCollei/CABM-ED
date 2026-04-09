@@ -50,7 +50,7 @@ func _create_switch_button():
 		vbox.move_child(switch_button, 2)
 	
 	var character_name = _get_character_name()
-	switch_button.text = "切换到" + character_name + "背包"
+	switch_button.text = "🔄切换到" + character_name + "背包"
 	switch_button.pressed.connect(_on_switch_button_pressed)
 
 func _on_switch_button_pressed():
@@ -60,10 +60,10 @@ func _on_switch_button_pressed():
 	
 	if is_showing_warehouse:
 		setup_other_container(InventoryManager.warehouse_container, "仓库")
-		switch_button.text = "切换到" + character_name + "背包"
+		switch_button.text = "🔄切换到" + character_name + "背包"
 	else:
 		setup_other_container(snow_fox_container, character_name + "的背包")
-		switch_button.text = "切换到仓库"
+		switch_button.text = "🔄切换到仓库"
 	
 	_refresh_all_slots()
 
@@ -86,7 +86,7 @@ func toggle_visibility():
 		is_showing_warehouse = true
 		setup_other_container(InventoryManager.warehouse_container, "仓库")
 		if switch_button:
-			switch_button.text = "切换到"+_get_character_name()+"背包"
+			switch_button.text = "🔄切换到"+_get_character_name()+"背包"
 		
 		open_with_container()
 

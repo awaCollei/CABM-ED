@@ -539,7 +539,7 @@ func _get_mood_icon(mood: String) -> String:
 func _get_willingness_text(willingness: int) -> String:
 	"""将交互意愿数值转换为带图标的状态文本"""
 	var percentage = float(willingness) / 100.0
-	if percentage >= 1.2:
+	if percentage >= 1.0:
 		return "⚡状态: 亢奋"
 	elif percentage >= 0.8:
 		return "🌟状态: 活跃"
@@ -608,20 +608,6 @@ func _load_mood_config() -> Dictionary:
 		return {}
 	
 	return json.data
-
-func _get_mood_color_old(mood: String) -> Color:
-	"""根据心情返回颜色（旧版本，保留作为备用）"""
-	match mood:
-		"happy", "excited":
-			return Color(0.3, 1.0, 0.3) # 绿色
-		"normal", "calm":
-			return Color(1.0, 1.0, 1.0) # 白色
-		"sad":
-			return Color(0.5, 0.5, 1.0) # 蓝色
-		"angry":
-			return Color(1.0, 0.3, 0.3) # 红色
-		_:
-			return Color(1.0, 1.0, 1.0)
 
 func _on_auto_save():
 	"""自动保存"""
