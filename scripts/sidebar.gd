@@ -174,11 +174,11 @@ func _setup_clock_and_auto():
 	header_container.add_child(separator_user)
 	
 	# 角色数据显示
-	var stats_label = Label.new()
-	stats_label.text = "角色状态"
-	stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	stats_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.5))
-	header_container.add_child(stats_label)
+	# var stats_label = Label.new()
+	# stats_label.text = "角色状态"
+	# stats_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	# stats_label.add_theme_color_override("font_color", Color(1.0, 0.9, 0.5))
+	# header_container.add_child(stats_label)
 	
 	# 角色位置
 	character_location_label = Label.new()
@@ -503,34 +503,67 @@ func _update_character_stats(_new_value = null):
 	
 	# 好感度
 	var affection = save_mgr.get_affection()
-	affection_label.text = "好感度: %d" % affection
+	var affection_icon = "💕" if affection > 100 else ("❤" if affection >= 0 else "💔")
+	affection_label.text = "%s好感度: %d" % [affection_icon, affection]
 	affection_label.add_theme_color_override("font_color", _get_stat_color(affection))
 	
-	# 交互意愿
+	# 状态
 	var willingness = save_mgr.get_reply_willingness()
-	willingness_label.text = "交互意愿: %d" % willingness
+	willingness_label.text = _get_willingness_text(willingness)
 	willingness_label.add_theme_color_override("font_color", _get_stat_color(willingness))
 	
 	# 心情
 	var mood = save_mgr.get_mood()
 	var mood_text = _get_mood_text(mood)
-	mood_label.text = "心情: %s" % mood_text
+	var mood_icon = _get_mood_icon(mood)
+	mood_label.text = "%s心情: %s" % [mood_icon, mood_text]
 	mood_label.add_theme_color_override("font_color", _get_mood_color(mood))
 
 func _on_ai_fields_updated(_fields: Dictionary):
 	"""AI字段更新时刷新显示"""
 	_update_character_stats()
 
-func _get_stat_color(value: int) -> Color:
-	"""根据数值返回颜色"""
-	if value >= 80:
-		return Color(0.3, 1.0, 0.3) # 绿色
-	elif value >= 50:
-		return Color(1.0, 1.0, 0.3) # 黄色
-	elif value >= 30:
-		return Color(1.0, 0.7, 0.3) # 橙色
+func _get_mood_icon(mood: String) -> String:
+	"""根据心情的 valence 返回图标"""
+	var mood_config = _load_mood_config()
+	if mood_config.is_empty():
+		return "☁️"
+	for mood_data in mood_config.moods:
+		if mood_data.name_en == mood:
+			match mood_data.get("valence", "neutral"):
+				"positive": return "🌈"
+				"negative": return "🌧️"
+				_: return "☁️"
+	return "☁️"
+
+func _get_willingness_text(willingness: int) -> String:
+	"""将交互意愿数值转换为带图标的状态文本"""
+	var percentage = float(willingness) / 100.0
+	if percentage >= 1.2:
+		return "⚡状态: 亢奋"
+	elif percentage >= 0.8:
+		return "🌟状态: 活跃"
+	elif percentage >= 0.6:
+		return "✨状态: 正常"
+	elif percentage >= 0.4:
+		return "💤状态: 疲惫"
+	elif percentage >= 0.2:
+		return "💢状态: 冷漠"
 	else:
-		return Color(1.0, 0.3, 0.3) # 红色
+		return "💥状态: 抗拒"
+
+func _get_stat_color(value: int) -> Color:
+	"""根据数值返回颜色（每20点一个区间）"""
+	if value >= 80:
+		return Color(0.3, 1.0, 0.3) # 绿色（80-100）
+	elif value >= 60:
+		return Color(0.6, 1.0, 0.3) # 黄绿色（60-79）
+	elif value >= 40:
+		return Color(1.0, 1.0, 0.3) # 黄色（40-59）
+	elif value >= 20:
+		return Color(1.0, 0.7, 0.3) # 橙色（20-39）
+	else:
+		return Color(1.0, 0.3, 0.3) # 红色（0-19）
 
 func _get_mood_text(mood: String) -> String:
 	"""获取心情文本（从配置文件）"""
@@ -614,7 +647,7 @@ func _setup_ai_settings(container: VBoxContainer):
 
 	# AI 配置按钮
 	var ai_config_button = Button.new()
-	ai_config_button.text = "🔧配置选项"
+	ai_config_button.text = "⚙配置选项"
 	ai_config_button.pressed.connect(_on_ai_config_pressed)
 	container.add_child(ai_config_button)
 
