@@ -9,7 +9,7 @@ var _current_screen: Screen = Screen.HOME
 
 @onready var home_panel: Control = $HomePanel
 @onready var collection_panel: Control = $CollectionPanel
-@onready var back_button: Button = $BackButton
+@onready var back_button: Button = $HomePanel/BackButton
 
 func _ready():
 	modulate.a = 0.0

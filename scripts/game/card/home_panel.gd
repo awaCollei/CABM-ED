@@ -2,6 +2,7 @@
 extends Control
 
 const CardDatabaseClass = preload("res://scripts/game/card/card_database.gd")
+const CharacterCardScene = preload("res://scenes/card/character_card.tscn")
 
 const MAX_SLOTS = 3
 
@@ -50,59 +51,28 @@ func _open_select_popup():
 
 func _create_popup_card(card) -> Control:
 	var btn = Button.new()
-	btn.custom_minimum_size = Vector2(100, 140)
+	btn.custom_minimum_size = Vector2(120, 170)
+	btn.clip_contents = true
 
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.2, 0.3, 0.5)
-	style.corner_radius_top_left = 8; style.corner_radius_top_right = 8
-	style.corner_radius_bottom_left = 8; style.corner_radius_bottom_right = 8
+	style.bg_color = Color(0.15, 0.15, 0.2)
+	style.corner_radius_top_left = 10; style.corner_radius_top_right = 10
+	style.corner_radius_bottom_left = 10; style.corner_radius_bottom_right = 10
 	style.border_width_left = 2; style.border_width_right = 2
 	style.border_width_top = 2; style.border_width_bottom = 2
-	style.border_color = card.get_rarity_color()
+	style.border_color = Color(0.5, 0.6, 0.8)
 	btn.add_theme_stylebox_override("normal", style)
 
 	var hover_style = style.duplicate()
-	hover_style.bg_color = Color(0.3, 0.4, 0.65)
+	hover_style.border_color = Color(0.8, 0.9, 1.0)
+	hover_style.bg_color = Color(0.2, 0.2, 0.3)
 	btn.add_theme_stylebox_override("hover", hover_style)
 
-	var vbox = VBoxContainer.new()
-	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	btn.add_child(vbox)
-
-	var img_area = Control.new()
-	img_area.custom_minimum_size = Vector2(0, 80)
-	img_area.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vbox.add_child(img_area)
-
-	var img_full_path = "res://assets/images/cards/" + card.image_path
-	if ResourceLoader.exists(img_full_path):
-		var tex = TextureRect.new()
-		tex.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		tex.texture = load(img_full_path)
-		img_area.add_child(tex)
-	else:
-		var ph = Label.new()
-		ph.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-		ph.text = "🧙"; ph.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		ph.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		ph.add_theme_font_size_override("font_size", 30)
-		img_area.add_child(ph)
-
-	var name_lbl = Label.new()
-	name_lbl.text = card.card_name
-	name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_lbl.add_theme_font_size_override("font_size", 12)
-	name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	vbox.add_child(name_lbl)
-
-	var rarity_lbl = Label.new()
-	rarity_lbl.text = card.get_rarity_name()
-	rarity_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	rarity_lbl.add_theme_font_size_override("font_size", 10)
-	rarity_lbl.add_theme_color_override("font_color", card.get_rarity_color())
-	vbox.add_child(rarity_lbl)
+	var card_view = CharacterCardScene.instantiate()
+	card_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	card_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	btn.add_child(card_view)
+	card_view.setup(card)
 
 	btn.pressed.connect(_on_popup_card_selected.bind(card))
 	return btn
@@ -130,34 +100,19 @@ func _refresh_slots():
 			slot_btn.add_theme_font_size_override("font_size", 28)
 		else:
 			slot_btn.text = ""
-			var vbox = VBoxContainer.new()
-			vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-			slot_btn.add_child(vbox)
+			slot_btn.clip_contents = true
 
-			var img_area = Control.new()
-			img_area.custom_minimum_size = Vector2(0, 80)
-			img_area.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			vbox.add_child(img_area)
+			var style = StyleBoxFlat.new()
+			style.bg_color = Color(0.15, 0.15, 0.2)
+			style.corner_radius_top_left = 10; style.corner_radius_top_right = 10
+			style.corner_radius_bottom_left = 10; style.corner_radius_bottom_right = 10
+			style.border_width_left = 2; style.border_width_right = 2
+			style.border_width_top = 2; style.border_width_bottom = 2
+			style.border_color = Color(0.5, 0.6, 0.8)
+			slot_btn.add_theme_stylebox_override("normal", style)
 
-			var img_full_path = "res://assets/images/cards/" + card.image_path
-			if ResourceLoader.exists(img_full_path):
-				var tex = TextureRect.new()
-				tex.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-				tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-				tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-				tex.texture = load(img_full_path)
-				img_area.add_child(tex)
-			else:
-				var ph = Label.new()
-				ph.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-				ph.text = "🧙"; ph.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-				ph.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-				ph.add_theme_font_size_override("font_size", 26)
-				img_area.add_child(ph)
-
-			var name_lbl = Label.new()
-			name_lbl.text = card.card_name
-			name_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-			name_lbl.add_theme_font_size_override("font_size", 11)
-			name_lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			vbox.add_child(name_lbl)
+			var card_view = CharacterCardScene.instantiate()
+			card_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			card_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			slot_btn.add_child(card_view)
+			card_view.setup(card)

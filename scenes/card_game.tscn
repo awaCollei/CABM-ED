@@ -23,31 +23,24 @@ grow_horizontal = 2
 grow_vertical = 2
 texture = ExtResource("2_thesi")
 
-[node name="BackButton" type="Button" parent="."]
-z_index = 10
-layout_mode = 1
-offset_left = 16.0
-offset_top = 16.0
-offset_right = 100.0
-offset_bottom = 48.0
-grow_horizontal = 0
-text = "← 返回"
-
 [node name="HomePanel" type="Control" parent="."]
-layout_mode = 1
-anchors_preset = 10
-anchor_right = 1.0
-grow_horizontal = 2
-script = ExtResource("2")
-
-[node name="BG" type="ColorRect" parent="HomePanel"]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = -1280.0
 grow_horizontal = 2
 grow_vertical = 2
+script = ExtResource("2")
+
+[node name="BackButton" type="Button" parent="HomePanel"]
+z_index = 10
+layout_mode = 1
+offset_left = 13.0
+offset_top = 16.0
+offset_right = 100.0
+offset_bottom = 54.0
+grow_horizontal = 0
+text = "← 返回"
 
 [node name="TitleLabel" type="Label" parent="HomePanel"]
 layout_mode = 1
@@ -57,13 +50,13 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = 60.0
+offset_top = -310.0
 offset_right = 200.0
-offset_bottom = 110.0
+offset_bottom = -260.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0, 0.5529412, 1, 1)
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 40
 text = "✦ Ice Breaker ✦"
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -76,9 +69,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = 115.0
+offset_top = -246.0
 offset_right = 200.0
-offset_bottom = 140.0
+offset_bottom = -221.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.8, 1)
@@ -94,30 +87,30 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -240.0
-offset_top = 160.0
+offset_top = -135.0
 offset_right = 240.0
-offset_bottom = 380.0
+offset_bottom = 85.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 24
 alignment = 1
 
 [node name="Slot0" type="Button" parent="HomePanel/SlotArea"]
-custom_minimum_size = Vector2(130, 200)
+custom_minimum_size = Vector2(180, 320)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.7, 0.9, 1)
 theme_override_font_sizes/font_size = 28
 text = "+"
 
 [node name="Slot1" type="Button" parent="HomePanel/SlotArea"]
-custom_minimum_size = Vector2(130, 200)
+custom_minimum_size = Vector2(180, 320)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.7, 0.9, 1)
 theme_override_font_sizes/font_size = 28
 text = "+"
 
 [node name="Slot2" type="Button" parent="HomePanel/SlotArea"]
-custom_minimum_size = Vector2(130, 200)
+custom_minimum_size = Vector2(180, 320)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.7, 0.9, 1)
 theme_override_font_sizes/font_size = 28
@@ -131,9 +124,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = 390.0
+offset_top = 145.0
 offset_right = 200.0
-offset_bottom = 415.0
+offset_bottom = 170.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0.5, 0.5, 0.6, 1)
@@ -149,9 +142,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = 440.0
+offset_top = 190.0
 offset_right = 200.0
-offset_bottom = 490.0
+offset_bottom = 240.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 20
@@ -160,13 +153,11 @@ alignment = 1
 [node name="StartButton" type="Button" parent="HomePanel/BottomButtons"]
 custom_minimum_size = Vector2(160, 48)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
 text = "▶ 开始游戏"
 
 [node name="CollectionButton" type="Button" parent="HomePanel/BottomButtons"]
 custom_minimum_size = Vector2(160, 48)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
 text = "📖 卡牌图鉴"
 
 [node name="SelectPopup" type="Control" parent="HomePanel"]
@@ -337,18 +328,9 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.8, 1, 1)
 theme_override_font_sizes/font_size = 13
 
-[node name="InfoRarity" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
-layout_mode = 2
-theme_override_font_sizes/font_size = 13
-
 [node name="StatRow" type="HBoxContainer" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
 layout_mode = 2
 theme_override_constants/separation = 16
-
-[node name="InfoCost" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/StatRow"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.9, 0.8, 0.3, 1)
-theme_override_font_sizes/font_size = 13
 
 [node name="InfoAttack" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/StatRow"]
 layout_mode = 2
@@ -357,11 +339,16 @@ theme_override_font_sizes/font_size = 13
 
 [node name="InfoDefense" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/StatRow"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
+theme_override_colors/font_color = Color(1, 0.3, 0.4, 1)
 theme_override_font_sizes/font_size = 13
 
 [node name="Divider" type="HSeparator" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
 layout_mode = 2
+
+[node name="InfoSkillName" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.8, 0.3, 1)
+theme_override_font_sizes/font_size = 14
 
 [node name="InfoDesc" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
 layout_mode = 2
