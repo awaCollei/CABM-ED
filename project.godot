@@ -51,6 +51,7 @@ InteractiveElementManager="*res://scripts/interactive_element_manager.gd"
 InventoryManager="*res://scripts/inventory_manager.gd"
 ShopManager="*res://scripts/shop_manager.gd"
 TimeUtil="*res://scripts/utils/time_util.gd"
+CardDatabase="*res://scripts/game/card/card_database.gd"
 
 [debug]
 
