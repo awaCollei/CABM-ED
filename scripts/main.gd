@@ -541,6 +541,8 @@ func _on_game_selected(game_type: String):
 		_start_gomoku_game()
 	elif game_type == "xiangqi":
 		_start_xiangqi_game()
+	elif game_type == "card_game":
+		_start_card_game()
 
 func _on_chat_ended():
 	await character.end_chat()
@@ -620,6 +622,39 @@ func _on_xiangqi_ended():
 		character.load_character_for_scene(scene_manager.current_scene)
 	else:
 		print("警告: 背景纹理未加载，等待加载...")
+		await get_tree().process_frame
+		await get_tree().process_frame
+		ui_layout_manager.update_all_layouts()
+		character.load_character_for_scene(scene_manager.current_scene)
+
+func _start_card_game():
+	print("开始加载卡牌游戏")
+	var card_scene = load("res://scenes/card_game.tscn")
+	if card_scene:
+		print("卡牌场景加载成功")
+		var card_game = card_scene.instantiate()
+		card_game.game_ended.connect(_on_card_game_ended)
+		game_state_manager.hide_main_scene()
+		add_child(card_game)
+		card_game.z_index = 100
+		print("卡牌游戏已添加到场景树")
+	else:
+		print("错误：无法加载卡牌场景")
+
+func _on_card_game_ended():
+	for child in get_children():
+		if child.name == "CardGame":
+			child.queue_free()
+	
+	game_state_manager.show_main_scene()
+	
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	if background.texture:
+		ui_layout_manager.update_all_layouts()
+		character.load_character_for_scene(scene_manager.current_scene)
+	else:
 		await get_tree().process_frame
 		await get_tree().process_frame
 		ui_layout_manager.update_all_layouts()

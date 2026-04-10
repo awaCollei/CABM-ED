@@ -13,6 +13,7 @@ signal sleep_mode_selected()
 @onready var game_submenu: Panel = $GameSubmenu
 @onready var gomoku_button: Button = $GameSubmenu/MarginContainer/VBoxContainer/GomokuButton
 @onready var chinese_chess_button: Button = $GameSubmenu/MarginContainer/VBoxContainer/ChineseChessButton
+@onready var card_game_button: Button = $GameSubmenu/MarginContainer/VBoxContainer/CardGameButton
 var message_display_manager: MessageDisplayManager
 const ANIMATION_DURATION = 0.2
 
@@ -59,6 +60,12 @@ func _ready():
 		print("中国象棋按钮信号已连接")
 	else:
 		print("警告：中国象棋按钮未找到")
+	
+	if card_game_button:
+		card_game_button.pressed.connect(_on_card_game_button_pressed)
+		print("卡牌按钮信号已连接")
+	else:
+		print("警告：卡牌按钮未找到")
 	
 	# 初始隐藏游戏子菜单
 	if game_submenu:
@@ -169,9 +176,27 @@ func _on_sleep_button_pressed():
 
 func _on_game_button_pressed():
 	print("游戏按钮被点击")
-	# 显示游戏子菜单
+	# 显示游戏子菜单，位置紧贴主菜单右侧，高度自适应内容
 	if game_submenu:
-		game_submenu.position = Vector2(size.x + 10, 0)
+		var submenu_height = game_submenu.get_combined_minimum_size().y
+		game_submenu.size = Vector2(game_submenu.size.x, submenu_height)
+			
+		# 默认放在右侧
+		var pos_x = size.x + 10
+		var pos_y = 0.0
+		
+		# 检查是否会超出视口右边界
+		var viewport_size = get_viewport().get_visible_rect().size
+		var global_right = global_position.x + pos_x + game_submenu.size.x
+		if global_right > viewport_size.x - 5:
+			pos_x = -game_submenu.size.x - 10
+		
+		# 检查是否会超出视口下边界
+		var global_bottom = global_position.y + pos_y + submenu_height
+		if global_bottom > viewport_size.y - 5:
+			pos_y = viewport_size.y - 5 - global_position.y - submenu_height
+		
+		game_submenu.position = Vector2(pos_x, pos_y)
 		game_submenu.visible = true
 		print("子菜单已显示")
 
@@ -183,4 +208,9 @@ func _on_gomoku_button_pressed():
 func _on_chinese_chess_button_pressed():
 	print("中国象棋按钮被点击")
 	game_selected.emit("xiangqi")
+	hide_menu()
+
+func _on_card_game_button_pressed():
+	print("卡牌按钮被点击")
+	game_selected.emit("card_game")
 	hide_menu()

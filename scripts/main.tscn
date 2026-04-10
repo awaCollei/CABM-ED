@@ -295,11 +295,11 @@ text = "🎮 游戏"
 
 [node name="GameSubmenu" type="Panel" parent="ActionMenu"]
 z_index = 1
-custom_minimum_size = Vector2(120, 0)
+custom_minimum_size = Vector2(120, 140)
 layout_mode = 0
 offset_left = 130.0
 offset_right = 250.0
-offset_bottom = 100.0
+offset_bottom = 130.0
 
 [node name="MarginContainer" type="MarginContainer" parent="ActionMenu/GameSubmenu"]
 layout_mode = 1
@@ -324,6 +324,10 @@ text = "五子棋"
 [node name="ChineseChessButton" type="Button" parent="ActionMenu/GameSubmenu/MarginContainer/VBoxContainer"]
 layout_mode = 2
 text = "中国象棋"
+
+[node name="CardGameButton" type="Button" parent="ActionMenu/GameSubmenu/MarginContainer/VBoxContainer"]
+layout_mode = 2
+text = "卡牌"
 
 [node name="SceneMenu" type="Panel" parent="."]
 custom_minimum_size = Vector2(150, 0)

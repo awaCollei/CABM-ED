@@ -52,7 +52,7 @@ offset_right = 546.0
 offset_bottom = 470.0
 theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("StyleBoxFlat_ilykg")
-text = "杂货"
+text = "💊杂货"
 
 [node name="SnacksBtn" type="Button" parent="SelectionUI"]
 layout_mode = 0
@@ -62,7 +62,7 @@ offset_right = 210.0
 offset_bottom = 400.0
 theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("StyleBoxFlat_ilykg")
-text = "食品"
+text = "🍔食品"
 
 [node name="DrinksBtn" type="Button" parent="SelectionUI"]
 layout_mode = 0
@@ -72,7 +72,7 @@ offset_right = 298.0
 offset_bottom = 601.0
 theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("StyleBoxFlat_ilykg")
-text = "饮料"
+text = "🧃饮料"
 
 [node name="ProduceBtn" type="Button" parent="SelectionUI"]
 layout_mode = 0
@@ -82,7 +82,7 @@ offset_right = 1107.0
 offset_bottom = 476.0
 theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("StyleBoxFlat_ilykg")
-text = "农产品"
+text = "🌽农产"
 
 [node name="DailyBtn" type="Button" parent="SelectionUI"]
 layout_mode = 0
@@ -92,7 +92,7 @@ offset_right = 821.0
 offset_bottom = 361.0
 theme_override_font_sizes/font_size = 32
 theme_override_styles/normal = SubResource("StyleBoxFlat_ilykg")
-text = "每日"
+text = "⌛每日"
 
 [node name="CloseSelectionBtn" type="Button" parent="SelectionUI"]
 layout_mode = 0
