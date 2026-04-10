@@ -1,9 +1,44 @@
-[gd_scene load_steps=5 format=3 uid="uid://bvk1dcukkr77b"]
+[gd_scene load_steps=10 format=3 uid="uid://bvk1dcukkr77b"]
 
 [ext_resource type="Script" uid="uid://dg4mcna63dgwx" path="res://scripts/game/card_game.gd" id="1"]
 [ext_resource type="Script" uid="uid://ggb4g7tte0ei" path="res://scripts/game/card/home_panel.gd" id="2"]
 [ext_resource type="Texture2D" uid="uid://ciav2n21hexqb" path="res://assets/images/story_background.png" id="2_thesi"]
 [ext_resource type="Script" uid="uid://dgqxmju12c8af" path="res://scripts/game/card/collection_panel.gd" id="3"]
+[ext_resource type="Theme" uid="uid://dxscbhbyg47rp" path="res://theme/green_button.tres" id="5_n8ail"]
+[ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="6_0tddn"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_thesi"]
+bg_color = Color(0.8392157, 0.8392157, 0.8392157, 0.49019608)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.47007585, 0.47007585, 0.47007585, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0tddn"]
+bg_color = Color(0, 0, 0, 0.4)
+border_width_left = 4
+border_width_top = 4
+border_width_bottom = 4
+border_color = Color(0.9209947, 0.92099464, 0.9209944, 1)
+corner_radius_top_left = 9
+corner_radius_bottom_left = 9
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_n8ail"]
+bg_color = Color(0.6, 0.4, 0.8, 1)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.45, 0.35, 0.55, 1)
+corner_radius_top_left = 9
+corner_radius_top_right = 9
+corner_radius_bottom_right = 9
+corner_radius_bottom_left = 9
 
 [node name="CardGame" type="Control"]
 layout_mode = 3
@@ -24,6 +59,7 @@ grow_vertical = 2
 texture = ExtResource("2_thesi")
 
 [node name="HomePanel" type="Control" parent="."]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -96,21 +132,21 @@ theme_override_constants/separation = 24
 alignment = 1
 
 [node name="Slot0" type="Button" parent="HomePanel/SlotArea"]
-custom_minimum_size = Vector2(180, 320)
+custom_minimum_size = Vector2(180, 270)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.7, 0.9, 1)
 theme_override_font_sizes/font_size = 28
 text = "+"
 
 [node name="Slot1" type="Button" parent="HomePanel/SlotArea"]
-custom_minimum_size = Vector2(180, 320)
+custom_minimum_size = Vector2(180, 270)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.7, 0.9, 1)
 theme_override_font_sizes/font_size = 28
 text = "+"
 
 [node name="Slot2" type="Button" parent="HomePanel/SlotArea"]
-custom_minimum_size = Vector2(180, 320)
+custom_minimum_size = Vector2(180, 270)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.7, 0.9, 1)
 theme_override_font_sizes/font_size = 28
@@ -124,9 +160,9 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -200.0
-offset_top = 145.0
+offset_top = 127.0
 offset_right = 200.0
-offset_bottom = 170.0
+offset_bottom = 152.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0.5, 0.5, 0.6, 1)
@@ -221,7 +257,6 @@ theme_override_font_sizes/font_size = 14
 text = "✕ 关闭"
 
 [node name="CollectionPanel" type="Control" parent="."]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -234,23 +269,21 @@ script = ExtResource("3")
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
-offset_bottom = 56.0
+offset_bottom = 50.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_constants/separation = 12
 
-[node name="BackButton" type="Button" parent="CollectionPanel/TopBar"]
-custom_minimum_size = Vector2(90, 40)
-layout_mode = 2
-theme_override_font_sizes/font_size = 14
-text = "← 返回"
-
 [node name="Title" type="Label" parent="CollectionPanel/TopBar"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 22
-text = "卡牌图鉴"
+text = " 卡牌图鉴"
 vertical_alignment = 1
+
+[node name="BackButton" type="Button" parent="CollectionPanel/TopBar"]
+custom_minimum_size = Vector2(90, 30)
+layout_mode = 2
+text = "← 返回"
 
 [node name="TabBar" type="HBoxContainer" parent="CollectionPanel"]
 layout_mode = 1
@@ -262,13 +295,13 @@ theme_override_constants/separation = 4
 [node name="TabCharacter" type="Button" parent="CollectionPanel/TabBar"]
 custom_minimum_size = Vector2(120, 36)
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
+theme = ExtResource("5_n8ail")
 text = "角色牌"
 
 [node name="TabHand" type="Button" parent="CollectionPanel/TabBar"]
 custom_minimum_size = Vector2(120, 36)
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
+theme = ExtResource("6_0tddn")
 text = "手牌"
 
 [node name="MainArea" type="HBoxContainer" parent="CollectionPanel"]
@@ -278,13 +311,13 @@ offset_right = 1280.0
 offset_bottom = 720.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 0
 
 [node name="CardScroll" type="ScrollContainer" parent="CollectionPanel/MainArea"]
 custom_minimum_size = Vector2(760, 0)
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_thesi")
 
 [node name="CardGrid" type="GridContainer" parent="CollectionPanel/MainArea/CardScroll"]
 layout_mode = 2
@@ -294,53 +327,66 @@ theme_override_constants/v_separation = 12
 columns = 6
 
 [node name="InfoPanel" type="PanelContainer" parent="CollectionPanel/MainArea"]
-visible = false
 custom_minimum_size = Vector2(300, 0)
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_0tddn")
 
 [node name="InfoVBox" type="VBoxContainer" parent="CollectionPanel/MainArea/InfoPanel"]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="InfoImage" type="TextureRect" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
-custom_minimum_size = Vector2(0, 180)
+[node name="InfoName" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
 layout_mode = 2
-size_flags_horizontal = 3
+text = "名字"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 1
+
+[node name="TopRow" type="HBoxContainer" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Control" type="Control" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/TopRow"]
+layout_mode = 2
+
+[node name="InfoImage" type="TextureRect" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/TopRow"]
+custom_minimum_size = Vector2(160, 240)
+layout_mode = 2
 expand_mode = 3
 stretch_mode = 6
 
-[node name="InfoEmoji" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
+[node name="InfoEmoji" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/TopRow"]
 visible = false
-custom_minimum_size = Vector2(0, 120)
+custom_minimum_size = Vector2(160, 240)
 layout_mode = 2
 theme_override_font_sizes/font_size = 64
+theme_override_styles/normal = SubResource("StyleBoxFlat_n8ail")
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="InfoName" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
+[node name="TopRightVBox" type="VBoxContainer" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/TopRow"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
-horizontal_alignment = 1
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
 
-[node name="InfoType" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
+[node name="InfoType" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/TopRow/TopRightVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.8, 1, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 18
+text = "未知类型"
 
-[node name="StatRow" type="HBoxContainer" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
+[node name="InfoDefense" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/TopRow/TopRightVBox"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_font_sizes/font_size = 30
+text = "♥ 0"
 
-[node name="InfoAttack" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/StatRow"]
+[node name="InfoAttack" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/TopRow/TopRightVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.5, 0.4, 1)
-theme_override_font_sizes/font_size = 13
-
-[node name="InfoDefense" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/StatRow"]
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 0.3, 0.4, 1)
-theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+theme_override_font_sizes/font_size = 30
+text = "🗡 0"
 
 [node name="Divider" type="HSeparator" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
 layout_mode = 2
@@ -348,15 +394,18 @@ layout_mode = 2
 [node name="InfoSkillName" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.8, 0.3, 1)
-theme_override_font_sizes/font_size = 14
+theme_override_font_sizes/font_size = 20
+text = "【技能名】"
 
 [node name="InfoDesc" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
+theme_override_font_sizes/font_size = 20
+text = "技能描述"
 autowrap_mode = 3
 
 [node name="InfoFlavor" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.6, 0.7, 1)
-theme_override_font_sizes/font_size = 11
+theme_override_font_sizes/font_size = 18
+text = "简介"
 autowrap_mode = 3

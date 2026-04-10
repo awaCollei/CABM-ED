@@ -15,14 +15,14 @@ var _selected_btn: Control = null
 @onready var card_grid: GridContainer = $MainArea/CardScroll/CardGrid
 @onready var info_panel: Control = $MainArea/InfoPanel
 @onready var info_name: Label = $MainArea/InfoPanel/InfoVBox/InfoName
-@onready var info_type: Label = $MainArea/InfoPanel/InfoVBox/InfoType
-@onready var info_attack: Label = $MainArea/InfoPanel/InfoVBox/StatRow/InfoAttack
-@onready var info_defense: Label = $MainArea/InfoPanel/InfoVBox/StatRow/InfoDefense
+@onready var info_type: Label = $MainArea/InfoPanel/InfoVBox/TopRow/TopRightVBox/InfoType
+@onready var info_attack: Label = $MainArea/InfoPanel/InfoVBox/TopRow/TopRightVBox/InfoAttack
+@onready var info_defense: Label = $MainArea/InfoPanel/InfoVBox/TopRow/TopRightVBox/InfoDefense
 @onready var info_skill_name: Label = $MainArea/InfoPanel/InfoVBox/InfoSkillName
 @onready var info_desc: Label = $MainArea/InfoPanel/InfoVBox/InfoDesc
 @onready var info_flavor: Label = $MainArea/InfoPanel/InfoVBox/InfoFlavor
-@onready var info_image: TextureRect = $MainArea/InfoPanel/InfoVBox/InfoImage
-@onready var info_emoji: Label = $MainArea/InfoPanel/InfoVBox/InfoEmoji
+@onready var info_image: TextureRect = $MainArea/InfoPanel/InfoVBox/TopRow/InfoImage
+@onready var info_emoji: Label = $MainArea/InfoPanel/InfoVBox/TopRow/InfoEmoji
 @onready var back_button: Button = $TopBar/BackButton
 
 signal back_pressed
@@ -38,9 +38,10 @@ func _set_tab(tab: int):
 	_current_tab = tab
 	_selected_card = null
 	_selected_btn = null
-	_clear_info()
-	tab_character.modulate = Color.WHITE if tab == 0 else Color(0.6, 0.6, 0.6)
-	tab_hand.modulate = Color.WHITE if tab == 1 else Color(0.6, 0.6, 0.6)
+	# 选中的 tab 置灰，未选中的正常显示
+	tab_character.modulate = Color(0.6, 0.6, 0.6) if tab == 0 else Color.WHITE
+	tab_hand.modulate = Color(0.6, 0.6, 0.6) if tab == 1 else Color.WHITE
+	_show_empty_info()
 	_populate_grid()
 
 func _on_tab_character():
@@ -74,7 +75,7 @@ func _create_character_card_item(card) -> Control:
 
 func _create_hand_card_item(card) -> Control:
 	var btn = Button.new()
-	btn.custom_minimum_size = Vector2(90, 130)
+	btn.custom_minimum_size = Vector2(120, 180)
 	btn.clip_contents = true
 
 	var style = StyleBoxFlat.new()
@@ -92,7 +93,7 @@ func _create_hand_card_item(card) -> Control:
 
 	var vbox = VBoxContainer.new()
 	vbox.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	vbox.add_theme_constant_override("separation", 2)
+	vbox.add_theme_constant_override("separation", 8)
 	btn.add_child(vbox)
 
 	var emoji_area = Control.new()
@@ -105,21 +106,21 @@ func _create_hand_card_item(card) -> Control:
 	emoji_label.text = card.emoji
 	emoji_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	emoji_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	emoji_label.add_theme_font_size_override("font_size", 32)
+	emoji_label.add_theme_font_size_override("font_size", 40)
 	emoji_area.add_child(emoji_label)
 
 	var name_label = Label.new()
 	name_label.text = card.card_name
 	name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	name_label.add_theme_font_size_override("font_size", 11)
+	name_label.add_theme_font_size_override("font_size", 24)
 	name_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	name_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	vbox.add_child(name_label)
 
 	var cost_label = Label.new()
-	cost_label.text = "费用: %d" % card.cost
+	cost_label.text = "%d费" % card.cost
 	cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	cost_label.add_theme_font_size_override("font_size", 10)
+	cost_label.add_theme_font_size_override("font_size", 22)
 	cost_label.add_theme_color_override("font_color", Color(0.9, 0.8, 0.3))
 	vbox.add_child(cost_label)
 
@@ -127,9 +128,16 @@ func _create_hand_card_item(card) -> Control:
 	return btn
 
 func _on_card_selected(card, btn: Control):
-	_selected_card = card
+	# 再次点击已选中的卡牌 -> 取消选中
+	if _selected_card == card:
+		_selected_btn.modulate = Color.WHITE
+		_selected_card = null
+		_selected_btn = null
+		_show_empty_info()
+		return
 	if _selected_btn:
 		_selected_btn.modulate = Color.WHITE
+	_selected_card = card
 	_selected_btn = btn
 	btn.modulate = Color(1.2, 1.2, 0.6)
 	_show_info(card)
@@ -137,9 +145,9 @@ func _on_card_selected(card, btn: Control):
 func _show_info(card):
 	info_panel.visible = true
 	info_name.text = card.card_name
-	info_type.text = "类型: " + ("角色牌" if card.card_type == 0 else "手牌")
-	info_attack.text = "🗡 攻击: %d" % card.attack
-	info_defense.text = "♥ 生命: %d" % card.defense
+	info_type.text = "角色牌" if card.card_type == 0 else "手牌"
+	info_attack.text = "🗡 %d" % card.attack
+	info_defense.text = "♥ %d" % card.defense
 
 	if card.card_type == 0:
 		info_skill_name.visible = true
@@ -156,6 +164,18 @@ func _show_info(card):
 
 	info_desc.text = card.description
 	info_flavor.text = card.flavor_text
+
+func _show_empty_info():
+	info_panel.visible = true
+	info_name.text = "选择卡牌查看详细信息"
+	info_type.text = ""
+	info_attack.text = ""
+	info_defense.text = ""
+	info_skill_name.visible = false
+	info_image.visible = false
+	info_emoji.visible = false
+	info_desc.text = ""
+	info_flavor.text = ""
 
 func _clear_info():
 	info_panel.visible = false

@@ -11,7 +11,7 @@ extends PanelContainer
 @onready var atk_icon: Label = $InnerPanel/AtkIcon
 @onready var atk_label: Label = $InnerPanel/AtkIcon/AtkLabel
 
-@export var border_normal_color: Color = Color(0.5, 0.6, 0.8)
+@export var border_normal_color: Color = Color(0.0, 1.0, 0.8)
 @export var border_hover_color: Color = Color(0.8, 0.9, 1.0)
 
 signal card_pressed

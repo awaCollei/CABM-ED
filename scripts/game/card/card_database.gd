@@ -14,25 +14,44 @@ static func get_character_cards() -> Array:
 	var cards: Array = []
 
 	var c1 = CardDataClass.new()
-	c1.id = "char_warrior"; c1.card_name = "雪狐"
+	c1.id = "snowfox"; c1.card_name = "雪狐"
 	c1.card_type = 0
-	c1.skill_name = "幽灵步"
-	c1.description = "雪狐释放攻击前，不能成为敌方的目标"
-	c1.flavor_text = "雪地幽灵"
+	c1.skill_name = "雪地幽灵"
+	c1.description = "场上存在其他我方角色时，雪狐不能被敌方选中"
+	c1.flavor_text = "……"
 	c1.image_path = "snowfox.png"
-	c1.attack = 3; c1.defense = 6
+	c1.attack = 6; c1.defense = 1
 	cards.append(c1)
 
 	var c2 = CardDataClass.new()
-	c2.id = "char_mage"; c2.card_name = "星辰法师"
+	c2.id = "dark_seele"; c2.card_name = "希儿·芙乐艾"
 	c2.card_type = 0
-	c2.skill_name = "星陨术"
-	c2.description = "对敌方指定单体造成3点伤害"
-	c2.flavor_text = "掌握星辰之力的神秘法师，魔法攻击极为强大。"
-	c2.image_path = "mage.png"
-	c2.attack = 7; c2.defense = 2
+	c2.skill_name = "忘了"
+	c2.description = "前面忘了"
+	c2.flavor_text = "后面忘了"
+	c2.image_path = "dark_seele.png"
+	c2.attack = 7; c2.defense = 5
 	cards.append(c2)
 
+	var c3 = CardDataClass.new()
+	c3.id = "silver_wolf"; c3.card_name = "银狼"
+	c3.card_type = 0
+	c3.skill_name = "雨一直下"
+	c3.description = "前面忘了"
+	c3.flavor_text = "后面忘了"
+	c3.image_path = "silver_wolf.png"
+	c3.attack = 99; c3.defense = 99
+	cards.append(c3)
+
+	var c4 = CardDataClass.new()
+	c4.id = "octocat"; c4.card_name = "Octocat"
+	c4.card_type = 0
+	c4.skill_name = "Github"
+	c4.description = "前面忘了"
+	c4.flavor_text = "后面忘了"
+	c4.image_path = "octocat.png"
+	c4.attack = 4; c4.defense = 6
+	cards.append(c4)
 	return cards
 
 static func get_hand_cards() -> Array:
