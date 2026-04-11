@@ -79,6 +79,19 @@ func _update_hit_area():
 	_hit_area.position = Vector2(min_x, min_y)
 	_hit_area.size = Vector2(max_x - min_x, max_y - min_y)
 
+func _input(event: InputEvent):
+	if not _popup_visible or _is_animating:
+		return
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		var mouse_pos = get_viewport().get_mouse_position()
+		# 用全局坐标判断是否点在面板或 hit_area 内
+		var panel_rect = Rect2(_popup_panel.global_position, _popup_panel.size)
+		var hit_rect = Rect2(_hit_area.global_position, _hit_area.size)
+		if panel_rect.has_point(mouse_pos) or hit_rect.has_point(mouse_pos):
+			return
+		_hide_popup()
+		get_viewport().set_input_as_handled()
+
 func _on_hit_area_input(event: InputEvent):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
 		# 精确判断是否在四边形内
