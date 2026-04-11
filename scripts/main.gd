@@ -3,6 +3,9 @@ extends Control
 @onready var background: TextureRect = $Background
 @onready var sidebar = $Sidebar
 @onready var character = $Background/Character
+
+# 壁纸节点（仅 livingroom 显示）
+var wallpaper: Node2D = null
 @onready var chat_dialog = $ChatDialog
 @onready var action_menu = $ActionMenu
 @onready var scene_menu = $SceneMenu
@@ -101,7 +104,19 @@ func _setup_managers():
 	scene_manager = SceneManager.new()
 	scene_manager.initialize(background, character, save_mgr)
 	add_child(scene_manager)
-	
+
+	# 创建壁纸节点：插入到 Background 的第一个子节点位置，
+	# 使其自然层级低于 Character（Character 是 Background 的后续子节点）
+	var wallpaper_script = load("res://scripts/wallpaper.gd")
+	wallpaper = Node2D.new()
+	wallpaper.set_script(wallpaper_script)
+	wallpaper.visible = false
+	background.add_child(wallpaper)
+	# 移到最前（index 0），确保在 Character 之下
+	background.move_child(wallpaper, 0)
+	# 连接壁纸面板请求信号
+	wallpaper.change_wallpaper_requested.connect(_on_change_wallpaper_requested)
+
 	# 初始化UI布局管理器
 	ui_layout_manager = UILayoutManager.new()
 	ui_layout_manager.initialize(scene_manager)
@@ -258,6 +273,9 @@ func _process(_delta):
 	# 持续更新场景区域信息（确保 scene_manager 已初始化）
 	if scene_manager:
 		scene_manager.calculate_scene_rect()
+		# 同步壁纸区域
+		if wallpaper and wallpaper.visible:
+			wallpaper.set_scene_rect(scene_manager.scene_rect)
 	
 	# 如果聊天框可见，持续更新其位置（确保 ui_layout_manager 已初始化）
 	if ui_layout_manager and chat_dialog.visible:
@@ -277,6 +295,96 @@ func _on_scene_loaded(scene_id: String, weather_id: String, time_id: String):
 	
 	# 切换背景音乐
 	audio_manager.play_background_music(scene_id, time_id, weather_id)
+	
+	# 更新壁纸
+	_update_wallpaper(scene_id)
+
+func _update_wallpaper(scene_id: String):
+	"""仅在 livingroom 场景显示壁纸"""
+	if not wallpaper:
+		return
+	if scene_id != "livingroom":
+		wallpaper.visible = false
+		return
+	
+	# 从存档读取壁纸 ID
+	var wp_id = "none"
+	if has_node("/root/SaveManager"):
+		var sm = get_node("/root/SaveManager")
+		wp_id = sm.save_data.get("wallpaper_id", "none")
+	
+	_apply_wallpaper_id(wp_id)
+	wallpaper.set_scene_rect(scene_manager.scene_rect)
+	wallpaper.visible = true
+
+func _apply_wallpaper_id(wp_id: String):
+	"""根据壁纸 ID 加载纹理"""
+	if not wallpaper:
+		return
+	
+	if wp_id == "none" or wp_id == "":
+		wallpaper.set_texture(null)
+		return
+	
+	if wp_id.begins_with("custom_"):
+		# user:// 路径，用 Image 加载
+		var fname = wp_id.substr(7) + ".png"  # 去掉 "custom_" 前缀
+		var path = "user://wallpapers/" + fname
+		var img = Image.new()
+		if img.load(path) == OK:
+			wallpaper.set_texture(ImageTexture.create_from_image(img))
+		else:
+			wallpaper.set_texture(null)
+	else:
+		# 内置壁纸，从 WallpaperPanel 的配置中查找
+		var wp_scene = load("res://scripts/wallpaper_panel.gd")
+		if wp_scene:
+			var tmp = wp_scene.new()
+			for entry in tmp.BUILTIN_WALLPAPERS:
+				if entry["id"] == wp_id and entry["file"] != "":
+					if ResourceLoader.exists(entry["file"]):
+						wallpaper.set_texture(load(entry["file"]))
+					tmp.free()
+					return
+			tmp.free()
+		wallpaper.set_texture(null)
+
+func _on_change_wallpaper_requested():
+	"""打开壁纸选择面板"""
+	var panel = get_node_or_null("WallpaperPanel")
+	if panel == null:
+		var panel_scene = load("res://scenes/wallpaper_panel.tscn")
+		if panel_scene == null:
+			return
+		panel = panel_scene.instantiate()
+		panel.name = "WallpaperPanel"
+		add_child(panel)
+		panel.wallpaper_changed.connect(_on_wallpaper_selected)
+		panel.panel_closed.connect(_on_wallpaper_panel_closed)
+	
+	var current_id = "none"
+	if has_node("/root/SaveManager"):
+		current_id = get_node("/root/SaveManager").save_data.get("wallpaper_id", "none")
+	
+	# 面板打开时禁用壁纸点击区域
+	if wallpaper:
+		wallpaper.set_panel_open(true)
+	panel.open_panel(current_id)
+
+func _on_wallpaper_panel_closed():
+	"""壁纸面板关闭后恢复壁纸点击"""
+	if wallpaper:
+		wallpaper.set_panel_open(false)
+
+func _on_wallpaper_selected(wp_id: String):
+	"""壁纸选择后保存并应用"""
+	if has_node("/root/SaveManager"):
+		var sm = get_node("/root/SaveManager")
+		sm.save_data["wallpaper_id"] = wp_id
+		sm.save_game(sm.current_slot)
+	_apply_wallpaper_id(wp_id)
+	if wallpaper:
+		wallpaper.set_scene_rect(scene_manager.scene_rect)
 
 func _update_interactive_elements_visibility():
 	"""更新所有可交互元素的显示状态"""

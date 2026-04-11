@@ -1,0 +1,103 @@
+[gd_scene load_steps=4 format=3 uid="uid://cw4dj56yfrxs6"]
+
+[ext_resource type="Script" uid="uid://dk5mos3ut0o0d" path="res://scripts/wallpaper_panel.gd" id="1_wp"]
+[ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="2_6v2xk"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_6v2xk"]
+bg_color = Color(0.39308554, 0.39308554, 0.39308533, 0.5137255)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="WallpaperPanel" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_wp")
+
+[node name="Overlay" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0, 0, 0, 0.5)
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -300.0
+offset_right = 400.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_6v2xk")
+
+[node name="VBox" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TopBar" type="HBoxContainer" parent="PanelContainer/VBox"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="PanelContainer/VBox/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 30
+text = "🖼 更换壁纸"
+
+[node name="CloseButton" type="Button" parent="PanelContainer/VBox/TopBar"]
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "✕ 关闭"
+
+[node name="HSeparator" type="HSeparator" parent="PanelContainer/VBox"]
+layout_mode = 2
+
+[node name="BuiltinLabel" type="Label" parent="PanelContainer/VBox"]
+layout_mode = 2
+text = "内置壁纸"
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBox"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+
+[node name="BuiltinContainer" type="HBoxContainer" parent="PanelContainer/VBox/ScrollContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HSeparator2" type="HSeparator" parent="PanelContainer/VBox"]
+layout_mode = 2
+
+[node name="CustomLabel" type="Label" parent="PanelContainer/VBox"]
+layout_mode = 2
+text = "自定义壁纸"
+
+[node name="CustomScroll" type="ScrollContainer" parent="PanelContainer/VBox"]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+
+[node name="CustomContainer" type="HBoxContainer" parent="PanelContainer/VBox/CustomScroll"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="UploadButton" type="Button" parent="PanelContainer/VBox"]
+layout_mode = 2
+theme = ExtResource("2_6v2xk")
+text = "📁 上传自定义壁纸"
