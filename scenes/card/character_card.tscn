@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://boocc214m1dbe"]
+[gd_scene load_steps=10 format=3 uid="uid://boocc214m1dbe"]
 
 [ext_resource type="Script" uid="uid://dhg1fra2js8g" path="res://scripts/game/card/character_card.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://lda7jwq2ag1x" path="res://assets/images/cards/snowfox.png" id="2_k4att"]
@@ -26,12 +26,22 @@ corner_radius_bottom_left = 10
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_aijrh"]
 bg_color = Color(0.18431373, 0.18431373, 0.18431373, 0.72156864)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_k4att"]
+bg_color = Color(0.1148968, 0.11489681, 0.11489678, 0.6117647)
+corner_radius_bottom_right = 6
+expand_margin_right = 4.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ur6rb"]
+bg_color = Color(0.11372549, 0.11372549, 0.11372549, 0.6117647)
+corner_radius_bottom_left = 6
+expand_margin_left = 4.0
+
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_k4att"]
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_btn"]
 
 [node name="CharacterCard" type="PanelContainer"]
-custom_minimum_size = Vector2(180, 270)
+custom_minimum_size = Vector2(183, 273)
 offset_right = 181.33334
 offset_bottom = 270.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_border")
@@ -75,43 +85,18 @@ color = Color(1, 1, 1, 0)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 0
-theme_override_colors/font_color = Color(1, 0.3, 0.4, 1)
-theme_override_font_sizes/font_size = 30
-text = "♥"
-
-[node name="HpLabel" type="Label" parent="InnerPanel/HpIcon"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 theme_override_colors/font_color = Color(0, 1, 0, 1)
-theme_override_font_sizes/font_size = 30
-text = "0"
-horizontal_alignment = 1
-vertical_alignment = 1
+theme_override_styles/normal = SubResource("StyleBoxFlat_k4att")
+text = "♥9"
 
 [node name="AtkIcon" type="Label" parent="InnerPanel"]
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 0
-theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
-theme_override_font_sizes/font_size = 30
-text = "⚔"
-
-[node name="AtkLabel" type="Label" parent="InnerPanel/AtkIcon"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_colors/font_color = Color(0, 1, 0, 1)
-theme_override_font_sizes/font_size = 30
-text = "0"
-horizontal_alignment = 1
-vertical_alignment = 1
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_ur6rb")
+text = "9⚔"
+horizontal_alignment = 2
 
 [node name="Button" type="Button" parent="."]
 layout_mode = 2

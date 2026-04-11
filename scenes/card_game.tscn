@@ -59,7 +59,6 @@ grow_vertical = 2
 texture = ExtResource("2_thesi")
 
 [node name="HomePanel" type="Control" parent="."]
-visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -93,7 +92,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0, 0.5529412, 1, 1)
 theme_override_font_sizes/font_size = 40
-text = "✦ Ice Breaker ✦"
+text = "✦ICE BREAKER✦"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -110,7 +109,7 @@ offset_right = 200.0
 offset_bottom = -221.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(0.7, 0.7, 0.8, 1)
+theme_override_colors/font_color = Color(0, 0.64705884, 1, 1)
 theme_override_font_sizes/font_size = 14
 text = "前面忘了中间忘了后面忘了"
 horizontal_alignment = 1
@@ -132,21 +131,21 @@ theme_override_constants/separation = 24
 alignment = 1
 
 [node name="Slot0" type="Button" parent="HomePanel/SlotArea"]
-custom_minimum_size = Vector2(180, 270)
+custom_minimum_size = Vector2(185, 274)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.7, 0.9, 1)
 theme_override_font_sizes/font_size = 28
 text = "+"
 
 [node name="Slot1" type="Button" parent="HomePanel/SlotArea"]
-custom_minimum_size = Vector2(180, 270)
+custom_minimum_size = Vector2(185, 274)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.7, 0.9, 1)
 theme_override_font_sizes/font_size = 28
 text = "+"
 
 [node name="Slot2" type="Button" parent="HomePanel/SlotArea"]
-custom_minimum_size = Vector2(180, 270)
+custom_minimum_size = Vector2(185, 274)
 layout_mode = 2
 theme_override_colors/font_color = Color(0.6, 0.7, 0.9, 1)
 theme_override_font_sizes/font_size = 28
@@ -165,7 +164,7 @@ offset_right = 200.0
 offset_bottom = 152.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(0.5, 0.5, 0.6, 1)
+theme_override_colors/font_color = Color(0.17828616, 0.17790055, 0.23022231, 1)
 theme_override_font_sizes/font_size = 12
 text = "点击卡槽选择角色牌"
 horizontal_alignment = 1
@@ -222,10 +221,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -320.0
-offset_top = -240.0
-offset_right = 320.0
-offset_bottom = 240.0
+offset_left = -500.0
+offset_top = -300.0
+offset_right = 500.0
+offset_bottom = 300.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -235,12 +234,11 @@ theme_override_constants/separation = 8
 
 [node name="PopupTitle" type="Label" parent="HomePanel/SelectPopup/PopupBG/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 18
 text = "选择角色牌"
 horizontal_alignment = 1
 
 [node name="ScrollContainer" type="ScrollContainer" parent="HomePanel/SelectPopup/PopupBG/VBox"]
-custom_minimum_size = Vector2(0, 340)
+custom_minimum_size = Vector2(0, 420)
 layout_mode = 2
 size_flags_vertical = 3
 
@@ -253,10 +251,11 @@ columns = 4
 
 [node name="CloseButton" type="Button" parent="HomePanel/SelectPopup/PopupBG/VBox"]
 layout_mode = 2
-theme_override_font_sizes/font_size = 14
+theme = ExtResource("6_0tddn")
 text = "✕ 关闭"
 
 [node name="CollectionPanel" type="Control" parent="."]
+visible = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -378,13 +377,13 @@ text = "未知类型"
 
 [node name="InfoDefense" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/TopRow/TopRightVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_colors/font_color = Color(0, 1, 0, 1)
 theme_override_font_sizes/font_size = 30
 text = "♥ 0"
 
 [node name="InfoAttack" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/TopRow/TopRightVBox"]
 layout_mode = 2
-theme_override_colors/font_color = Color(0, 1, 0, 1)
+theme_override_colors/font_color = Color(1, 0, 0, 1)
 theme_override_font_sizes/font_size = 30
 text = "🗡 0"
 

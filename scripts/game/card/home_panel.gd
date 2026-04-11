@@ -37,6 +37,10 @@ func _ready():
 	_refresh_slots()
 
 func _on_slot_pressed(slot_idx: int):
+	if _selected_slots[slot_idx] != null:
+		_selected_slots[slot_idx] = null
+		_refresh_slots()
+		return
 	_editing_slot = slot_idx
 	_open_select_popup()
 
@@ -50,32 +54,16 @@ func _open_select_popup():
 	select_popup.visible = true
 
 func _create_popup_card(card) -> Control:
-	var btn = Button.new()
-	btn.custom_minimum_size = Vector2(120, 170)
-	btn.clip_contents = true
-
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.15, 0.15, 0.2)
-	style.corner_radius_top_left = 10; style.corner_radius_top_right = 10
-	style.corner_radius_bottom_left = 10; style.corner_radius_bottom_right = 10
-	style.border_width_left = 2; style.border_width_right = 2
-	style.border_width_top = 2; style.border_width_bottom = 2
-	style.border_color = Color(0.5, 0.6, 0.8)
-	btn.add_theme_stylebox_override("normal", style)
-
-	var hover_style = style.duplicate()
-	hover_style.border_color = Color(0.8, 0.9, 1.0)
-	hover_style.bg_color = Color(0.2, 0.2, 0.3)
-	btn.add_theme_stylebox_override("hover", hover_style)
-
 	var card_view = CharacterCardScene.instantiate()
-	card_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	card_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	btn.add_child(card_view)
 	card_view.setup(card)
 
-	btn.pressed.connect(_on_popup_card_selected.bind(card))
-	return btn
+	var already_selected = _selected_slots.any(func(s): return s != null and s.card_name == card.card_name)
+	if already_selected:
+		card_view.modulate = Color(0.4, 0.4, 0.4, 0.7)
+	else:
+		card_view.card_pressed.connect(_on_popup_card_selected.bind(card))
+
+	return card_view
 
 func _on_popup_card_selected(card):
 	if _editing_slot >= 0:
@@ -98,6 +86,7 @@ func _refresh_slots():
 		if card == null:
 			slot_btn.text = "+"
 			slot_btn.add_theme_font_size_override("font_size", 28)
+			slot_btn.remove_theme_stylebox_override("normal")
 		else:
 			slot_btn.text = ""
 			slot_btn.clip_contents = true
@@ -113,6 +102,9 @@ func _refresh_slots():
 
 			var card_view = CharacterCardScene.instantiate()
 			card_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-			card_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			slot_btn.add_child(card_view)
 			card_view.setup(card)
+			# 让卡牌所有子节点都不拦截鼠标，事件透传给卡槽按钮
+			for node in card_view.find_children("*", "Control", true, false):
+				node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			card_view.mouse_filter = Control.MOUSE_FILTER_IGNORE

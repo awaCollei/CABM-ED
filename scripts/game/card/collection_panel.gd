@@ -99,6 +99,7 @@ func _create_hand_card_item(card) -> Control:
 	var emoji_area = Control.new()
 	emoji_area.custom_minimum_size = Vector2(0, 70)
 	emoji_area.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	emoji_area.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(emoji_area)
 
 	var emoji_label = Label.new()

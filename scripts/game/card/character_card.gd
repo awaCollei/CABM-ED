@@ -6,10 +6,8 @@ extends PanelContainer
 @onready var image_placeholder: Label = $InnerPanel/ImagePlaceholder
 @onready var name_bar: ColorRect = $InnerPanel/NameBar
 @onready var name_label: Label = $InnerPanel/NameLabel
-@onready var hp_icon: Label = $InnerPanel/HpIcon
-@onready var hp_label: Label = $InnerPanel/HpIcon/HpLabel
-@onready var atk_icon: Label = $InnerPanel/AtkIcon
-@onready var atk_label: Label = $InnerPanel/AtkIcon/AtkLabel
+@onready var hp_label: Label = $InnerPanel/HpIcon
+@onready var atk_label: Label = $InnerPanel/AtkIcon
 
 @export var border_normal_color: Color = Color(0.0, 1.0, 0.8)
 @export var border_hover_color: Color = Color(0.8, 0.9, 1.0)
@@ -32,8 +30,8 @@ func _ready() -> void:
 
 func _apply_card_data(card) -> void:
 	name_label.text = card.card_name
-	hp_label.text = "%d" % card.defense
-	atk_label.text = "%d" % card.attack
+	hp_label.text = "♥%d" % card.defense
+	atk_label.text = "%d⚔" % card.attack
 
 	var img_full_path = "res://assets/images/cards/" + card.image_path
 	if ResourceLoader.exists(img_full_path):

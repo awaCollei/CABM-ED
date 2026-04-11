@@ -1,0 +1,69 @@
+import os
+from PIL import Image
+
+def resize_and_crop(image_path, target_width=180, target_height=270):
+    """
+    将图片调整到目标尺寸（裁剪方式）
+    """
+    try:
+        # 打开图片
+        img = Image.open(image_path)
+        
+        # 获取原始尺寸
+        original_width, original_height = img.size
+        
+        # 计算目标宽高比和原始宽高比
+        target_ratio = target_width / target_height
+        original_ratio = original_width / original_height
+        
+        # 确定裁剪区域
+        if original_ratio > target_ratio:
+            # 原图更宽，需要裁剪宽度
+            new_width = int(target_height * original_ratio)
+            new_height = target_height
+            # 先缩放到合适尺寸
+            img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+            # 计算裁剪区域（居中裁剪）
+            left = (new_width - target_width) // 2
+            right = left + target_width
+            img = img.crop((left, 0, right, target_height))
+        else:
+            # 原图更高，需要裁剪高度
+            new_width = target_width
+            new_height = int(target_width / original_ratio)
+            # 先缩放到合适尺寸
+            img = img.resize((new_width, new_height), Image.Resampling.LANCZOS)
+            # 计算裁剪区域（居中裁剪）
+            top = (new_height - target_height) // 2
+            bottom = top + target_height
+            img = img.crop((0, top, target_width, bottom))
+        
+        # 保存图片（覆盖原文件）
+        img.save(image_path)
+        print(f"✓ 已处理: {image_path}")
+        return True
+        
+    except Exception as e:
+        print(f"✗ 处理失败: {image_path}, 错误: {str(e)}")
+        return False
+
+def main():
+    # 获取当前目录下所有.png文件（不区分大小写）
+    png_files = [f for f in os.listdir('.') if f.lower().endswith('.png')]
+    
+    if not png_files:
+        print("当前目录下没有找到PNG文件")
+        return
+    
+    print(f"找到 {len(png_files)} 个PNG文件")
+    print("开始处理...\n")
+    
+    success_count = 0
+    for filename in png_files:
+        if resize_and_crop(filename):
+            success_count += 1
+    
+    print(f"\n处理完成！成功: {success_count}/{len(png_files)}")
+
+if __name__ == "__main__":
+    main()
