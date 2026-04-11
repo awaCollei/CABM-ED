@@ -1,0 +1,46 @@
+[
+  {
+    "id": "snowfox",
+    "card_name": "雪狐",
+    "card_type": 0,
+    "skill_name": "雪地幽灵",
+    "description": "场上存在其他我方角色时，雪狐不能被敌方选中。",
+    "flavor_text": "……",
+    "image_path": "snowfox.png",
+    "attack": 4,
+    "defense": 1
+  },
+  {
+    "id": "dark_seele",
+    "card_name": "希儿·芙乐艾",
+    "card_type": 0,
+    "skill_name": "罪罚两断之刃",
+    "description": "每次攻击获得一层【赤痕】。【赤痕】到达3层时，攻击消耗全部【赤痕】使本次攻击伤害+5。",
+    "flavor_text": "希儿会保护好大家的\n这™是哪个希儿？！",
+    "image_path": "dark_seele.png",
+    "attack": 3,
+    "defense": 10
+  },
+  {
+    "id": "silver_wolf",
+    "card_name": "银狼",
+    "card_type": 0,
+    "skill_name": "雨一直下",
+    "description": "打败你根本不需要技能。",
+    "flavor_text": "你看，又开",
+    "image_path": "silver_wolf.png",
+    "attack": 99,
+    "defense": 99
+  },
+  {
+    "id": "octocat",
+    "card_name": "Octocat",
+    "card_type": 0,
+    "skill_name": "重构",
+    "description": "生命值低于4时，恢复全部生命值并使攻击力增加3。该效果只能触发一次。",
+    "flavor_text": "这程序居然不能跑，为什么？\n这程序居然能跑，为什么？？",
+    "image_path": "octocat.png",
+    "attack": 2,
+    "defense": 10
+  }
+]

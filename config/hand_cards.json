@@ -1,0 +1,90 @@
+[
+  {
+    "id": "hand_fireball",
+    "card_name": "火球术",
+    "card_type": 1,
+    "description": "向目标投掷一枚炽热的火球，造成大量伤害。",
+    "flavor_text": "\"烈焰焚尽一切。\"",
+    "emoji": "🔥",
+    "attack": 5,
+    "defense": 0,
+    "cost": 3
+  },
+  {
+    "id": "hand_shield",
+    "card_name": "铁壁防御",
+    "card_type": 1,
+    "description": "为己方角色提供坚固的护盾，抵挡下一次攻击。",
+    "flavor_text": "\"最好的进攻是无懈可击的防守。\"",
+    "emoji": "🛡️",
+    "attack": 0,
+    "defense": 6,
+    "cost": 2
+  },
+  {
+    "id": "hand_lightning",
+    "card_name": "雷霆一击",
+    "card_type": 1,
+    "description": "召唤闪电精准打击敌方，有概率造成眩晕。",
+    "flavor_text": "\"雷声未至，胜负已分。\"",
+    "emoji": "⚡",
+    "attack": 6,
+    "defense": 0,
+    "cost": 4
+  },
+  {
+    "id": "hand_heal",
+    "card_name": "治愈之光",
+    "card_type": 1,
+    "description": "恢复己方角色的生命值。",
+    "flavor_text": "\"伤口会愈合，意志不会消散。\"",
+    "emoji": "💚",
+    "attack": 0,
+    "defense": 4,
+    "cost": 2
+  },
+  {
+    "id": "hand_poison",
+    "card_name": "剧毒之刃",
+    "card_type": 1,
+    "description": "涂抹毒素的匕首，每回合持续造成伤害。",
+    "flavor_text": "\"慢慢来，死亡也可以很优雅。\"",
+    "emoji": "🗡️",
+    "attack": 2,
+    "defense": 0,
+    "cost": 2
+  },
+  {
+    "id": "hand_ice",
+    "card_name": "冰封大地",
+    "card_type": 1,
+    "description": "冻结所有敌方单位，使其无法行动一回合。",
+    "flavor_text": "\"寒冰封印，时间静止。\"",
+    "emoji": "❄️",
+    "attack": 3,
+    "defense": 3,
+    "cost": 5
+  },
+  {
+    "id": "hand_summon",
+    "card_name": "召唤骷髅",
+    "card_type": 1,
+    "description": "从亡者之地召唤一具骷髅战士为你战斗。",
+    "flavor_text": "\"死亡不是终点，而是新的开始。\"",
+    "emoji": "💀",
+    "attack": 3,
+    "defense": 2,
+    "cost": 3
+  },
+  {
+    "id": "hand_draw",
+    "card_name": "命运之轮",
+    "card_type": 1,
+    "description": "抽取三张牌，命运掌握在你手中。",
+    "flavor_text": "\"机遇总是青睐有准备的人。\"",
+    "emoji": "🎴",
+    "attack": 0,
+    "defense": 0,
+    "cost": 1
+  }
+]
