@@ -303,6 +303,7 @@ func _update_wallpaper(scene_id: String):
 	"""仅在 livingroom 场景显示壁纸"""
 	if not wallpaper:
 		return
+	wallpaper.current_scene = scene_id
 	if scene_id != "livingroom":
 		wallpaper.visible = false
 		return

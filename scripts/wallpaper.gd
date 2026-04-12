@@ -17,6 +17,7 @@ var texture: Texture2D = null
 @export var pos_bottom_left: Vector2 = Vector2(0.630, 0.438)
 
 var scene_rect: Rect2 = Rect2()
+var current_scene: String = ""
 
 const ANIMATION_DURATION = 0.2
 
@@ -94,9 +95,12 @@ func _input(event: InputEvent):
 
 func _on_hit_area_input(event: InputEvent):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		# 精确判断是否在四边形内
-		var local_pos = to_local(get_viewport().get_mouse_position())
-		if not _point_in_quad(local_pos):
+		# 仅在客厅场景响应
+		if current_scene != "livingroom":
+			return
+		# 精确判断是否在四边形内（用视口坐标，与 scene_rect 同一坐标系）
+		var viewport_pos = get_viewport().get_mouse_position()
+		if not _point_in_quad(viewport_pos):
 			return
 		if _popup_visible:
 			_hide_popup()

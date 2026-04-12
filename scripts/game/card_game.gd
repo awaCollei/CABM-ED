@@ -29,8 +29,8 @@ func _show_screen(screen: Screen):
 	collection_panel.visible = screen == Screen.COLLECTION
 
 func _on_start_game():
+	MessageDisplay.show_failure_message("此功能尚未实现，敬请期待")
 	# TODO: 进入实际游戏逻辑
-	pass
 
 func _on_open_collection():
 	_show_screen(Screen.COLLECTION)
