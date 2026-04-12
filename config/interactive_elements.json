@@ -162,7 +162,7 @@
       "enabled": true,
       "options": [
         {
-          "text": "📚 阅读",
+          "text": "📚 阅览",
           "action": "open_bookshelf",
           "signal": "open_bookshelf"
         }

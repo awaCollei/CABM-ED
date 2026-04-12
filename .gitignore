@@ -2,6 +2,7 @@ assets/images/character/*
 assets/images/items/nsfw/*
 !assets/images/character/default/
 config/character_presets/*
+config/books/h/*
 !config/character_presets/default.json
 novel/*/
 novel/config

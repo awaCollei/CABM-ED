@@ -19,7 +19,7 @@ func setup(books: Array):
 
 func _create_book_card(book: Dictionary) -> Control:
 	var btn = Button.new()
-	btn.custom_minimum_size = Vector2(140, 200)
+	btn.custom_minimum_size = Vector2(160, 240)
 	btn.pressed.connect(func(): book_selected.emit(book))
 
 	var vbox = VBoxContainer.new()
@@ -44,16 +44,19 @@ func _create_book_card(book: Dictionary) -> Control:
 	# 书名
 	var title_lbl = Label.new()
 	title_lbl.text = book.get("title", "")
+	title_lbl.custom_minimum_size=Vector2(160,40)
 	title_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	title_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	title_lbl.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
 	title_lbl.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+	title_lbl.add_theme_font_size_override("font_size", 20)
 	vbox.add_child(title_lbl)
 
 	# 作者
 	var author_lbl = Label.new()
 	author_lbl.text = book.get("author", "")
+	author_lbl.custom_minimum_size=Vector2(160,40)
 	author_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	author_lbl.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	author_lbl.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
 	author_lbl.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
 	author_lbl.add_theme_font_size_override("font_size", 11)
 	author_lbl.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))

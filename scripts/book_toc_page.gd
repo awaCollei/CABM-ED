@@ -49,6 +49,7 @@ func setup(book: Dictionary):
 	for ch in chapters:
 		var btn = Button.new()
 		btn.text = ch.get("title", "第%d章" % ch.get("index", 1))
+		btn.custom_minimum_size=Vector2(0,45)
 		btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
 		var idx = ch.get("index", 1)
 		btn.pressed.connect(func(): chapter_selected.emit(current_book, idx))

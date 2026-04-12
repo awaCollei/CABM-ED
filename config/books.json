@@ -1,0 +1,42 @@
+{
+  "books": [
+    {
+      "id": "cabmed",
+      "title": "游戏手册",
+      "author": "awaCollei",
+      "icon": "res://assets/images/books/book1.png",
+      "description": "⚠此文档可能更新不及时，最新文档请在官网(https://cabm.shasnow.top/site/CABM-ED)查看",
+      "chapters": [
+        { "index": 1, "title": "项目理念" },
+        { "index": 2, "title": "功能玩法" },
+        { "index": 3, "title": "背景故事" },
+        { "index": 4, "title": "常见问题" },
+        { "index": 5, "title": "免责声明" },
+        { "index": 6, "title": "关于记忆" },
+        { "index": 7, "title": "自定义服装" },
+        { "index": 8, "title": "开发手册" }
+      ]
+    },
+    {
+      "id": "snowfox",
+      "title": "雪狐の奇妙冒险",
+      "author": "awaCollei et al.",
+      "icon": "res://assets/images/books/book3.png",
+      "description": "雪狐的短篇二创（三创）",
+      "chapters": [
+        { "index": 1, "title": "在古代拥有一只雪狐到底有多爽" },
+        { "index": 2, "title": "在现代拥有一只雪狐到底有多爽" }
+      ]
+    },
+    {
+      "id": "h",
+      "title": "小煌文",
+      "author": "西柚柠檬茶",
+      "icon": "res://assets/images/books/book3.png",
+      "description": "阅读本书前，请确保您已满18周岁",
+      "chapters": [
+        { "index": 1, "title": "可爱的傲娇老大被狠狠欺负然后堕落" }
+      ]
+    }
+  ]
+}
