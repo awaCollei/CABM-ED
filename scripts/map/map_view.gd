@@ -257,7 +257,7 @@ func _build_base_points(base_id: String):
 		btn.pressed.connect(_on_point_pressed.bind(cid))
 		canvas.add_child(btn)
 		point_nodes.append({"node": btn, "pos": pos, "id": cid, "type": "scene"})
-	close_button.text = "世界地图"
+	close_button.text = "🧭世界地图"
 	current_level = "base"
 	current_base_id = base_id
 

@@ -58,7 +58,7 @@ func setup_scenes(scenes_config: Dictionary, current_scene: String):
 	_style_button(call_button)
 	vbox.add_child(call_button)
 
-	if current_scene == "entryway" or current_scene == "shop" or current_scene == "rooftop":
+	if current_scene == "entryway" or current_scene == "shop" or current_scene == "rooftop" or current_scene == "library":
 		map_button = Button.new()
 		map_button.text = "🗺️ 打开地图"
 		map_button.pressed.connect(_on_map_button_pressed)
