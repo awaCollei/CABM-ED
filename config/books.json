@@ -3,18 +3,44 @@
     {
       "id": "cabmed",
       "title": "游戏手册",
-      "author": "awaCollei",
+      "author": "awaCollei et al.",
       "icon": "res://assets/images/books/book1.png",
       "description": "⚠此文档可能更新不及时，最新文档请在官网(https://cabm.shasnow.top/site/CABM-ED)查看",
       "chapters": [
-        { "index": 1, "title": "项目理念" },
-        { "index": 2, "title": "功能玩法" },
-        { "index": 3, "title": "背景故事" },
-        { "index": 4, "title": "常见问题" },
-        { "index": 5, "title": "免责声明" },
-        { "index": 6, "title": "关于记忆" },
-        { "index": 7, "title": "自定义服装" },
-        { "index": 8, "title": "开发手册" }
+        { "index": 1, "title": "💡 项目理念" },
+        { "index": 2, "title": "💕 功能玩法" },
+        { "index": 3, "title": "📜 背景故事" },
+        { "index": 4, "title": "❓ 常见问题" },
+        { "index": 5, "title": "📄 免责声明" },
+        { "index": 6, "title": "🧠 关于记忆" },
+        { "index": 7, "title": "👘 自定义服装" },
+        { "index": 8, "title": "🛠 开发者手册" }
+      ]
+    },
+    {
+      "id": "d",
+      "title": "日月前事",
+      "author": "N/A",
+      "icon": "res://assets/images/books/book2.png",
+      "description": "我头上怎么有个钉子？",
+      "chapters": [
+        { "index": 1, "title": "【鸽子衔枝之年】" },
+        { "index": 2, "title": "【法涅斯，或者原初的那一位】" },
+        { "index": 3, "title": "【衔枝后四十余年】" },
+        { "index": 4, "title": "【衔枝的四百余年】" },
+        { "index": 5, "title": "【箱舟开门之年】" },
+        { "index": 6, "title": "【箱舟开门的次年】" },
+        { "index": 7, "title": "【狂欢节之年】" },
+        { "index": 8, "title": "【葬火之年】" },
+        { "index": 9, "title": "【黑暗的元年】" },
+        { "index": 10, "title": "【太阳的比喻】" },
+        { "index": 11, "title": "【忘忧莲的比喻】" },
+        { "index": 12, "title": "【黑暗的第三年】" },
+        { "index": 13, "title": "【目盲之年】" },
+        { "index": 14, "title": "【目明之年，或日月的元年】" },
+        { "index": 15, "title": "【日月的二年】" },
+        { "index": 16, "title": "【树的比喻】" },
+        { "index": 17, "title": "【日月之十年】" }
       ]
     },
     {
@@ -32,8 +58,8 @@
       "id": "h",
       "title": "小煌文",
       "author": "西柚柠檬茶",
-      "icon": "res://assets/images/books/book3.png",
-      "description": "阅读本书前，请确保您已满18周岁",
+      "icon": "res://assets/images/books/book4.png",
+      "description": "🔞阅读本书前，请确保您已满18周岁",
       "chapters": [
         { "index": 1, "title": "可爱的傲娇老大被狠狠欺负然后堕落" }
       ]
