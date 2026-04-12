@@ -161,15 +161,29 @@ func _on_click_area_input(event: InputEvent):
 			if is_menu_visible:
 				hide_menu()
 			else:
-				show_menu()
+				show_menu(event.global_position)
 
-func show_menu():
+func show_menu(click_global_pos: Vector2 = Vector2.ZERO):
 	"""显示选项菜单"""
 	if is_menu_visible:
 		return
 	
 	is_menu_visible = true
 	options_panel.visible = true
+	
+	# 根据点击的全局位置计算面板位置
+	if click_global_pos != Vector2.ZERO:
+		var panel_h = options_panel.size.y if options_panel.size.y > 0 else 100.0
+		var panel_w = options_panel.size.x if options_panel.size.x > 0 else 150.0
+		var viewport_size = get_viewport_rect().size
+		var global_x = click_global_pos.x - panel_w / 2.0
+		var global_y = click_global_pos.y - panel_h - 10.0
+		# 防止超出屏幕边界
+		global_x = clamp(global_x, 0, viewport_size.x - panel_w)
+		global_y = clamp(global_y, 0, viewport_size.y - panel_h)
+		# 转换为相对于本节点的本地坐标
+		options_panel.position = Vector2(global_x, global_y) - global_position
+	
 	options_panel.pivot_offset = options_panel.size / 2.0
 	options_panel.scale = Vector2(0.8, 0.8)
 	
