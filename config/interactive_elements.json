@@ -143,6 +143,30 @@
           "signal": "enter_farming"
         }
       ]
+    },
+    "bookshelf_button": {
+      "name": "书架入口",
+      "type": "click_area",
+      "size": {
+        "width": 380,
+        "height": 320
+      },
+      "position": {
+        "anchor": "top_left",
+        "offset_x": 100,
+        "offset_y": 80
+      },
+      "scenes": [
+        "library"
+      ],
+      "enabled": true,
+      "options": [
+        {
+          "text": "📚 阅读",
+          "action": "open_bookshelf",
+          "signal": "open_bookshelf"
+        }
+      ]
     }
   },
   "position_anchors": {

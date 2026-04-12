@@ -266,6 +266,8 @@ func _connect_dynamic_elements_signals():
 			element.action_triggered.connect(_on_farming_action_triggered)
 		elif element_id == "story_mode_button" and element.has_signal("action_triggered"):
 			element.action_triggered.connect(_on_story_mode_action_triggered)
+		elif element_id == "bookshelf_button" and element.has_signal("action_triggered"):
+			element.action_triggered.connect(_on_bookshelf_action_triggered)
 		
 		# 可以根据需要添加其他元素的信号连接
 
@@ -1127,3 +1129,25 @@ func _move_character_to_current_scene():
 			_start_called_chat()
 		else:
 			print("呼唤触发对话已关闭，仅移动角色")
+
+func _on_bookshelf_action_triggered(_action: String):
+	"""书架按钮动作触发"""
+	var panel = get_node_or_null("BookReaderPanel")
+	if panel:
+		panel.open_panel()
+		return
+
+	var scene = load("res://scenes/book_reader_panel.tscn")
+	if scene:
+		panel = scene.instantiate()
+		panel.name = "BookReaderPanel"
+		add_child(panel)
+		panel.panel_closed.connect(_on_book_reader_closed)
+		panel.open_panel()
+	else:
+		push_error("无法加载 book_reader_panel.tscn")
+
+func _on_book_reader_closed():
+	"""图书阅览面板关闭"""
+	if has_node("/root/UIManager"):
+		get_node("/root/UIManager").enable_all()
