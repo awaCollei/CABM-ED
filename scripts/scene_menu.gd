@@ -17,6 +17,24 @@ func _ready():
 	modulate.a = 0.0
 	scale = Vector2(0.8, 0.8)
 	mouse_filter = Control.MOUSE_FILTER_IGNORE # Initially ignore mouse events
+	_apply_panel_style()
+
+func _apply_panel_style():
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.1, 0.1, 0.15, 0.8)
+	style.corner_radius_top_left = 10
+	style.corner_radius_top_right = 10
+	style.corner_radius_bottom_left = 10
+	style.corner_radius_bottom_right = 10
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.border_color = Color(0.4, 0.4, 0.5, 0.6)
+	style.shadow_color = Color(0, 0, 0, 0.4)
+	style.shadow_size = 6
+	style.shadow_offset = Vector2(2, 3)
+	add_theme_stylebox_override("panel", style)
 
 func setup_scenes(scenes_config: Dictionary, current_scene: String):
 	# 清除现有按钮
@@ -37,12 +55,14 @@ func setup_scenes(scenes_config: Dictionary, current_scene: String):
 	call_button = Button.new()
 	call_button.text = "💬 呼唤" + character_name
 	call_button.pressed.connect(_on_call_button_pressed)
+	_style_button(call_button)
 	vbox.add_child(call_button)
 
 	if current_scene == "entryway" or current_scene == "shop" or current_scene == "rooftop":
 		map_button = Button.new()
 		map_button.text = "🗺️ 打开地图"
 		map_button.pressed.connect(_on_map_button_pressed)
+		_style_button(map_button)
 		vbox.add_child(map_button)
 	
 	# 获取当前场景的连通场景列表
@@ -61,7 +81,7 @@ func setup_scenes(scenes_config: Dictionary, current_scene: String):
 		var icon = _get_scene_icon(scene_data)
 		button.text = icon + " 前往" + scene_data.get("name", scene_id)
 		button.pressed.connect(_on_scene_button_pressed.bind(scene_id))
-		
+		_style_button(button)
 		vbox.add_child(button)
 		scene_buttons.append(button)
 
@@ -83,9 +103,9 @@ func show_menu(at_position: Vector2):
 	var separation = 5.0  # 按钮间距
 	var total_height = button_count * button_height + (button_count - 1) * separation
 	
-	# 设置面板大小（宽度150，高度根据按钮数量计算）
-	var panel_width = 150.0
-	var margin = 20.0
+	# 设置面板大小（宽度170，高度根据按钮数量计算）
+	var panel_width = 180.0
+	var margin = 16.0
 	custom_minimum_size = Vector2(panel_width, total_height + margin)
 	size = Vector2(panel_width, total_height + margin)
 	
@@ -145,6 +165,37 @@ func _get_scene_icon(scene_data: Dictionary) -> String:
 			return "🌳"
 		_:
 			return "📍"
+
+func _style_button(btn: Button) -> void:
+	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
+	btn.add_theme_font_size_override("font_size", 26)
+	btn.custom_minimum_size=Vector2(170,40)
+	# 普通状态
+	var normal = StyleBoxFlat.new()
+	normal.bg_color = Color(1, 1, 1, 0.0)
+	normal.corner_radius_top_left = 6
+	normal.corner_radius_top_right = 6
+	normal.corner_radius_bottom_left = 6
+	normal.corner_radius_bottom_right = 6
+	btn.add_theme_stylebox_override("normal", normal)
+	# 悬停状态
+	var hover = StyleBoxFlat.new()
+	hover.bg_color = Color(1, 1, 1, 0.12)
+	hover.corner_radius_top_left = 6
+	hover.corner_radius_top_right = 6
+	hover.corner_radius_bottom_left = 6
+	hover.corner_radius_bottom_right = 6
+	btn.add_theme_stylebox_override("hover", hover)
+	# 按下状态
+	var pressed_style = StyleBoxFlat.new()
+	pressed_style.bg_color = Color(1, 1, 1, 0.2)
+	pressed_style.corner_radius_top_left = 6
+	pressed_style.corner_radius_top_right = 6
+	pressed_style.corner_radius_bottom_left = 6
+	pressed_style.corner_radius_bottom_right = 6
+	btn.add_theme_stylebox_override("pressed", pressed_style)
+	# 字体颜色
+	btn.add_theme_color_override("font_color", Color(0.95, 0.95, 0.95))
 
 func _input(event):
 	# 如果菜单可见，且点击了菜单外的区域，则隐藏菜单

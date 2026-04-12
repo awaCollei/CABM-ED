@@ -1,4 +1,4 @@
-[gd_scene load_steps=17 format=3 uid="uid://c8yqvxm7qwxqj"]
+[gd_scene load_steps=18 format=3 uid="uid://c8yqvxm7qwxqj"]
 
 [ext_resource type="Script" uid="uid://b84t0i8227422" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Theme" uid="uid://contcf3ey12vl" path="res://default_theme.tres" id="1_ragmj"]
@@ -23,6 +23,8 @@ border_color = Color(0.9326067, 0.8857702, 0.6834521, 1)
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 shadow_size = 3
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0im0j"]
 
 [node name="Main" type="Control"]
 layout_mode = 3
@@ -253,6 +255,7 @@ offset_right = 120.0
 offset_bottom = 80.0
 size_flags_horizontal = 0
 size_flags_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_0im0j")
 script = ExtResource("6_action_menu")
 
 [node name="MarginContainer" type="MarginContainer" parent="ActionMenu"]
@@ -276,21 +279,25 @@ theme_override_constants/separation = 5
 [node name="ChatButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+theme_override_font_sizes/font_size = 28
 text = "💬 聊天"
 
 [node name="CompanionButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+theme_override_font_sizes/font_size = 28
 text = "📚 陪伴"
 
 [node name="SleepButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+theme_override_font_sizes/font_size = 28
 text = "💤 助眠"
 
 [node name="GameButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer"]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
+theme_override_font_sizes/font_size = 28
 text = "🎮 游戏"
 
 [node name="GameSubmenu" type="Panel" parent="ActionMenu"]

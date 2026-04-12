@@ -33,7 +33,7 @@
     },
     "studyroom": {
       "name": "书房",
-      "icon": "📚",
+      "icon": "💻",
       "weight": 3,
       "class": "home",
       "connect": ["livingroom","bedroom","bathroom"]
@@ -57,14 +57,21 @@
       "icon": "🏪",
       "weight": 1,
       "class": "outdoor",
-      "connect": ["entryway"]
+      "connect": ["entryway","library"]
     },
     "entryway": {
       "name": "玄关",
       "icon": "🚪",
       "weight": 1,
       "class": "home",
-      "connect": ["livingroom","kitchen","shop","rooftop"]
+      "connect": ["livingroom","kitchen","rooftop","shop","library"]
+    },
+    "library": {
+      "name": "图书馆",
+      "icon": "📚",
+      "weight": 1,
+      "class": "outdoor",
+      "connect": ["entryway","shop","rooftop"]
     }
   }
 }
