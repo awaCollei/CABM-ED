@@ -75,6 +75,13 @@ func _close_popup():
 	select_popup.visible = false
 	_editing_slot = -1
 
+func get_selected_cards() -> Array:
+	var result = []
+	for card in _selected_slots:
+		if card != null:
+			result.append(card)
+	return result
+
 func _refresh_slots():
 	for i in MAX_SLOTS:
 		var slot_btn: Button = slot_buttons[i]
