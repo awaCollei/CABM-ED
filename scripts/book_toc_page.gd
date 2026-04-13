@@ -157,13 +157,13 @@ func _create_chapter_card(chapter: Dictionary, index: int) -> Control:
 	hbox.add_child(number_panel)
 	
 	# 章节标题
-	var title_label = Label.new()
-	title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE  # 让鼠标事件穿透
-	title_label.text = chapter.get("title", "第%d章" % idx)
-	title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	title_label.add_theme_font_size_override("font_size", 24)
-	title_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.95, 1))
-	hbox.add_child(title_label)
+	var chapter_title_label = Label.new()
+	chapter_title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE  # 让鼠标事件穿透
+	chapter_title_label.text = chapter.get("title", "第%d章" % idx)
+	chapter_title_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	chapter_title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	chapter_title_label.add_theme_font_size_override("font_size", 24)
+	chapter_title_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.95, 1))
+	hbox.add_child(chapter_title_label)
 	
 	return btn
