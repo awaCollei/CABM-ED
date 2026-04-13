@@ -255,14 +255,6 @@ func load_character_for_scene(scene_id: String):
 		custom_minimum_size = texture_normal.get_size()
 		size = texture_normal.get_size()
 		
-		# 先设置为完全透明，避免在(0,0)位置闪现
-		modulate.a = 0.0
-		visible = true
-		
-		# 等待背景和场景完全准备好
-		await get_tree().process_frame
-		await get_tree().process_frame
-		
 		# 再次验证 background_node（防止在等待期间被清除）
 		if not background_node:
 			print("错误: 等待后 background_node 为空")
@@ -274,14 +266,17 @@ func load_character_for_scene(scene_id: String):
 			print("警告: 背景纹理未加载，等待加载...")
 			# 再等待几帧
 			await get_tree().process_frame
-			await get_tree().process_frame
 			if not background_node.texture:
 				print("错误: 背景纹理仍未加载")
 				visible = false
 				return
 		
-		# 更新位置和缩放
+		# 先更新位置和缩放（在显示之前）
 		_update_position_and_scale_from_preset()
+		
+		# 然后设置为完全透明并显示，避免闪现
+		modulate.a = 0.0
+		visible = true
 		
 		# 保存角色场景和预设到存档
 		_save_character_state()
@@ -516,9 +511,6 @@ func _reload_same_preset():
 		custom_minimum_size = texture_normal.get_size()
 		size = texture_normal.get_size()
 		
-		modulate.a = 0.0
-		visible = true
-		
 		await get_tree().process_frame
 		await get_tree().process_frame
 		
@@ -528,8 +520,13 @@ func _reload_same_preset():
 			visible = false
 			return
 		
+		# 先更新位置和缩放（在显示之前）
 		_update_position_and_scale_from_preset()
 		_save_character_state()
+		
+		# 然后设置为完全透明并显示
+		modulate.a = 0.0
+		visible = true
 		
 		var fade_in_tween = create_tween()
 		fade_in_tween.tween_property(self, "modulate:a", 1.0, 0.5).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
