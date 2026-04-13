@@ -78,87 +78,128 @@ theme_override_font_sizes/font_size = 12
 layout_mode = 2
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="LeftContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer"]
+[node name="LeftContainer" type="ScrollContainer" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="ExpressionContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer"]
+[node name="ExpressionContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="ExpressionDiffCheckButton" type="CheckButton" parent="VBoxContainer/HBoxContainer/LeftContainer/ExpressionContainer"]
+[node name="ExpressionDiffCheckButton" type="CheckButton" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/ExpressionContainer"]
 layout_mode = 2
 size_flags_horizontal = 0
 text = "启用表情差分"
 
-[node name="ExpressionDescLabel" type="Label" parent="VBoxContainer/HBoxContainer/LeftContainer/ExpressionContainer"]
+[node name="ExpressionDescLabel" type="Label" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/ExpressionContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_font_sizes/font_size = 12
 text = "更丰富的表情变化"
 
-[node name="GenerationContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer"]
+[node name="GenerationContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="GenerationOptionsCheckButton" type="CheckButton" parent="VBoxContainer/HBoxContainer/LeftContainer/GenerationContainer"]
+[node name="GenerationOptionsCheckButton" type="CheckButton" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/GenerationContainer"]
 layout_mode = 2
 size_flags_horizontal = 0
 text = "生成回复选项"
 
-[node name="GenerationDescLabel" type="Label" parent="VBoxContainer/HBoxContainer/LeftContainer/GenerationContainer"]
+[node name="GenerationDescLabel" type="Label" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/GenerationContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_font_sizes/font_size = 12
 text = "旮旯给木里就是这样的"
 
-[node name="TopInputContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer"]
+[node name="TopInputContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="TopInputCheckButton" type="CheckButton" parent="VBoxContainer/HBoxContainer/LeftContainer/TopInputContainer"]
+[node name="TopInputCheckButton" type="CheckButton" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/TopInputContainer"]
 layout_mode = 2
 size_flags_horizontal = 0
 text = "上方输入区域"
 
-[node name="TopInputDescLabel" type="Label" parent="VBoxContainer/HBoxContainer/LeftContainer/TopInputContainer"]
+[node name="TopInputDescLabel" type="Label" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/TopInputContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_font_sizes/font_size = 12
 text = "或许对移动端会更友好一些"
 
-[node name="CallTriggerContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer"]
+[node name="CallTriggerContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="CallTriggerDialogCheckButton" type="CheckButton" parent="VBoxContainer/HBoxContainer/LeftContainer/CallTriggerContainer"]
+[node name="CallTriggerDialogCheckButton" type="CheckButton" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/CallTriggerContainer"]
 layout_mode = 2
 size_flags_horizontal = 0
 text = "呼唤触发对话"
 
-[node name="CallTriggerDescLabel" type="Label" parent="VBoxContainer/HBoxContainer/LeftContainer/CallTriggerContainer"]
+[node name="CallTriggerDescLabel" type="Label" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/CallTriggerContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_font_sizes/font_size = 12
 text = "跨场景呼唤角色时触发对话"
 
-[node name="StatusContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer"]
+[node name="ActiveChatContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="StatusCheckButton" type="CheckButton" parent="VBoxContainer/HBoxContainer/LeftContainer/StatusContainer"]
+[node name="ActiveChatCheckButton" type="CheckButton" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/ActiveChatContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+button_pressed = true
+text = "启用主动对话"
+
+[node name="ActiveChatDescLabel" type="Label" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/ActiveChatContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "角色可以主动发起对话"
+
+[node name="OfflineDiaryContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="OfflineDiaryCheckButton" type="CheckButton" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/OfflineDiaryContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+button_pressed = true
+text = "启用离线日记"
+
+[node name="OfflineDiaryDescLabel" type="Label" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/OfflineDiaryContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "在离线期间生成日记"
+
+[node name="StatusContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="StatusCheckButton" type="CheckButton" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/StatusContainer"]
 layout_mode = 2
 size_flags_horizontal = 0
 text = "显示请求状态"
 
-[node name="StatusDescLabel" type="Label" parent="VBoxContainer/HBoxContainer/LeftContainer/StatusContainer"]
+[node name="StatusDescLabel" type="Label" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/StatusContainer"]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_font_sizes/font_size = 12
 text = "聊天时显示后台状态"
+
+[node name="VSeparator" type="VSeparator" parent="VBoxContainer/HBoxContainer"]
+layout_mode = 2
 
 [node name="RightContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2

@@ -14,11 +14,13 @@ const TYPING_PREVIEW_TEXT = "这是一段示例文本，你可以拖动滑杆观
 @onready var verbal_checkbox = $VBoxContainer/StylesHBox/VerbalContainer/VerbalCheckBox
 @onready var narrative_checkbox = $VBoxContainer/StylesHBox/NarrativeContainer/NarrativeCheckBox
 @onready var story_checkbox = $VBoxContainer/StylesHBox/StoryContainer/StoryCheckBox
-@onready var expression_diff_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/ExpressionContainer/ExpressionDiffCheckButton
-@onready var generation_options_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/GenerationContainer/GenerationOptionsCheckButton
-@onready var top_input_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/TopInputContainer/TopInputCheckButton
-@onready var call_trigger_dialog_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/CallTriggerContainer/CallTriggerDialogCheckButton
-@onready var status_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/StatusContainer/StatusCheckButton
+@onready var expression_diff_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/ExpressionContainer/ExpressionDiffCheckButton
+@onready var generation_options_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/GenerationContainer/GenerationOptionsCheckButton
+@onready var top_input_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/TopInputContainer/TopInputCheckButton
+@onready var call_trigger_dialog_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/CallTriggerContainer/CallTriggerDialogCheckButton
+@onready var active_chat_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/ActiveChatContainer/ActiveChatCheckButton
+@onready var offline_diary_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/OfflineDiaryContainer/OfflineDiaryCheckButton
+@onready var status_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/StatusContainer/StatusCheckButton
 @onready var typing_speed_slider: HSlider = $VBoxContainer/HBoxContainer/RightContainer/HSlider
 @onready var typing_speed_preview_text_edit: TextEdit = $VBoxContainer/HBoxContainer/RightContainer/TextEdit
 
@@ -64,6 +66,8 @@ func _ready() -> void:
 	generation_options_checkbutton.toggled.connect(_on_generation_options_toggled)
 	top_input_checkbutton.toggled.connect(_on_top_input_toggled)
 	call_trigger_dialog_checkbutton.toggled.connect(_on_call_trigger_dialog_toggled)
+	active_chat_checkbutton.toggled.connect(_on_active_chat_toggled)
+	offline_diary_checkbutton.toggled.connect(_on_offline_diary_toggled)
 	status_checkbutton.toggled.connect(_on_status_check_toggled)
 	typing_speed_slider.value_changed.connect(_on_typing_speed_slider_changed)
 	
@@ -102,6 +106,12 @@ func load_response_settings() -> void:
 	
 	# 加载呼唤触发对话设置
 	call_trigger_dialog_checkbutton.button_pressed = config_manager.load_call_trigger_dialog()
+	
+	# 加载启用主动对话设置
+	active_chat_checkbutton.button_pressed = config_manager.load_active_chat()
+	
+	# 加载启用离线日记设置
+	offline_diary_checkbutton.button_pressed = config_manager.load_offline_diary()
 	
 	# 加载显示请求状态设置
 	status_checkbutton.button_pressed = config_manager.load_status_check()
@@ -164,6 +174,16 @@ func _on_top_input_toggled(enabled: bool) -> void:
 func _on_call_trigger_dialog_toggled(enabled: bool) -> void:
 	config_manager.save_call_trigger_dialog(enabled)
 	print("呼唤触发对话已%s" % ("开启" if enabled else "关闭"))
+
+## 启用主动对话开关切换
+func _on_active_chat_toggled(enabled: bool) -> void:
+	config_manager.save_active_chat(enabled)
+	print("启用主动对话已%s" % ("开启" if enabled else "关闭"))
+
+## 启用离线日记开关切换
+func _on_offline_diary_toggled(enabled: bool) -> void:
+	config_manager.save_offline_diary(enabled)
+	print("启用离线日记已%s" % ("开启" if enabled else "关闭"))
 
 ## 显示请求状态开关切换
 func _on_status_check_toggled(enabled: bool) -> void:

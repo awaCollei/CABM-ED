@@ -295,6 +295,28 @@ func load_call_trigger_dialog() -> bool:
 	var config = load_config()
 	return config.get("call_trigger_dialog", true) # 默认开启
 
+## 保存启用主动对话设置
+func save_active_chat(enabled: bool) -> bool:
+	var config = load_config()
+	config["active_chat"] = enabled
+	return save_config(config)
+
+## 加载启用主动对话设置
+func load_active_chat() -> bool:
+	var config = load_config()
+	return config.get("active_chat", true) # 默认开启
+
+## 保存启用离线日记设置
+func save_offline_diary(enabled: bool) -> bool:
+	var config = load_config()
+	config["offline_diary"] = enabled
+	return save_config(config)
+
+## 加载启用离线日记设置
+func load_offline_diary() -> bool:
+	var config = load_config()
+	return config.get("offline_diary", true) # 默认开启
+
 ## 保存文本输出速度（秒/字）
 func save_typing_speed(speed: float) -> bool:
 	var config = load_config()

@@ -136,6 +136,11 @@ func on_enter_scene() -> EventResult:
 	if is_on_cooldown("enter_scene"):
 		return EventResult.new(false, "")
 	
+	# 检查是否启用主动对话
+	if not _is_active_chat_enabled():
+		print("主动对话已关闭，跳过进入场景事件")
+		return EventResult.new(false, "")
+	
 	var base_willingness = 50
 	var success_chance = helpers.calculate_success_chance(base_willingness)
 	var success = randf() < success_chance
@@ -160,6 +165,11 @@ func on_leave_scene() -> EventResult:
 	reset_idle_timer()
 	
 	if is_on_cooldown("leave_scene"):
+		return EventResult.new(false, "")
+	
+	# 检查是否启用主动对话
+	if not _is_active_chat_enabled():
+		print("主动对话已关闭，跳过离开场景事件")
 		return EventResult.new(false, "")
 	
 	var base_willingness = 30
@@ -305,16 +315,24 @@ func on_idle_timeout() -> EventResult:
 		result.willingness_change = randi_range(5, 15)
 		print("非聊天状态空闲超时：提高回复意愿")
 		
-		# 尝试触发主动聊天（50%概率）
-		var base_willingness = 50
-		var success_chance = helpers.calculate_success_chance(base_willingness)
-		if randf() < success_chance:
-			result.message = "active" # 触发主动聊天
-			print("空闲超时触发主动聊天")
-		# 如果没有触发主动聊天，尝试触发位置变动（100%概率）
-		elif randf() < 1.0:
-			result.message = "idle_position_change" # 触发位置变动
-			print("空闲超时触发位置变动")
+		# 检查是否启用主动对话
+		if _is_active_chat_enabled():
+			# 尝试触发主动聊天（50%概率）
+			var base_willingness = 50
+			var success_chance = helpers.calculate_success_chance(base_willingness)
+			if randf() < success_chance:
+				result.message = "active" # 触发主动聊天
+				print("空闲超时触发主动聊天")
+			# 如果没有触发主动聊天，尝试触发位置变动（100%概率）
+			elif randf() < 1.0:
+				result.message = "idle_position_change" # 触发位置变动
+				print("空闲超时触发位置变动")
+		else:
+			print("主动对话已关闭，跳过主动聊天触发")
+			# 尝试触发位置变动（100%概率）
+			if randf() < 1.0:
+				result.message = "idle_position_change" # 触发位置变动
+				print("空闲超时触发位置变动")
 	
 	_apply_result(result)
 	event_completed.emit("idle_timeout", result)
@@ -368,6 +386,16 @@ func _get_chat_state() -> String:
 	else:
 		# AI正在回复或打字动画进行中
 		return "chatting"
+
+func _is_active_chat_enabled() -> bool:
+	"""检查是否启用主动对话"""
+	# 尝试获取配置管理器
+	var config_mgr = get_node_or_null("/root/AIConfigManager")
+	if config_mgr == null:
+		print("警告: AIConfigManager 未找到，默认启用主动对话")
+		return true
+	
+	return config_mgr.load_active_chat()
 
 # ========================================
 # 冷却管理

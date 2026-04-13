@@ -265,6 +265,11 @@ func _generate_character_diary(offline_minutes: float, event_count: int):
 		print("事件数为0，跳过日记生成")
 		return
 	
+	# 检查是否启用离线日记
+	if not _is_offline_diary_enabled():
+		print("离线日记已关闭，跳过日记生成")
+		return
+	
 	print("开始生成角色日记，离线时长: %.2f 分钟，事件数: %d" % [offline_minutes, event_count])
 	
 	# 获取当前时间和时区偏移
@@ -670,3 +675,13 @@ func _save_diary_entry_legacy(time_str: String, event_text: String, date_str: St
 		await memory_mgr.add_diary_entry(diary_entry)
 	
 	print("日记已保存（旧逻辑）: [%s] %s" % [time_str, event_text])
+
+func _is_offline_diary_enabled() -> bool:
+	"""检查是否启用离线日记"""
+	# 尝试获取配置管理器
+	var config_mgr = get_node_or_null("/root/AIConfigManager")
+	if config_mgr == null:
+		print("警告: AIConfigManager 未找到，默认启用离线日记")
+		return true
+	
+	return config_mgr.load_offline_diary()
