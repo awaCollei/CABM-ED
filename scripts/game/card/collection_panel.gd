@@ -16,8 +16,15 @@ var _selected_btn: Control = null
 @onready var info_panel: Control = $MainArea/InfoPanel
 @onready var info_name: Label = $MainArea/InfoPanel/InfoVBox/InfoName
 @onready var info_type: Label = $MainArea/InfoPanel/InfoVBox/TopRow/TopRightVBox/InfoType
+
+# 角色牌专用标签
 @onready var info_attack: Label = $MainArea/InfoPanel/InfoVBox/TopRow/TopRightVBox/InfoAttack
 @onready var info_defense: Label = $MainArea/InfoPanel/InfoVBox/TopRow/TopRightVBox/InfoDefense
+
+# 手牌专用标签
+@onready var info_category: Label = $MainArea/InfoPanel/InfoVBox/TopRow/TopRightVBox/InfoCategory
+@onready var info_cost: Label = $MainArea/InfoPanel/InfoVBox/TopRow/TopRightVBox/InfoCost
+
 @onready var info_skill_name: Label = $MainArea/InfoPanel/InfoVBox/InfoSkillName
 @onready var info_desc: Label = $MainArea/InfoPanel/InfoVBox/InfoDesc
 @onready var info_flavor: Label = $MainArea/InfoPanel/InfoVBox/InfoFlavor
@@ -96,8 +103,17 @@ func _create_hand_card_item(card) -> Control:
 	vbox.add_theme_constant_override("separation", 8)
 	btn.add_child(vbox)
 
+	# 类型图标（顶部）
+	var category_icon = Label.new()
+	category_icon.text = card.get_category_icon()
+	category_icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	category_icon.add_theme_font_size_override("font_size", 20)
+	category_icon.custom_minimum_size = Vector2(0, 24)
+	category_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(category_icon)
+
 	var emoji_area = Control.new()
-	emoji_area.custom_minimum_size = Vector2(0, 70)
+	emoji_area.custom_minimum_size = Vector2(0, 60)
 	emoji_area.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	emoji_area.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	vbox.add_child(emoji_area)
@@ -106,8 +122,8 @@ func _create_hand_card_item(card) -> Control:
 	emoji_label.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	emoji_label.text = card.emoji
 	emoji_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	emoji_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	emoji_label.add_theme_font_size_override("font_size", 40)
+	emoji_label.vertical_alignment = VERTICAL_ALIGNMENT_TOP
+	emoji_label.add_theme_font_size_override("font_size", 42)
 	emoji_area.add_child(emoji_label)
 
 	var name_label = Label.new()
@@ -119,7 +135,7 @@ func _create_hand_card_item(card) -> Control:
 	vbox.add_child(name_label)
 
 	var cost_label = Label.new()
-	cost_label.text = "%d费" % card.cost
+	cost_label.text = "💎 %d" % card.cost
 	cost_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	cost_label.add_theme_font_size_override("font_size", 22)
 	cost_label.add_theme_color_override("font_color", Color(0.9, 0.8, 0.3))
@@ -147,10 +163,17 @@ func _show_info(card):
 	info_panel.visible = true
 	info_name.text = card.card_name
 	info_type.text = "角色牌" if card.card_type == 0 else "手牌"
-	info_attack.text = "🗡 %d" % card.attack
-	info_defense.text = "♥ %d" % card.defense
 
 	if card.card_type == 0:
+		# 角色牌：显示攻击/防御，隐藏类型/费用
+		info_attack.visible = true
+		info_defense.visible = true
+		info_category.visible = false
+		info_cost.visible = false
+		
+		info_attack.text = "🗡 %d" % card.attack
+		info_defense.text = "♥ %d" % card.defense
+		
 		info_skill_name.visible = true
 		info_skill_name.text = "【%s】" % card.skill_name if card.skill_name != "" else ""
 		info_image.visible = true
@@ -158,6 +181,15 @@ func _show_info(card):
 		var img_full_path = "res://assets/images/cards/" + card.image_path
 		info_image.texture = load(img_full_path) if ResourceLoader.exists(img_full_path) else null
 	else:
+		# 手牌：显示类型/费用，隐藏攻击/防御
+		info_attack.visible = false
+		info_defense.visible = false
+		info_category.visible = true
+		info_cost.visible = true
+		
+		info_category.text = "%s %s" % [card.get_category_icon(), card.get_category_name()]
+		info_cost.text = "💎 %d" % card.cost
+		
 		info_skill_name.visible = false
 		info_image.visible = false
 		info_emoji.visible = true
@@ -170,8 +202,10 @@ func _show_empty_info():
 	info_panel.visible = true
 	info_name.text = "选择卡牌查看详细信息"
 	info_type.text = ""
-	info_attack.text = ""
-	info_defense.text = ""
+	info_attack.visible = false
+	info_defense.visible = false
+	info_category.visible = false
+	info_cost.visible = false
 	info_skill_name.visible = false
 	info_image.visible = false
 	info_emoji.visible = false

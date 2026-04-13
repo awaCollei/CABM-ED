@@ -39,6 +39,7 @@ static func _load_cards_from_json(path: String) -> Array:
 		card.defense     = entry.get("defense", 0)
 		card.cost        = entry.get("cost", 1)
 		card.emoji       = entry.get("emoji", "")
+		card.category    = entry.get("category", "")
 		card.image_path  = entry.get("image_path", "")
 		card.skill_name  = entry.get("skill_name", "")
 		cards.append(card)

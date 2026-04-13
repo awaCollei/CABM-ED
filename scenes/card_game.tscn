@@ -109,9 +109,8 @@ offset_right = 200.0
 offset_bottom = -221.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_colors/font_color = Color(0, 0.64705884, 1, 1)
-theme_override_font_sizes/font_size = 14
-text = "前面忘了中间忘了后面忘了"
+theme_override_colors/font_color = Color(1, 0.5529412, 0, 1)
+text = "⚠此玩法尚未完成"
 horizontal_alignment = 1
 
 [node name="SlotArea" type="HBoxContainer" parent="HomePanel"]
@@ -386,6 +385,18 @@ layout_mode = 2
 theme_override_colors/font_color = Color(1, 0, 0, 1)
 theme_override_font_sizes/font_size = 30
 text = "🗡 0"
+
+[node name="InfoCategory" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/TopRow/TopRightVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.7, 1, 1)
+theme_override_font_sizes/font_size = 26
+text = "✨ 特殊"
+
+[node name="InfoCost" type="Label" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox/TopRow/TopRightVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.85, 0.3, 1)
+theme_override_font_sizes/font_size = 28
+text = "💎 1"
 
 [node name="Divider" type="HSeparator" parent="CollectionPanel/MainArea/InfoPanel/InfoVBox"]
 layout_mode = 2

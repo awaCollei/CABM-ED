@@ -802,8 +802,17 @@ func _create_hand_card_ui(card: CardDataClass, index: int) -> Control:
 	panel.add_theme_stylebox_override("panel", style)
 	
 	var vbox = VBoxContainer.new()
-	vbox.add_theme_constant_override("separation", 5)
+	vbox.add_theme_constant_override("separation", 3)
 	panel.add_child(vbox)
+	
+	# 类型图标（顶部）
+	var category_icon = Label.new()
+	category_icon.text = card.get_category_icon()
+	category_icon.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
+	category_icon.add_theme_font_size_override("font_size", 16)
+	category_icon.custom_minimum_size = Vector2(0, 20)
+	category_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	vbox.add_child(category_icon)
 	
 	# Emoji图标
 	var emoji_label = Label.new()
