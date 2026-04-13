@@ -5,25 +5,38 @@ extends Control
 signal back_requested()
 
 @onready var chapter_label = $MarginContainer/VBoxContainer/TopBar/ChapterLabel
+@onready var book_title_label = $MarginContainer/VBoxContainer/TopBar/BookTitleLabel
 @onready var back_btn = $MarginContainer/VBoxContainer/TopBar/BackButton
 @onready var content_label = $MarginContainer/VBoxContainer/ScrollContainer/ContentLabel
 @onready var prev_btn = $MarginContainer/VBoxContainer/NavBar/PrevButton
 @onready var next_btn = $MarginContainer/VBoxContainer/NavBar/NextButton
 @onready var page_label = $MarginContainer/VBoxContainer/NavBar/PageLabel
+@onready var decrease_btn = $FontSizeControl/DecreaseButton
+@onready var increase_btn = $FontSizeControl/IncreaseButton
 
 var current_book: Dictionary = {}
 var current_index: int = 1
 var total_chapters: int = 1
+var font_size: int = 17  # 默认字体大小
+const MIN_FONT_SIZE: int = 12
+const MAX_FONT_SIZE: int = 32
 
 func _ready():
 	back_btn.pressed.connect(func(): back_requested.emit())
 	prev_btn.pressed.connect(_on_prev)
 	next_btn.pressed.connect(_on_next)
+	decrease_btn.pressed.connect(_on_decrease_font)
+	increase_btn.pressed.connect(_on_increase_font)
+	_update_font_size()
 
 func setup(book: Dictionary, chapter_index: int):
 	current_book = book
 	current_index = chapter_index
 	total_chapters = book.get("chapters", []).size()
+	
+	# 显示书名
+	book_title_label.text = book.get("title", "")
+	
 	_load_chapter(chapter_index)
 
 func _load_chapter(index: int):
@@ -63,3 +76,18 @@ func _on_prev():
 func _on_next():
 	if current_index < total_chapters:
 		_load_chapter(current_index + 1)
+
+func _on_decrease_font():
+	if font_size > MIN_FONT_SIZE:
+		font_size -= 2
+		_update_font_size()
+
+func _on_increase_font():
+	if font_size < MAX_FONT_SIZE:
+		font_size += 2
+		_update_font_size()
+
+func _update_font_size():
+	content_label.add_theme_font_size_override("normal_font_size", font_size)
+	decrease_btn.disabled = (font_size <= MIN_FONT_SIZE)
+	increase_btn.disabled = (font_size >= MAX_FONT_SIZE)

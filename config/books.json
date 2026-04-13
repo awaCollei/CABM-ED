@@ -28,6 +28,23 @@
       ]
     },
     {
+      "id": "icebreaker1",
+      "title": "破冰者（一）",
+      "author": "awaCollei et al.",
+      "icon": "res://assets/images/books/book2.png",
+      "description": "雪狐原作的小说，第一部。但是全是AI写的，而且没写完……以后肯定是要重写的，毕竟AI写的也是一坨（",
+      "chapters": [
+        { "index": 1, "title": "序章" },
+        { "index": 2, "title": "死寂" },
+        { "index": 3, "title": "雪影" },
+        { "index": 4, "title": "影梦" },
+        { "index": 5, "title": "破冰" },
+        { "index": 6, "title": "潜袭" },
+        { "index": 7, "title": "幽灵" },
+        { "index": 8, "title": "雪狐" }
+      ]
+    },
+    {
       "id": "snowfox",
       "title": "雪狐の奇妙冒险",
       "author": "awaCollei et al.",

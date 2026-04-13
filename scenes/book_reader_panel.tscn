@@ -1,10 +1,11 @@
-[gd_scene load_steps=7 format=3 uid="uid://b7su3lcad0hfj"]
+[gd_scene load_steps=8 format=3 uid="uid://b7su3lcad0hfj"]
 
 [ext_resource type="Script" uid="uid://c3pqqkqf5ifvm" path="res://scripts/book_reader_panel.gd" id="1"]
 [ext_resource type="Script" uid="uid://c25y5apkm0woo" path="res://scripts/book_list_page.gd" id="2"]
 [ext_resource type="Script" uid="uid://oqcfh88iiyi3" path="res://scripts/book_toc_page.gd" id="3"]
 [ext_resource type="Script" uid="uid://bes3kwiqlnsue" path="res://scripts/book_content_page.gd" id="4"]
 [ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="4_qeycb"]
+[ext_resource type="Theme" uid="uid://dxscbhbyg47rp" path="res://theme/green_button.tres" id="6_yuhtg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.19076231, 0.19076234, 0.19076225, 0.9019608)
@@ -69,9 +70,9 @@ size_flags_vertical = 3
 [node name="GridContainer" type="GridContainer" parent="BookListPage/MarginContainer/VBoxContainer/ScrollContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/h_separation = 20
-theme_override_constants/v_separation = 20
-columns = 4
+theme_override_constants/h_separation = 24
+theme_override_constants/v_separation = 24
+columns = 6
 
 [node name="BookTocPage" type="Control" parent="."]
 visible = false
@@ -205,6 +206,11 @@ layout_mode = 2
 layout_mode = 2
 size_flags_horizontal = 3
 
+[node name="BookTitleLabel" type="Label" parent="BookContentPage/MarginContainer/VBoxContainer/TopBar"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 18
+
 [node name="ScrollContainer" type="ScrollContainer" parent="BookContentPage/MarginContainer/VBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 3
@@ -236,3 +242,30 @@ horizontal_alignment = 1
 [node name="NextButton" type="Button" parent="BookContentPage/MarginContainer/VBoxContainer/NavBar"]
 layout_mode = 2
 text = "下一章 ▶"
+
+[node name="FontSizeControl" type="HBoxContainer" parent="BookContentPage"]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -120.0
+offset_top = -60.0
+offset_right = -20.0
+offset_bottom = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_constants/separation = 8
+
+[node name="DecreaseButton" type="Button" parent="BookContentPage/FontSizeControl"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+theme = ExtResource("6_yuhtg")
+text = "-"
+
+[node name="IncreaseButton" type="Button" parent="BookContentPage/FontSizeControl"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+theme = ExtResource("6_yuhtg")
+text = "+"
