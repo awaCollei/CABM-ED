@@ -211,44 +211,12 @@ func _do_delete(wp_id: String, file_path: String, dialog: ConfirmationDialog):
 # ── 上传（系统文件管理器）────────────────────────────────
 
 func _on_upload_pressed():
-	if OS.get_name() == "Android":
-		_upload_android()
-	else:
-		_upload_desktop()
-
-func _upload_desktop():
-	# 使用系统原生文件对话框（异步，结果通过回调返回）
-	DisplayServer.file_dialog_show(
-		"选择壁纸图片",
-		OS.get_system_dir(OS.SYSTEM_DIR_PICTURES),
-		"",
-		false,
-		DisplayServer.FILE_DIALOG_MODE_OPEN_FILE,
-		["*.png ; PNG图片", "*.jpg,*.jpeg ; JPEG图片"],
-		_on_desktop_file_selected
-	)
-
-func _on_desktop_file_selected(status: bool, selected_paths: PackedStringArray, _filter_idx: int):
-	if not status or selected_paths.is_empty():
-		return
-	_import_image(selected_paths[0])
-
-func _upload_android():
-	# Android 权限检查
-	var perm = "android.permission.READ_MEDIA_IMAGES"
-	var granted = OS.get_granted_permissions()
-	if not granted.has(perm) and not granted.has("android.permission.READ_EXTERNAL_STORAGE"):
-		OS.request_permissions()
-		await get_tree().create_timer(1.5).timeout
-	# Android 上用 Godot FileDialog 作为回退
-	_open_godot_file_dialog()
-
-func _open_godot_file_dialog():
 	var dialog = FileDialog.new()
 	dialog.file_mode = FileDialog.FILE_MODE_OPEN_FILE
 	dialog.access = FileDialog.ACCESS_FILESYSTEM
 	dialog.filters = ["*.png,*.jpg,*.jpeg ; 图片文件"]
 	dialog.title = "选择壁纸图片"
+	dialog.use_native_dialog = true
 	add_child(dialog)
 	dialog.popup_centered(Vector2(600, 400))
 	dialog.file_selected.connect(_import_image)
