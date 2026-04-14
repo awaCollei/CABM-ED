@@ -175,24 +175,29 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -200.0
+offset_left = -280.0
 offset_top = 190.0
-offset_right = 200.0
+offset_right = 280.0
 offset_bottom = 240.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 12
 alignment = 1
 
 [node name="StartButton" type="Button" parent="HomePanel/BottomButtons"]
-custom_minimum_size = Vector2(160, 48)
+custom_minimum_size = Vector2(150, 48)
 layout_mode = 2
 text = "▶ 开始游戏"
 
 [node name="CollectionButton" type="Button" parent="HomePanel/BottomButtons"]
-custom_minimum_size = Vector2(160, 48)
+custom_minimum_size = Vector2(150, 48)
 layout_mode = 2
 text = "📖 卡牌图鉴"
+
+[node name="ResetButton" type="Button" parent="HomePanel/BottomButtons"]
+custom_minimum_size = Vector2(150, 48)
+layout_mode = 2
+text = "🔄 重置卡槽"
 
 [node name="SelectPopup" type="Control" parent="HomePanel"]
 visible = false

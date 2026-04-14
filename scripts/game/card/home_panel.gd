@@ -17,6 +17,7 @@ var _editing_slot: int = -1
 ]
 @onready var start_button: Button = $BottomButtons/StartButton
 @onready var collection_button: Button = $BottomButtons/CollectionButton
+@onready var reset_button: Button = $BottomButtons/ResetButton
 @onready var select_popup: Control = $SelectPopup
 @onready var popup_grid: GridContainer = $SelectPopup/PopupBG/VBox/ScrollContainer/PopupGrid
 @onready var popup_close: Button = $SelectPopup/PopupBG/VBox/CloseButton
@@ -28,18 +29,21 @@ func _ready():
 	_character_cards = CardDatabaseClass.get_character_cards()
 	start_button.pressed.connect(func(): start_game_pressed.emit())
 	collection_button.pressed.connect(func(): collection_pressed.emit())
+	reset_button.pressed.connect(_on_reset_pressed)
 	popup_close.pressed.connect(_close_popup)
 	select_popup.visible = false
 
 	for i in MAX_SLOTS:
 		slot_buttons[i].pressed.connect(_on_slot_pressed.bind(i))
 
+	_load_slots()
 	_refresh_slots()
 
 func _on_slot_pressed(slot_idx: int):
 	if _selected_slots[slot_idx] != null:
 		_selected_slots[slot_idx] = null
 		_refresh_slots()
+		_save_slots()
 		return
 	_editing_slot = slot_idx
 	_open_select_popup()
@@ -69,7 +73,13 @@ func _on_popup_card_selected(card):
 	if _editing_slot >= 0:
 		_selected_slots[_editing_slot] = card
 		_refresh_slots()
+		_save_slots()
 	_close_popup()
+
+func _on_reset_pressed():
+	_selected_slots = [null, null, null]
+	_refresh_slots()
+	_save_slots()
 
 func _close_popup():
 	select_popup.visible = false
@@ -115,3 +125,47 @@ func _refresh_slots():
 			for node in card_view.find_children("*", "Control", true, false):
 				node.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			card_view.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+func _save_slots():
+	"""保存卡槽选择状态"""
+	if not has_node("/root/SaveManager"):
+		return
+	
+	var save_mgr = get_node("/root/SaveManager")
+	var slot_data = []
+	
+	for card in _selected_slots:
+		if card != null:
+			slot_data.append(card.card_name)
+		else:
+			slot_data.append(null)
+	
+	if not save_mgr.save_data.has("card_game_data"):
+		save_mgr.save_data.card_game_data = {}
+	
+	save_mgr.save_data.card_game_data.selected_slots = slot_data
+	save_mgr.save_game(save_mgr.current_slot)
+
+func _load_slots():
+	"""加载卡槽选择状态"""
+	if not has_node("/root/SaveManager"):
+		return
+	
+	var save_mgr = get_node("/root/SaveManager")
+	
+	if not save_mgr.save_data.has("card_game_data"):
+		return
+	
+	if not save_mgr.save_data.card_game_data.has("selected_slots"):
+		return
+	
+	var slot_data = save_mgr.save_data.card_game_data.selected_slots
+	
+	for i in range(min(slot_data.size(), MAX_SLOTS)):
+		var card_name = slot_data[i]
+		if card_name != null:
+			# 根据卡牌名称查找对应的卡牌数据
+			for card in _character_cards:
+				if card.card_name == card_name:
+					_selected_slots[i] = card
+					break
