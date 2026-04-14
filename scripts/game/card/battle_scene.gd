@@ -25,12 +25,13 @@ var _discard_pile: Array = []       # CardData数组
 # 战斗单位状态
 var _player_hp: Array = []  # 对应_player_characters的生命值
 var _enemy_hp: Array = []   # 对应_enemy_characters的生命值
-var _player_buffs: Array = []  # 各种buff状态
-var _enemy_buffs: Array = []
+var _player_effects: Array = []  # 效果数组（每个单位一个数组）
+var _enemy_effects: Array = []   # 效果数组（每个单位一个数组）
 
 # 选择状态
 var _selected_hand_card: int = -1
 var _selected_player_unit: int = -1
+var _current_card_action: CardActionBase = null  # 当前选中卡牌的行为
 
 # UI节点
 @onready var player_area = $PlayerAreaBG/PlayerArea
@@ -144,12 +145,12 @@ func _on_back_pressed():
 func start_battle(player_cards: Array):
 	_player_characters = player_cards.duplicate()
 	
-	# 初始化玩家生命值
+	# 初始化玩家生命值和效果
 	_player_hp.clear()
-	_player_buffs.clear()
+	_player_effects.clear()
 	for card in _player_characters:
 		_player_hp.append(card.defense)
-		_player_buffs.append({})
+		_player_effects.append([])  # 每个单位一个效果数组
 	
 	# 创建3个普通敌人
 	_create_enemies()
@@ -169,7 +170,7 @@ func start_battle(player_cards: Array):
 func _create_enemies():
 	_enemy_characters.clear()
 	_enemy_hp.clear()
-	_enemy_buffs.clear()
+	_enemy_effects.clear()
 	
 	# 创建3个普通敌人角色卡
 	for i in range(3):
@@ -182,7 +183,7 @@ func _create_enemies():
 		enemy.description = "一个普通的敌人"
 		_enemy_characters.append(enemy)
 		_enemy_hp.append(enemy.defense)
-		_enemy_buffs.append({})
+		_enemy_effects.append([])  # 每个单位一个效果数组
 
 func _init_deck():
 	_deck.clear()
@@ -220,19 +221,11 @@ func _start_player_turn():
 	_turn_number += 1
 	_player_energy = _max_energy
 	
-	# 处理玩家buff效果（如剧毒）
+	# 触发玩家回合开始效果
 	for i in range(_player_characters.size()):
 		if _player_hp[i] <= 0:
 			continue
-		
-		# 处理剧毒
-		if _player_buffs[i].has("poison") and _player_buffs[i]["poison"] > 0:
-			_deal_damage_to_player(i, 1)
-			_player_buffs[i]["poison"] -= 1
-			if _player_buffs[i]["poison"] <= 0:
-				_player_buffs[i].erase("poison")
-			_update_info("你的角色 " + str(i+1) + " 受到剧毒伤害！")
-			await get_tree().create_timer(0.3).timeout
+		_trigger_turn_start_effects(i, true)
 	
 	# 检查游戏结束
 	if _check_game_over():
@@ -244,6 +237,7 @@ func _start_player_turn():
 	# 清除选择
 	_selected_hand_card = -1
 	_selected_player_unit = -1
+	_current_card_action = null
 	
 	_refresh_all_ui()
 	_update_info("你的回合 - 回合 " + str(_turn_number))
@@ -255,20 +249,13 @@ func _start_enemy_turn():
 	
 	await get_tree().create_timer(1.0).timeout
 	
-	# 处理敌人buff效果（如剧毒）
+	# 触发敌人回合开始效果
 	for i in range(_enemy_characters.size()):
 		if _enemy_hp[i] <= 0:
 			continue
-		
-		# 处理剧毒
-		if _enemy_buffs[i].has("poison") and _enemy_buffs[i]["poison"] > 0:
-			_deal_damage_to_enemy(i, 1)
-			_enemy_buffs[i]["poison"] -= 1
-			if _enemy_buffs[i]["poison"] <= 0:
-				_enemy_buffs[i].erase("poison")
-			_update_info("敌人 " + str(i+1) + " 受到剧毒伤害！")
-			_refresh_all_ui()
-			await get_tree().create_timer(0.5).timeout
+		_trigger_turn_start_effects(i, false)
+		_refresh_all_ui()
+		await get_tree().create_timer(0.5).timeout
 	
 	# 检查游戏结束
 	if _check_game_over():
@@ -292,10 +279,17 @@ func _start_enemy_turn():
 		var target = alive_players[randi() % alive_players.size()]
 		var damage = _enemy_characters[i].attack
 		
+		# 触发攻击前效果
+		damage = _trigger_before_deal_damage(i, false, damage)
+		
 		_update_info("敌人 " + str(i+1) + " 攻击你的角色 " + str(target+1) + "!")
 		await get_tree().create_timer(0.8).timeout
 		
 		_deal_damage_to_player(target, damage)
+		
+		# 触发攻击后效果
+		_trigger_after_deal_damage(i, false, damage)
+		
 		_refresh_all_ui()
 		await get_tree().create_timer(0.5).timeout
 	
@@ -327,8 +321,23 @@ func _on_hand_card_clicked(index: int):
 		_update_info("费用不足！需要 " + str(card.cost) + " 费用")
 		return
 	
+	# 创建卡牌行为
+	_current_card_action = CardActionFactory.create_action(card, self)
+	if _current_card_action == null:
+		_update_info("该卡牌暂未实现")
+		return
+	
 	_selected_hand_card = index
-	_update_info("已选择: " + card.card_name + " - 选择目标")
+	
+	# 根据目标类型显示提示
+	var target_type = _current_card_action.get_target_type()
+	if target_type == 0:
+		# 无需目标，直接执行
+		_execute_current_card()
+	else:
+		var hint = _current_card_action.get_hint_text()
+		_update_info("已选择: " + card.card_name + " - " + hint)
+	
 	_refresh_all_ui()
 
 func _on_player_unit_clicked(index: int):
@@ -336,134 +345,188 @@ func _on_player_unit_clicked(index: int):
 		return
 	
 	if _player_hp[index] <= 0:
+		_update_info("该角色已阵亡")
 		return
 	
-	if _selected_hand_card >= 0:
-		_use_card_on_player_unit(index)
+	if _current_card_action != null:
+		var target_type = _current_card_action.get_target_type()
+		if target_type == 1:
+			# 只需要己方单位
+			_execute_current_card(index, -1)
+		elif target_type == 3:
+			# 需要先选己方，再选敌方
+			_selected_player_unit = index
+			var hint = _current_card_action.get_hint_text(index)
+			_update_info(hint)
+			_refresh_all_ui()
+		else:
+			_update_info("该卡牌不能对己方使用")
 	else:
-		_selected_player_unit = index
-		_update_info("已选择你的角色 " + str(index+1))
-		_refresh_all_ui()
+		# 没有选中卡牌，角色牌不能直接攻击
+		_update_info("角色不能直接攻击，请使用【攻击】手牌")
 
 func _on_enemy_unit_clicked(index: int):
 	if _phase != Phase.PLAYER_TURN:
 		return
 	
 	if _enemy_hp[index] <= 0:
+		_update_info("该敌人已阵亡")
 		return
 	
-	if _selected_hand_card >= 0:
-		_use_card_on_enemy_unit(index)
-	elif _selected_player_unit >= 0:
-		# 使用攻击牌或直接攻击
-		_player_attack_enemy(_selected_player_unit, index)
-
-func _use_card_on_player_unit(target: int):
-	var card = _hand_cards[_selected_hand_card]
-	
-	# 扣除费用
-	_player_energy -= card.cost
-	
-	# 执行卡牌效果
-	match card.id:
-		"attack":
-			# 攻击牌：选择己方角色后，等待选择敌人目标
-			_selected_player_unit = target
-			# 弃牌
-			_discard_pile.append(_hand_cards[_selected_hand_card])
-			_hand_cards.remove_at(_selected_hand_card)
-			_selected_hand_card = -1
-			_update_info("选择要攻击的敌人目标")
-			_refresh_all_ui()
-			return
-		"shield":
-			_player_buffs[target]["shield"] = 2
-			_update_info(card.card_name + " 使用成功！")
-		"hand_heal":
-			_player_hp[target] = min(_player_hp[target] + 2, _player_characters[target].defense)
-			_update_info(card.card_name + " 恢复了2点生命！")
-		"draw":
-			_draw_cards(3)
-			_update_info(card.card_name + " 抽取了3张牌！")
-		_:
-			_update_info("该卡牌不能对己方使用")
-			_player_energy += card.cost
-			_selected_hand_card = -1
-			_refresh_all_ui()
-			return
-	
-	# 弃牌
-	_discard_pile.append(_hand_cards[_selected_hand_card])
-	_hand_cards.remove_at(_selected_hand_card)
-	_selected_hand_card = -1
-	
-	_refresh_all_ui()
-
-func _use_card_on_enemy_unit(target: int):
-	var card = _hand_cards[_selected_hand_card]
-	
-	# 扣除费用
-	_player_energy -= card.cost
-	
-	# 执行卡牌效果
-	match card.id:
-		"poison":
-			_enemy_buffs[target]["poison"] = 3
-			_update_info(card.card_name + " 施加了剧毒！")
-		_:
+	if _current_card_action != null:
+		var target_type = _current_card_action.get_target_type()
+		if target_type == 2:
+			# 只需要敌方单位
+			_execute_current_card(-1, index)
+		elif target_type == 3:
+			# 需要先选己方，再选敌方
+			if _selected_player_unit >= 0:
+				_execute_current_card(_selected_player_unit, index)
+			else:
+				_update_info("请先选择己方角色")
+		else:
 			_update_info("该卡牌不能对敌方使用")
-			_player_energy += card.cost
-			_selected_hand_card = -1
-			_refresh_all_ui()
-			return
-	
-	# 弃牌
-	_discard_pile.append(_hand_cards[_selected_hand_card])
-	_hand_cards.remove_at(_selected_hand_card)
-	_selected_hand_card = -1
-	
-	_refresh_all_ui()
+	else:
+		_update_info("请先选择手牌")
 
-func _player_attack_enemy(attacker: int, target: int):
-	var damage = _player_characters[attacker].attack
-	_deal_damage_to_enemy(target, damage)
+func _execute_current_card(player_unit: int = -1, enemy_unit: int = -1):
+	if _current_card_action == null or _selected_hand_card < 0:
+		return
 	
-	_update_info(_player_characters[attacker].card_name + " 攻击了敌人 " + str(target+1) + "，造成 " + str(damage) + " 点伤害!")
+	var card = _hand_cards[_selected_hand_card]
 	
+	# 检查是否可以使用
+	if not _current_card_action.can_use(player_unit, enemy_unit):
+		_update_info("无法使用该卡牌")
+		return
+	
+	# 扣除费用
+	_player_energy -= card.cost
+	
+	# 执行卡牌效果
+	var success = _current_card_action.execute(player_unit, enemy_unit)
+	
+	if success:
+		# 弃牌
+		_discard_pile.append(_hand_cards[_selected_hand_card])
+		_hand_cards.remove_at(_selected_hand_card)
+	else:
+		# 执行失败，返还费用
+		_player_energy += card.cost
+		_update_info("卡牌执行失败")
+	
+	# 清除选择
+	_selected_hand_card = -1
 	_selected_player_unit = -1
-	_refresh_all_ui()
+	_current_card_action = null
 	
+	_refresh_all_ui()
 	_check_game_over()
 
+# ========== 效果系统 ==========
+
+func _add_effect(target_index: int, is_player: bool, effect: EffectBase):
+	var effects_array = _player_effects[target_index] if is_player else _enemy_effects[target_index]
+	effects_array.append(effect)
+	effect.on_apply()
+
+func _trigger_turn_start_effects(target_index: int, is_player: bool):
+	var effects_array = _player_effects[target_index] if is_player else _enemy_effects[target_index]
+	var to_remove = []
+	
+	for i in range(effects_array.size()):
+		var effect = effects_array[i]
+		effect.on_turn_start()
+		
+		# 检查效果是否过期
+		if effect.duration == 0:
+			to_remove.append(i)
+	
+	# 移除过期效果（从后往前删除）
+	for i in range(to_remove.size() - 1, -1, -1):
+		var effect = effects_array[to_remove[i]]
+		effect.on_remove()
+		effects_array.remove_at(to_remove[i])
+
+func _trigger_before_damage(target_index: int, is_player: bool, damage: int) -> int:
+	var effects_array = _player_effects[target_index] if is_player else _enemy_effects[target_index]
+	var modified_damage = damage
+	
+	for effect in effects_array:
+		modified_damage = effect.on_before_damage(modified_damage)
+	
+	return modified_damage
+
+func _trigger_after_damage(target_index: int, is_player: bool, damage: int):
+	var effects_array = _player_effects[target_index] if is_player else _enemy_effects[target_index]
+	
+	for effect in effects_array:
+		effect.on_after_damage(damage)
+
+func _trigger_before_deal_damage(attacker_index: int, is_player: bool, damage: int) -> int:
+	var effects_array = _player_effects[attacker_index] if is_player else _enemy_effects[attacker_index]
+	var modified_damage = damage
+	
+	for effect in effects_array:
+		modified_damage = effect.on_before_deal_damage(modified_damage)
+	
+	return modified_damage
+
+func _trigger_after_deal_damage(_attacker_index: int, _is_player: bool, _damage: int):
+	# 可以在这里添加攻击后触发的效果
+	pass
+
+# ========== 伤害系统 ==========
+
 func _deal_damage_to_player(target: int, damage: int):
-	# 检查护盾
-	var actual_damage = damage
-	if _player_buffs[target].has("shield"):
-		var shield = _player_buffs[target]["shield"]
-		var reduced = min(damage, shield)
-		actual_damage -= reduced
-		_player_buffs[target]["shield"] -= reduced
-		if _player_buffs[target]["shield"] <= 0:
-			_player_buffs[target].erase("shield")
-		if reduced > 0:
-			_update_info("护盾抵挡了 " + str(reduced) + " 点伤害！")
+	# 触发受伤前效果
+	var actual_damage = _trigger_before_damage(target, true, damage)
 	
 	_player_hp[target] -= actual_damage
 	if _player_hp[target] < 0:
 		_player_hp[target] = 0
 	
+	# 触发受伤后效果
+	_trigger_after_damage(target, true, actual_damage)
+	
 	# 显示伤害数字
 	if actual_damage > 0:
 		_show_damage_number(target, actual_damage, true)
+	
+	# 清理过期效果
+	_cleanup_expired_effects(target, true)
 
 func _deal_damage_to_enemy(target: int, damage: int):
-	_enemy_hp[target] -= damage
+	# 触发受伤前效果
+	var actual_damage = _trigger_before_damage(target, false, damage)
+	
+	_enemy_hp[target] -= actual_damage
 	if _enemy_hp[target] < 0:
 		_enemy_hp[target] = 0
 	
+	# 触发受伤后效果
+	_trigger_after_damage(target, false, actual_damage)
+	
 	# 显示伤害数字
-	if damage > 0:
-		_show_damage_number(target, damage, false)
+	if actual_damage > 0:
+		_show_damage_number(target, actual_damage, false)
+	
+	# 清理过期效果
+	_cleanup_expired_effects(target, false)
+
+func _cleanup_expired_effects(target_index: int, is_player: bool):
+	var effects_array = _player_effects[target_index] if is_player else _enemy_effects[target_index]
+	var to_remove = []
+	
+	for i in range(effects_array.size()):
+		if effects_array[i].duration == 0:
+			to_remove.append(i)
+	
+	# 从后往前删除
+	for i in range(to_remove.size() - 1, -1, -1):
+		var effect = effects_array[to_remove[i]]
+		effect.on_remove()
+		effects_array.remove_at(to_remove[i])
 
 func _show_damage_number(target: int, damage: int, is_player: bool):
 	# 创建伤害数字标签
@@ -522,6 +585,8 @@ func _game_over(victory: bool):
 	
 	await get_tree().create_timer(2.0).timeout
 	battle_ended.emit(victory)
+
+# ========== UI刷新 ==========
 
 func _refresh_all_ui():
 	_refresh_player_area()
@@ -603,11 +668,10 @@ func _refresh_turn_panel():
 		end_turn_btn.custom_minimum_size = Vector2(160, 40)
 		end_turn_btn.pressed.connect(_on_end_turn_pressed)
 		_setup_button_style(end_turn_btn, Color(0.2, 0.5, 0.3), Color(0.3, 0.7, 0.4))
+	
+	# 确保按钮在面板中
+	if end_turn_btn.get_parent() != turn_panel:
 		turn_panel.add_child(end_turn_btn)
-	else:
-		# 确保按钮在面板中
-		if end_turn_btn.get_parent() != turn_panel:
-			turn_panel.add_child(end_turn_btn)
 	
 	# 根据回合状态禁用/启用按钮
 	end_turn_btn.disabled = (_phase != Phase.PLAYER_TURN)
@@ -726,23 +790,15 @@ func _create_character_ui(card: CardDataClass, hp: int, is_player: bool, index: 
 	atk_label.add_theme_color_override("font_color", Color(1.0, 0.7, 0.3))
 	vbox.add_child(atk_label)
 	
-	# 显示buff状态
-	var buffs = _player_buffs[index] if is_player else _enemy_buffs[index]
-	if buffs.has("shield") and buffs["shield"] > 0:
-		var shield_label = Label.new()
-		shield_label.text = "🛡️ 护盾 +" + str(buffs["shield"])
-		shield_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		shield_label.add_theme_font_size_override("font_size", 12)
-		shield_label.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0))
-		vbox.add_child(shield_label)
-	
-	if buffs.has("poison") and buffs["poison"] > 0:
-		var poison_label = Label.new()
-		poison_label.text = "🍃 剧毒 x" + str(buffs["poison"])
-		poison_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		poison_label.add_theme_font_size_override("font_size", 12)
-		poison_label.add_theme_color_override("font_color", Color(0.4, 1.0, 0.4))
-		vbox.add_child(poison_label)
+	# 显示效果状态
+	var effects = _player_effects[index] if is_player else _enemy_effects[index]
+	for effect in effects:
+		var effect_label = Label.new()
+		effect_label.text = effect.get_display_text()
+		effect_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		effect_label.add_theme_font_size_override("font_size", 12)
+		effect_label.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0))
+		vbox.add_child(effect_label)
 	
 	# 添加点击按钮
 	var btn = Button.new()
