@@ -35,6 +35,10 @@ var _selected_player_unit: int = -1
 var _current_card_action: CardActionBase = null  # 当前选中卡牌的行为
 var _dragging_card: int = -1  # 正在拖动的卡牌索引
 var _dragging_card_ui: Control = null  # 拖动中的卡牌UI副本
+var _drag_start_pos: Vector2 = Vector2.ZERO  # 拖动起始位置
+var _is_dragging: bool = false  # 是否正在拖动
+var _resolving_card_ui: Control = null  # 正在结算区域的卡牌UI
+const DRAG_THRESHOLD: float = 10.0  # 拖动阈值（像素）
 
 # 行为结算器
 var _action_resolver: BattleActionResolverClass = null
@@ -49,6 +53,7 @@ var _action_resolver: BattleActionResolverClass = null
 @onready var back_btn = $BackButton
 @onready var play_zone_indicator = $PlayZoneIndicator
 @onready var end_turn_btn = $TurnPanel/TurnVBox/EndTurnButton
+@onready var card_resolve_area = $CardResolveArea  # 卡牌结算区域
 
 func _ready():
 	back_btn.pressed.connect(_on_back_pressed)
@@ -345,54 +350,67 @@ func _on_end_turn_pressed():
 	
 	_start_enemy_turn()
 
-func _on_hand_card_clicked(index: int):
+func _on_hand_card_mouse_down(index: int, start_pos: Vector2):
+	"""鼠标按下"""
+	print("[拖动] 鼠标按下, index=", index, " start_pos=", start_pos)
+	
 	if _phase != Phase.PLAYER_TURN:
+		print("[拖动] 不是玩家回合，返回")
 		return
 	
 	var card = _hand_cards[index]
 	
 	# 检查费用
 	if card.cost > _player_energy:
-		_update_info("费用不足！需要 " + str(card.cost) + " 费用")
+		print("[拖动] 费用不足，返回")
 		return
 	
-	# 点击卡牌进入"选择"状态，显示tooltip
-	if _selected_hand_card == index:
-		# 再次点击取消选择
-		_selected_hand_card = -1
-		_current_card_action = null
-		_update_info("取消选择")
-	else:
-		# 选择卡牌
-		_selected_hand_card = index
-		_current_card_action = CardActionFactory.create_action(card, self)
-		
-		if _current_card_action == null:
-			_update_info("该卡牌暂未实现")
-			_selected_hand_card = -1
-			return
-		
-		# 显示卡牌信息
-		_update_info("已选择: " + card.card_name + " - 拖动到上方区域打出")
+	# 记录拖动起始位置
+	_drag_start_pos = start_pos
+	_dragging_card = index
+	_is_dragging = false  # 还未确定是拖动
+	print("[拖动] 记录拖动起始位置, _dragging_card=", _dragging_card)
+
+func _on_hand_card_mouse_up(index: int, end_pos: Vector2):
+	"""鼠标松开"""
+	print("[拖动] 鼠标松开, index=", index, " end_pos=", end_pos)
+	print("[拖动] _dragging_card=", _dragging_card, " _is_dragging=", _is_dragging)
 	
-	_refresh_all_ui()
+	if _dragging_card != index:
+		print("[拖动] 索引不匹配，返回")
+		return
+	
+	# 如果是拖动状态，处理拖动结束
+	if _is_dragging:
+		print("[拖动] 调用 _on_hand_card_drag_end")
+		_on_hand_card_drag_end(index, end_pos)
+		# 注意：_on_hand_card_drag_end 内部会调用 _cleanup_drag_state()
+	else:
+		# 如果不是拖动（只是点击），清理拖动状态
+		print("[拖动] 只是点击，清理拖动状态")
+		_cleanup_drag_state()
 
 func _on_hand_card_drag_start(index: int, start_pos: Vector2):
+	"""开始拖动（超过阈值后才真正开始）"""
+	print("[拖动] 开始拖动, index=", index, " start_pos=", start_pos)
+	
 	if _phase != Phase.PLAYER_TURN:
+		print("[拖动] 不是玩家回合，返回")
 		return
 	
-	var card = _hand_cards[index]
-	
-	# 检查费用
-	if card.cost > _player_energy:
+	if _dragging_card != index:
+		print("[拖动] 索引不匹配，返回")
 		return
 	
-	_dragging_card = index
+	_is_dragging = true
 	_selected_hand_card = -1  # 拖动时清除选择状态
 	
 	# 显示打出区域指示器（只在开始拖动时显示）
 	if play_zone_indicator:
 		play_zone_indicator.visible = true
+		print("[拖动] 显示打出区域指示器")
+	else:
+		print("[拖动] play_zone_indicator 不存在！")
 	
 	# 创建拖动卡牌的视觉副本
 	_create_dragging_card_visual(index, start_pos)
@@ -413,8 +431,8 @@ func _create_dragging_card_visual(index: int, start_pos: Vector2):
 	_dragging_card_ui.z_index = 1000
 	_dragging_card_ui.modulate = Color(1.0, 1.0, 1.0, 0.8)
 	
-	# 添加发光效果
-	var tween = create_tween()
+	# 添加发光效果（绑定到_dragging_card_ui，这样删除时会自动停止）
+	var tween = _dragging_card_ui.create_tween()
 	tween.set_loops()
 	tween.tween_property(_dragging_card_ui, "modulate:a", 0.6, 0.5)
 	tween.tween_property(_dragging_card_ui, "modulate:a", 0.9, 0.5)
@@ -422,40 +440,82 @@ func _create_dragging_card_visual(index: int, start_pos: Vector2):
 	add_child(_dragging_card_ui)
 
 func _process(_delta):
-	# 更新拖动卡牌的位置
-	if _dragging_card >= 0 and _dragging_card_ui:
+	# 安全检查：如果鼠标左键没有按下，但仍在拖动状态，处理拖动结束
+	if (_is_dragging or _dragging_card >= 0) and not Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
+		print("[拖动] _process 检测到鼠标松开")
+		if _is_dragging and _dragging_card >= 0:
+			# 正在拖动，处理拖动结束
+			var mouse_pos = get_global_mouse_position()
+			_on_hand_card_drag_end(_dragging_card, mouse_pos)
+		else:
+			# 还没开始拖动，只是清理状态
+			_cleanup_drag_state()
+			_refresh_all_ui()
+		return
+	
+	# 检查是否超过拖动阈值
+	if _dragging_card >= 0 and not _is_dragging:
+		var current_pos = get_global_mouse_position()
+		var distance = _drag_start_pos.distance_to(current_pos)
+		if distance > DRAG_THRESHOLD:
+			# 超过阈值，开始拖动
+			_on_hand_card_drag_start(_dragging_card, current_pos)
+	
+	# 更新拖动卡牌的位置（只在真正拖动时）
+	if _is_dragging and _dragging_card >= 0 and _dragging_card_ui:
 		var mouse_pos = get_global_mouse_position()
 		_dragging_card_ui.global_position = mouse_pos - _dragging_card_ui.size / 2
 
 func _on_hand_card_drag_end(index: int, end_pos: Vector2):
-	if _dragging_card != index:
+	"""拖动结束"""
+	print("[拖动] _on_hand_card_drag_end 被调用, index=", index, " end_pos=", end_pos)
+	print("[拖动] _is_dragging=", _is_dragging, " _dragging_card=", _dragging_card)
+	
+	if not _is_dragging:
+		print("[拖动] 不在拖动状态，返回")
 		return
 	
+	# 检查是否在打出区域内（使用当前鼠标位置而不是end_pos）
+	var mouse_pos = get_global_mouse_position()
+	var is_in_zone = false
+	if play_zone_indicator:
+		var zone_rect = play_zone_indicator.get_global_rect()
+		is_in_zone = zone_rect.has_point(mouse_pos)
+		print("[拖动] mouse_pos=", mouse_pos)
+		print("[拖动] zone_rect=", zone_rect)
+		print("[拖动] is_in_zone=", is_in_zone)
+	else:
+		print("[拖动] play_zone_indicator 不存在！")
+	
+	# 立即清理拖动状态
+	_cleanup_drag_state()
+	
+	if is_in_zone:
+		# 在打出区域内，执行卡牌
+		print("[拖动] 在打出区域内，执行卡牌")
+		_play_card_from_drag(index)
+	else:
+		# 不在打出区域，取消
+		print("[拖动] 不在打出区域，取消")
+		_update_info("拖动到上方绿色区域以打出卡牌")
+		_refresh_all_ui()
+
+func _cleanup_drag_state():
+	"""清理所有拖动相关状态"""
+	print("[拖动] 清理拖动状态")
+	_is_dragging = false
 	_dragging_card = -1
 	
 	# 清理拖动卡牌视觉副本
 	if _dragging_card_ui:
 		_dragging_card_ui.queue_free()
 		_dragging_card_ui = null
+		print("[拖动] 清理拖动卡牌UI")
 	
 	# 隐藏打出区域指示器
 	if play_zone_indicator:
 		play_zone_indicator.visible = false
-	
-	# 检查是否在打出区域内（使用play_zone_indicator的全局rect）
-	var is_in_zone = false
-	if play_zone_indicator:
-		var zone_rect = play_zone_indicator.get_global_rect()
-		is_in_zone = zone_rect.has_point(end_pos)
-	
-	if is_in_zone:
-		# 在打出区域内，执行卡牌
-		_play_card_from_drag(index)
-	else:
-		# 不在打出区域，取消
-		_update_info("拖动到上方绿色区域以打出卡牌")
-	
-	_refresh_all_ui()
+		print("[拖动] 隐藏打出区域指示器")
 
 func _on_player_unit_clicked(index: int):
 	if _phase != Phase.PLAYER_TURN:
@@ -518,22 +578,25 @@ func _execute_current_card(player_unit: int = -1, enemy_unit: int = -1):
 		return
 	
 	# 注意：费用已经在拖动打出时扣除了
+	# 注意：卡牌已经在结算区域了
 	
 	# 执行卡牌效果
 	var success = _current_card_action.execute(player_unit, enemy_unit)
 	
 	if success:
-		# 播放卡牌消失动画（从当前位置消失）
-		var card_index = _selected_hand_card
-		await _play_card_final_disappear(card_index)
-		
 		# 弃牌
 		_discard_pile.append(_hand_cards[_selected_hand_card])
 		_hand_cards.remove_at(_selected_hand_card)
+		_update_info("卡牌已打出")
+		
+		# 等待一小段时间后让结算区域的卡牌消失
+		await get_tree().create_timer(0.3).timeout
+		await _remove_resolving_card()
 	else:
 		# 执行失败，返还费用
 		_player_energy += card.cost
 		_update_info("卡牌执行失败")
+		await _remove_resolving_card()
 	
 	# 清除选择
 	_selected_hand_card = -1
@@ -543,93 +606,67 @@ func _execute_current_card(player_unit: int = -1, enemy_unit: int = -1):
 	_refresh_all_ui()
 	_check_game_over()
 
-func _play_card_final_disappear(card_index: int):
-	"""播放卡牌最终消失动画（从等待位置消失）"""
-	if card_index >= hand_area.get_child_count():
-		return
-	
-	var card_ui = hand_area.get_child(card_index)
-	
-	# 创建消失动画
-	var tween = create_tween()
-	tween.tween_property(card_ui, "modulate:a", 0.0, 0.3)
-	
-	await tween.finished
-
 func _play_card_from_drag(index: int):
 	"""从拖动打出卡牌 - 先打出，再选择目标"""
+	print("[拖动] _play_card_from_drag 被调用, index=", index)
+	
 	if index < 0 or index >= _hand_cards.size():
+		print("[拖动] 索引无效，返回")
+		_refresh_all_ui()
 		return
 	
 	var card = _hand_cards[index]
+	print("[拖动] 卡牌: ", card.card_name, " 费用: ", card.cost)
 	
 	# 创建卡牌行为
 	var card_action = CardActionFactory.create_action(card, self)
 	if card_action == null:
+		print("[拖动] 卡牌行为未实现")
 		_update_info("该卡牌暂未实现")
+		_refresh_all_ui()
 		return
 	
 	var target_type = card_action.get_target_type()
+	print("[拖动] 目标类型: ", target_type)
 	
 	# 扣除费用
 	_player_energy -= card.cost
+	print("[拖动] 扣除费用后剩余: ", _player_energy)
+	
+	# 先播放动画移动到结算区域（所有卡牌都先移动，且不消失）
+	await _move_card_to_resolve_area(card, index)
 	
 	if target_type == 0:
 		# 无需目标，直接执行
+		print("[拖动] 无需目标，直接执行")
 		var success = card_action.execute(-1, -1)
 		
 		if success:
-			# 播放卡牌移动到左侧并消失的动画
-			await _play_card_move_and_disappear(index)
+			# 弃牌
 			_discard_pile.append(_hand_cards[index])
 			_hand_cards.remove_at(index)
+			_update_info("卡牌已打出")
+			print("[拖动] 卡牌执行成功")
 		else:
 			_player_energy += card.cost
 			_update_info("卡牌执行失败")
+			print("[拖动] 卡牌执行失败")
+		
+		# 等待一小段时间后让结算区域的卡牌消失
+		await get_tree().create_timer(0.3).timeout
+		await _remove_resolving_card()
 		
 		_refresh_all_ui()
 		_check_game_over()
 	else:
-		# 需要选择目标 - 先打出卡牌，移动到左侧等待
+		# 需要选择目标 - 卡牌已经在结算区域，等待选择目标
+		print("[拖动] 需要选择目标")
 		_selected_hand_card = index
 		_current_card_action = card_action
-		
-		# 播放卡牌移动到左侧等待的动画
-		await _play_card_move_to_wait(index)
 		
 		var hint = card_action.get_hint_text()
 		_update_info("请选择目标 - " + hint)
 		_refresh_all_ui()
-
-func _play_card_move_to_wait(card_index: int):
-	"""播放卡牌移动到左侧等待动画"""
-	if card_index >= hand_area.get_child_count():
-		return
-	
-	var card_ui = hand_area.get_child(card_index)
-	var target_pos = Vector2(100, get_viewport_rect().size.y / 2 - 75)
-	
-	# 创建动画
-	var tween = create_tween()
-	tween.tween_property(card_ui, "global_position", target_pos, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-	
-	await tween.finished
-
-func _play_card_move_and_disappear(card_index: int):
-	"""播放卡牌移动到左侧并消失动画"""
-	if card_index >= hand_area.get_child_count():
-		return
-	
-	var card_ui = hand_area.get_child(card_index)
-	var target_pos = Vector2(100, get_viewport_rect().size.y / 2 - 75)
-	
-	# 创建动画
-	var tween = create_tween()
-	tween.set_parallel(false)
-	tween.tween_property(card_ui, "global_position", target_pos, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
-	tween.tween_property(card_ui, "modulate:a", 0.0, 0.2)
-	
-	await tween.finished
 
 # ========== 游戏结束检查 ==========
 
@@ -933,15 +970,15 @@ func _create_hand_card_ui(card: CardDataClass, index: int) -> Control:
 	style.content_margin_top = 8
 	style.content_margin_bottom = 8
 	
-	# 高亮选中（点击选择状态）
-	if _selected_hand_card == index:
-		style.border_color = Color(0.3, 1.0, 0.3, 1.0)
+	# 等待选择目标时高亮（拖动打出后）
+	if _selected_hand_card == index and _current_card_action != null:
+		style.border_color = Color(1.0, 0.9, 0.3, 1.0)
 		style.border_width_left = 4
 		style.border_width_right = 4
 		style.border_width_top = 4
 		style.border_width_bottom = 4
-		style.bg_color = Color(0.2, 0.3, 0.2, 0.95)
-		# 选中时向上移动
+		style.bg_color = Color(0.3, 0.3, 0.2, 0.95)
+		# 高亮时向上移动
 		container.position.y -= 20
 	
 	# 拖动时隐藏原始卡牌
@@ -1015,17 +1052,16 @@ func _create_draggable_card_button(index: int, card: CardDataClass) -> Button:
 		btn.disabled = true
 		btn.mouse_default_cursor_shape = Control.CURSOR_FORBIDDEN
 	else:
-		# 点击事件
-		btn.pressed.connect(_on_hand_card_clicked.bind(index))
-		
 		# 拖动事件（使用gui_input）
 		btn.gui_input.connect(func(event: InputEvent):
 			if event is InputEventMouseButton:
 				if event.button_index == MOUSE_BUTTON_LEFT:
 					if event.pressed:
-						_on_hand_card_drag_start(index, event.global_position)
+						# 鼠标按下
+						_on_hand_card_mouse_down(index, event.global_position)
 					else:
-						_on_hand_card_drag_end(index, event.global_position)
+						# 鼠标松开
+						_on_hand_card_mouse_up(index, event.global_position)
 		)
 	
 	return btn
@@ -1038,3 +1074,62 @@ func _update_info(text: String):
 		status_label.modulate = Color(1.0, 1.0, 1.0, 0.0)
 		var tween = create_tween()
 		tween.tween_property(status_label, "modulate:a", 1.0, 0.3)
+
+func _move_card_to_resolve_area(card: CardDataClass, index: int):
+	"""将卡牌移动到结算区域（不消失，保持显示）"""
+	print("[动画] 开始移动卡牌到结算区域")
+	
+	# 获取原始卡牌位置
+	var start_pos = Vector2(get_viewport_rect().size.x / 2, get_viewport_rect().size.y - 100)
+	var original_card = hand_area.get_child(index) if index < hand_area.get_child_count() else null
+	if original_card:
+		start_pos = original_card.global_position
+	
+	# 立即刷新UI，移除原卡牌（避免分身）
+	_refresh_hand_area()
+	
+	# 创建卡牌UI副本用于结算区域显示
+	var card_ui = _create_hand_card_ui(card, -1)  # 使用-1避免交互
+	card_ui.z_index = 2000
+	card_ui.global_position = start_pos
+	
+	add_child(card_ui)
+	_resolving_card_ui = card_ui  # 保存引用
+	
+	# 目标位置：结算区域
+	var target_pos = card_resolve_area.global_position if card_resolve_area else Vector2(100, get_viewport_rect().size.y / 2)
+	
+	# 创建动画
+	var tween = create_tween()
+	tween.set_parallel(true)
+	
+	# 移动到结算区域
+	tween.tween_property(card_ui, "global_position", target_pos, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	
+	# 稍微放大
+	tween.tween_property(card_ui, "scale", Vector2(1.2, 1.2), 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	
+	# 等待移动完成
+	await tween.finished
+	
+	print("[动画] 卡牌移动到结算区域完成，保持显示")
+
+func _remove_resolving_card():
+	"""移除结算区域的卡牌（淡出消失）"""
+	if not _resolving_card_ui:
+		return
+	
+	print("[动画] 开始移除结算区域的卡牌")
+	
+	# 淡出消失
+	var fade_tween = create_tween()
+	fade_tween.set_parallel(true)
+	fade_tween.tween_property(_resolving_card_ui, "modulate:a", 0.0, 0.3)
+	fade_tween.tween_property(_resolving_card_ui, "scale", Vector2(0.8, 0.8), 0.3)
+	
+	await fade_tween.finished
+	
+	print("[动画] 卡牌淡出完成")
+	_resolving_card_ui.queue_free()
+	_resolving_card_ui = null
+
