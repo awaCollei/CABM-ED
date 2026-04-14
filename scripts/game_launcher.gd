@@ -7,6 +7,12 @@ var status_label: Label
 var canvas: CanvasLayer
 
 func _ready():
+	# 游戏启动时确保UUID已生成
+	_ensure_uuid()
+	
+	# 上报游戏启动事件（异步，不影响游戏启动）
+	_report_game_launch()
+	
 	# 检查是否需要转移资源
 	var rm = get_node_or_null("/root/ResourceManager")
 	if not rm:
@@ -134,6 +140,54 @@ func _show_progress_ui():
 	hint.add_theme_font_size_override("font_size", 16)
 	hint.add_theme_color_override("font_color", Color.GRAY)
 	vbox.add_child(hint)
+
+func _report_game_launch():
+	"""上报游戏启动事件（异步，不阻塞游戏启动）"""
+	# 检查脚本是否存在
+	var reporter_path = "res://scripts/analytics_reporter.gd"
+	if not ResourceLoader.exists(reporter_path):
+		print("[GameLauncher] 跳过启动事件上报：analytics_reporter.gd 不存在")
+		return
+	
+	# 创建上报器实例
+	var reporter = load(reporter_path).new()
+	add_child(reporter)
+	
+	# 异步上报登录事件
+	reporter.report_login_event()
+	
+	print("[GameLauncher] 已触发启动事件上报")
+
+func _ensure_uuid():
+	"""游戏启动时检查UUID，不存在则生成并保存"""
+	var uuid_file_path = "user://uuid.txt"
+	if FileAccess.file_exists(uuid_file_path):
+		var read_file = FileAccess.open(uuid_file_path, FileAccess.READ)
+		if read_file:
+			var existing = read_file.get_as_text().strip_edges()
+			read_file.close()
+			if not existing.is_empty():
+				print("[GameLauncher] UUID已存在: ", existing)
+				return
+	
+	# 生成新UUID
+	var hex_chars = "0123456789abcdef"
+	var uuid = ""
+	for i in range(36):
+		match i:
+			8, 13, 18, 23:
+				uuid += "-"
+			_:
+				uuid += hex_chars[randi() % hex_chars.length()]
+	uuid = uuid.substr(0, 14) + "4" + uuid.substr(15)
+	var variant = ["8", "9", "a", "b"][randi() % 4]
+	uuid = uuid.substr(0, 19) + variant + uuid.substr(20)
+	
+	var write_file = FileAccess.open(uuid_file_path, FileAccess.WRITE)
+	if write_file:
+		write_file.store_string(uuid)
+		write_file.close()
+		print("[GameLauncher] 已生成新UUID: ", uuid)
 
 func _has_save_file() -> bool:
 	"""检查是否存在存档文件"""

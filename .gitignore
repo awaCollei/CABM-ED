@@ -3,6 +3,7 @@ assets/images/items/nsfw/*
 !assets/images/character/default/
 config/character_presets/*
 config/books/h/*
+scripts/analytics_reporter.gd
 !config/character_presets/default.json
 novel/*/
 novel/config
