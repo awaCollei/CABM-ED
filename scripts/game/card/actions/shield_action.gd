@@ -22,7 +22,7 @@ func execute(player_unit_index: int = -1, enemy_unit_index: int = -1) -> bool:
 	shield_effect.value = 2  # 每层抵挡2点伤害
 	shield_effect.duration = -1  # 永久直到消耗完
 	
-	battle_scene._add_effect(player_unit_index, true, shield_effect)
+	battle_scene._action_resolver.add_effect(player_unit_index, true, shield_effect)
 	
 	var target_name = battle_scene._player_characters[player_unit_index].card_name
 	battle_scene._update_info(target_name + " 获得了【铁壁防御】!")

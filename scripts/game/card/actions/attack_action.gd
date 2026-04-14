@@ -21,13 +21,13 @@ func execute(player_unit_index: int = -1, enemy_unit_index: int = -1) -> bool:
 	var damage = attacker.attack
 	
 	# 触发攻击前效果
-	damage = battle_scene._trigger_before_deal_damage(player_unit_index, true, damage)
+	damage = battle_scene._action_resolver.trigger_before_deal_damage(player_unit_index, true, damage)
 	
 	# 造成伤害
-	battle_scene._deal_damage_to_enemy(enemy_unit_index, damage)
+	battle_scene._action_resolver.deal_damage_to_enemy(enemy_unit_index, damage)
 	
 	# 触发攻击后效果
-	battle_scene._trigger_after_deal_damage(player_unit_index, true, damage)
+	battle_scene._action_resolver.trigger_after_deal_damage(player_unit_index, true, damage)
 	
 	battle_scene._update_info(attacker.card_name + " 攻击了敌人，造成 " + str(damage) + " 点伤害!")
 	

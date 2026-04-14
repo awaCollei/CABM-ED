@@ -9,11 +9,11 @@ func _init(scene: Node):
 func on_turn_start():
 	# 在回合开始时造成伤害
 	if is_player_unit:
-		battle_scene._deal_damage_to_player(target_index, value)
+		battle_scene._action_resolver.deal_damage_to_player(target_index, value)
 		var unit_name = battle_scene._player_characters[target_index].card_name
 		battle_scene._update_info(unit_name + " 受到【剧毒】伤害!")
 	else:
-		battle_scene._deal_damage_to_enemy(target_index, value)
+		battle_scene._action_resolver.deal_damage_to_enemy(target_index, value)
 		battle_scene._update_info("敌人 " + str(target_index + 1) + " 受到【剧毒】伤害!")
 	
 	# 减少持续时间

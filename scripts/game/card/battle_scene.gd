@@ -3,6 +3,7 @@ extends Control
 
 const CardDataClass = preload("res://scripts/game/card/card_data.gd")
 const CardDatabaseClass = preload("res://scripts/game/card/card_database.gd")
+const BattleActionResolverClass = preload("res://scripts/game/card/battle_action_resolver.gd")
 
 signal battle_ended(victory: bool)
 
@@ -32,6 +33,11 @@ var _enemy_effects: Array = []   # 效果数组（每个单位一个数组）
 var _selected_hand_card: int = -1
 var _selected_player_unit: int = -1
 var _current_card_action: CardActionBase = null  # 当前选中卡牌的行为
+var _dragging_card: int = -1  # 正在拖动的卡牌索引
+var _dragging_card_ui: Control = null  # 拖动中的卡牌UI副本
+
+# 行为结算器
+var _action_resolver: BattleActionResolverClass = null
 
 # UI节点
 @onready var player_area = $PlayerAreaBG/PlayerArea
@@ -41,12 +47,41 @@ var _current_card_action: CardActionBase = null  # 当前选中卡牌的行为
 @onready var turn_panel = $TurnPanel/TurnVBox
 @onready var status_label = $StatusLabel
 @onready var back_btn = $BackButton
-
-var end_turn_btn: Button  # 动态创建
+@onready var play_zone_indicator = $PlayZoneIndicator
+@onready var end_turn_btn = $TurnPanel/TurnVBox/EndTurnButton
 
 func _ready():
 	back_btn.pressed.connect(_on_back_pressed)
+	end_turn_btn.pressed.connect(_on_end_turn_pressed)
+	_action_resolver = BattleActionResolverClass.new(self)
 	_setup_styles()
+	_setup_play_zone_style()
+
+func _setup_play_zone_style():
+	"""设置打出区域指示器样式"""
+	if not play_zone_indicator:
+		return
+	
+	# 设置打出区域样式
+	var style = StyleBoxFlat.new()
+	style.bg_color = Color(0.3, 0.8, 0.3, 0.25)
+	style.border_color = Color(0.3, 1.0, 0.3, 0.8)
+	style.border_width_left = 5
+	style.border_width_right = 5
+	style.border_width_top = 5
+	style.border_width_bottom = 5
+	style.corner_radius_top_left = 15
+	style.corner_radius_top_right = 15
+	style.corner_radius_bottom_left = 15
+	style.corner_radius_bottom_right = 15
+	play_zone_indicator.add_theme_stylebox_override("panel", style)
+	
+	# 设置标签样式
+	var label = play_zone_indicator.get_node("Label")
+	if label:
+		label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.3))
+		label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+		label.add_theme_constant_override("outline_size", 3)
 
 func _setup_styles():
 	# 设置背景面板样式
@@ -158,8 +193,8 @@ func start_battle(player_cards: Array):
 	# 初始化牌库
 	_init_deck()
 	
-	# 绘制初始手牌
-	_draw_cards(5)
+	# 绘制初始手牌（减少初始抽牌数）
+	_draw_cards(3)
 	
 	# 刷新UI
 	_refresh_all_ui()
@@ -225,7 +260,7 @@ func _start_player_turn():
 	for i in range(_player_characters.size()):
 		if _player_hp[i] <= 0:
 			continue
-		_trigger_turn_start_effects(i, true)
+		_action_resolver.trigger_turn_start_effects(i, true)
 	
 	# 检查游戏结束
 	if _check_game_over():
@@ -253,7 +288,7 @@ func _start_enemy_turn():
 	for i in range(_enemy_characters.size()):
 		if _enemy_hp[i] <= 0:
 			continue
-		_trigger_turn_start_effects(i, false)
+		_action_resolver.trigger_turn_start_effects(i, false)
 		_refresh_all_ui()
 		await get_tree().create_timer(0.5).timeout
 	
@@ -280,15 +315,15 @@ func _start_enemy_turn():
 		var damage = _enemy_characters[i].attack
 		
 		# 触发攻击前效果
-		damage = _trigger_before_deal_damage(i, false, damage)
+		damage = _action_resolver.trigger_before_deal_damage(i, false, damage)
 		
 		_update_info("敌人 " + str(i+1) + " 攻击你的角色 " + str(target+1) + "!")
 		await get_tree().create_timer(0.8).timeout
 		
-		_deal_damage_to_player(target, damage)
+		_action_resolver.deal_damage_to_player(target, damage)
 		
 		# 触发攻击后效果
-		_trigger_after_deal_damage(i, false, damage)
+		_action_resolver.trigger_after_deal_damage(i, false, damage)
 		
 		_refresh_all_ui()
 		await get_tree().create_timer(0.5).timeout
@@ -304,9 +339,9 @@ func _on_end_turn_pressed():
 	if _phase != Phase.PLAYER_TURN:
 		return
 	
-	# 弃掉所有手牌
-	_discard_pile.append_array(_hand_cards)
-	_hand_cards.clear()
+	# 回合结束保留手牌（不再弃牌）
+	# _discard_pile.append_array(_hand_cards)
+	# _hand_cards.clear()
 	
 	_start_enemy_turn()
 
@@ -321,22 +356,104 @@ func _on_hand_card_clicked(index: int):
 		_update_info("费用不足！需要 " + str(card.cost) + " 费用")
 		return
 	
-	# 创建卡牌行为
-	_current_card_action = CardActionFactory.create_action(card, self)
-	if _current_card_action == null:
-		_update_info("该卡牌暂未实现")
+	# 点击卡牌进入"选择"状态，显示tooltip
+	if _selected_hand_card == index:
+		# 再次点击取消选择
+		_selected_hand_card = -1
+		_current_card_action = null
+		_update_info("取消选择")
+	else:
+		# 选择卡牌
+		_selected_hand_card = index
+		_current_card_action = CardActionFactory.create_action(card, self)
+		
+		if _current_card_action == null:
+			_update_info("该卡牌暂未实现")
+			_selected_hand_card = -1
+			return
+		
+		# 显示卡牌信息
+		_update_info("已选择: " + card.card_name + " - 拖动到上方区域打出")
+	
+	_refresh_all_ui()
+
+func _on_hand_card_drag_start(index: int, start_pos: Vector2):
+	if _phase != Phase.PLAYER_TURN:
 		return
 	
-	_selected_hand_card = index
+	var card = _hand_cards[index]
 	
-	# 根据目标类型显示提示
-	var target_type = _current_card_action.get_target_type()
-	if target_type == 0:
-		# 无需目标，直接执行
-		_execute_current_card()
+	# 检查费用
+	if card.cost > _player_energy:
+		return
+	
+	_dragging_card = index
+	_selected_hand_card = -1  # 拖动时清除选择状态
+	
+	# 显示打出区域指示器（只在开始拖动时显示）
+	if play_zone_indicator:
+		play_zone_indicator.visible = true
+	
+	# 创建拖动卡牌的视觉副本
+	_create_dragging_card_visual(index, start_pos)
+	
+	# 刷新UI以显示拖动反馈
+	_refresh_all_ui()
+
+func _create_dragging_card_visual(index: int, start_pos: Vector2):
+	"""创建拖动卡牌的视觉副本"""
+	if index >= hand_area.get_child_count():
+		return
+	
+	var original_card = hand_area.get_child(index)
+	
+	# 复制卡牌UI
+	_dragging_card_ui = original_card.duplicate()
+	_dragging_card_ui.global_position = start_pos - _dragging_card_ui.size / 2
+	_dragging_card_ui.z_index = 1000
+	_dragging_card_ui.modulate = Color(1.0, 1.0, 1.0, 0.8)
+	
+	# 添加发光效果
+	var tween = create_tween()
+	tween.set_loops()
+	tween.tween_property(_dragging_card_ui, "modulate:a", 0.6, 0.5)
+	tween.tween_property(_dragging_card_ui, "modulate:a", 0.9, 0.5)
+	
+	add_child(_dragging_card_ui)
+
+func _process(_delta):
+	# 更新拖动卡牌的位置
+	if _dragging_card >= 0 and _dragging_card_ui:
+		var mouse_pos = get_global_mouse_position()
+		_dragging_card_ui.global_position = mouse_pos - _dragging_card_ui.size / 2
+
+func _on_hand_card_drag_end(index: int, end_pos: Vector2):
+	if _dragging_card != index:
+		return
+	
+	_dragging_card = -1
+	
+	# 清理拖动卡牌视觉副本
+	if _dragging_card_ui:
+		_dragging_card_ui.queue_free()
+		_dragging_card_ui = null
+	
+	# 隐藏打出区域指示器
+	if play_zone_indicator:
+		play_zone_indicator.visible = false
+	
+	# 检查是否在打出区域内（使用play_zone_indicator的全局rect）
+	var is_in_zone = false
+	if play_zone_indicator:
+		var zone_rect = play_zone_indicator.get_global_rect()
+		is_in_zone = zone_rect.has_point(end_pos)
+	
+	if is_in_zone:
+		# 在打出区域内，执行卡牌
+		_play_card_from_drag(index)
 	else:
-		var hint = _current_card_action.get_hint_text()
-		_update_info("已选择: " + card.card_name + " - " + hint)
+		# 不在打出区域，取消
+		_update_info("拖动到上方绿色区域以打出卡牌")
 	
 	_refresh_all_ui()
 
@@ -400,13 +517,16 @@ func _execute_current_card(player_unit: int = -1, enemy_unit: int = -1):
 		_update_info("无法使用该卡牌")
 		return
 	
-	# 扣除费用
-	_player_energy -= card.cost
+	# 注意：费用已经在拖动打出时扣除了
 	
 	# 执行卡牌效果
 	var success = _current_card_action.execute(player_unit, enemy_unit)
 	
 	if success:
+		# 播放卡牌消失动画（从当前位置消失）
+		var card_index = _selected_hand_card
+		await _play_card_final_disappear(card_index)
+		
 		# 弃牌
 		_discard_pile.append(_hand_cards[_selected_hand_card])
 		_hand_cards.remove_at(_selected_hand_card)
@@ -423,133 +543,95 @@ func _execute_current_card(player_unit: int = -1, enemy_unit: int = -1):
 	_refresh_all_ui()
 	_check_game_over()
 
-# ========== 效果系统 ==========
-
-func _add_effect(target_index: int, is_player: bool, effect: EffectBase):
-	var effects_array = _player_effects[target_index] if is_player else _enemy_effects[target_index]
-	effects_array.append(effect)
-	effect.on_apply()
-
-func _trigger_turn_start_effects(target_index: int, is_player: bool):
-	var effects_array = _player_effects[target_index] if is_player else _enemy_effects[target_index]
-	var to_remove = []
+func _play_card_final_disappear(card_index: int):
+	"""播放卡牌最终消失动画（从等待位置消失）"""
+	if card_index >= hand_area.get_child_count():
+		return
 	
-	for i in range(effects_array.size()):
-		var effect = effects_array[i]
-		effect.on_turn_start()
+	var card_ui = hand_area.get_child(card_index)
+	
+	# 创建消失动画
+	var tween = create_tween()
+	tween.tween_property(card_ui, "modulate:a", 0.0, 0.3)
+	
+	await tween.finished
+
+func _play_card_from_drag(index: int):
+	"""从拖动打出卡牌 - 先打出，再选择目标"""
+	if index < 0 or index >= _hand_cards.size():
+		return
+	
+	var card = _hand_cards[index]
+	
+	# 创建卡牌行为
+	var card_action = CardActionFactory.create_action(card, self)
+	if card_action == null:
+		_update_info("该卡牌暂未实现")
+		return
+	
+	var target_type = card_action.get_target_type()
+	
+	# 扣除费用
+	_player_energy -= card.cost
+	
+	if target_type == 0:
+		# 无需目标，直接执行
+		var success = card_action.execute(-1, -1)
 		
-		# 检查效果是否过期
-		if effect.duration == 0:
-			to_remove.append(i)
-	
-	# 移除过期效果（从后往前删除）
-	for i in range(to_remove.size() - 1, -1, -1):
-		var effect = effects_array[to_remove[i]]
-		effect.on_remove()
-		effects_array.remove_at(to_remove[i])
-
-func _trigger_before_damage(target_index: int, is_player: bool, damage: int) -> int:
-	var effects_array = _player_effects[target_index] if is_player else _enemy_effects[target_index]
-	var modified_damage = damage
-	
-	for effect in effects_array:
-		modified_damage = effect.on_before_damage(modified_damage)
-	
-	return modified_damage
-
-func _trigger_after_damage(target_index: int, is_player: bool, damage: int):
-	var effects_array = _player_effects[target_index] if is_player else _enemy_effects[target_index]
-	
-	for effect in effects_array:
-		effect.on_after_damage(damage)
-
-func _trigger_before_deal_damage(attacker_index: int, is_player: bool, damage: int) -> int:
-	var effects_array = _player_effects[attacker_index] if is_player else _enemy_effects[attacker_index]
-	var modified_damage = damage
-	
-	for effect in effects_array:
-		modified_damage = effect.on_before_deal_damage(modified_damage)
-	
-	return modified_damage
-
-func _trigger_after_deal_damage(_attacker_index: int, _is_player: bool, _damage: int):
-	# 可以在这里添加攻击后触发的效果
-	pass
-
-# ========== 伤害系统 ==========
-
-func _deal_damage_to_player(target: int, damage: int):
-	# 触发受伤前效果
-	var actual_damage = _trigger_before_damage(target, true, damage)
-	
-	_player_hp[target] -= actual_damage
-	if _player_hp[target] < 0:
-		_player_hp[target] = 0
-	
-	# 触发受伤后效果
-	_trigger_after_damage(target, true, actual_damage)
-	
-	# 显示伤害数字
-	if actual_damage > 0:
-		_show_damage_number(target, actual_damage, true)
-	
-	# 清理过期效果
-	_cleanup_expired_effects(target, true)
-
-func _deal_damage_to_enemy(target: int, damage: int):
-	# 触发受伤前效果
-	var actual_damage = _trigger_before_damage(target, false, damage)
-	
-	_enemy_hp[target] -= actual_damage
-	if _enemy_hp[target] < 0:
-		_enemy_hp[target] = 0
-	
-	# 触发受伤后效果
-	_trigger_after_damage(target, false, actual_damage)
-	
-	# 显示伤害数字
-	if actual_damage > 0:
-		_show_damage_number(target, actual_damage, false)
-	
-	# 清理过期效果
-	_cleanup_expired_effects(target, false)
-
-func _cleanup_expired_effects(target_index: int, is_player: bool):
-	var effects_array = _player_effects[target_index] if is_player else _enemy_effects[target_index]
-	var to_remove = []
-	
-	for i in range(effects_array.size()):
-		if effects_array[i].duration == 0:
-			to_remove.append(i)
-	
-	# 从后往前删除
-	for i in range(to_remove.size() - 1, -1, -1):
-		var effect = effects_array[to_remove[i]]
-		effect.on_remove()
-		effects_array.remove_at(to_remove[i])
-
-func _show_damage_number(target: int, damage: int, is_player: bool):
-	# 创建伤害数字标签
-	var damage_label = Label.new()
-	damage_label.text = "-" + str(damage)
-	damage_label.add_theme_font_size_override("font_size", 24)
-	damage_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
-	damage_label.z_index = 100
-	
-	# 获取目标位置
-	var area = player_area if is_player else enemy_area
-	if target < area.get_child_count():
-		var target_node = area.get_child(target)
-		var pos = target_node.global_position + Vector2(60, 40)
-		damage_label.global_position = pos
-		add_child(damage_label)
+		if success:
+			# 播放卡牌移动到左侧并消失的动画
+			await _play_card_move_and_disappear(index)
+			_discard_pile.append(_hand_cards[index])
+			_hand_cards.remove_at(index)
+		else:
+			_player_energy += card.cost
+			_update_info("卡牌执行失败")
 		
-		# 动画效果
-		var tween = create_tween()
-		tween.set_parallel(true)
-		tween.tween_property(damage_label, "global_position:y", pos.y - 50, 0.8)
-		tween.tween_property(damage_label, "modulate:a", 0.0, 0.8)
-		tween.finished.connect(damage_label.queue_free)
+		_refresh_all_ui()
+		_check_game_over()
+	else:
+		# 需要选择目标 - 先打出卡牌，移动到左侧等待
+		_selected_hand_card = index
+		_current_card_action = card_action
+		
+		# 播放卡牌移动到左侧等待的动画
+		await _play_card_move_to_wait(index)
+		
+		var hint = card_action.get_hint_text()
+		_update_info("请选择目标 - " + hint)
+		_refresh_all_ui()
+
+func _play_card_move_to_wait(card_index: int):
+	"""播放卡牌移动到左侧等待动画"""
+	if card_index >= hand_area.get_child_count():
+		return
+	
+	var card_ui = hand_area.get_child(card_index)
+	var target_pos = Vector2(100, get_viewport_rect().size.y / 2 - 75)
+	
+	# 创建动画
+	var tween = create_tween()
+	tween.tween_property(card_ui, "global_position", target_pos, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	
+	await tween.finished
+
+func _play_card_move_and_disappear(card_index: int):
+	"""播放卡牌移动到左侧并消失动画"""
+	if card_index >= hand_area.get_child_count():
+		return
+	
+	var card_ui = hand_area.get_child(card_index)
+	var target_pos = Vector2(100, get_viewport_rect().size.y / 2 - 75)
+	
+	# 创建动画
+	var tween = create_tween()
+	tween.set_parallel(false)
+	tween.tween_property(card_ui, "global_position", target_pos, 0.3).set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_CUBIC)
+	tween.tween_property(card_ui, "modulate:a", 0.0, 0.2)
+	
+	await tween.finished
+
+# ========== 游戏结束检查 ==========
 
 func _check_game_over() -> bool:
 	# 检查玩家是否全灭
@@ -632,9 +714,10 @@ func _refresh_energy_panel():
 	energy_panel.add_child(discard_label)
 
 func _refresh_turn_panel():
-	# 清空现有UI
+	# 清空现有UI（除了按钮）
 	for child in turn_panel.get_children():
-		child.queue_free()
+		if child != end_turn_btn:
+			child.queue_free()
 	
 	var turn_label = Label.new()
 	turn_label.text = "回合 " + str(_turn_number)
@@ -642,6 +725,7 @@ func _refresh_turn_panel():
 	turn_label.add_theme_font_size_override("font_size", 18)
 	turn_label.add_theme_color_override("font_color", Color(1.0, 1.0, 0.8))
 	turn_panel.add_child(turn_label)
+	turn_panel.move_child(turn_label, 0)
 	
 	var phase_label = Label.new()
 	if _phase == Phase.PLAYER_TURN:
@@ -656,25 +740,33 @@ func _refresh_turn_panel():
 	phase_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	phase_label.add_theme_font_size_override("font_size", 14)
 	turn_panel.add_child(phase_label)
+	turn_panel.move_child(phase_label, 1)
 	
 	# 添加分隔线
 	var separator = HSeparator.new()
 	turn_panel.add_child(separator)
+	turn_panel.move_child(separator, 2)
 	
-	# 创建或更新结束回合按钮
-	if end_turn_btn == null:
-		end_turn_btn = Button.new()
-		end_turn_btn.text = "结束回合"
-		end_turn_btn.custom_minimum_size = Vector2(160, 40)
-		end_turn_btn.pressed.connect(_on_end_turn_pressed)
+	# 根据回合状态禁用/启用按钮（置灰而不是隐藏）
+	var can_end_turn = (_phase == Phase.PLAYER_TURN and _current_card_action == null)
+	end_turn_btn.disabled = not can_end_turn
+	
+	# 更新按钮样式
+	if not can_end_turn:
+		var disabled_style = StyleBoxFlat.new()
+		disabled_style.bg_color = Color(0.3, 0.3, 0.3)
+		disabled_style.corner_radius_top_left = 8
+		disabled_style.corner_radius_top_right = 8
+		disabled_style.corner_radius_bottom_left = 8
+		disabled_style.corner_radius_bottom_right = 8
+		disabled_style.content_margin_left = 10
+		disabled_style.content_margin_right = 10
+		disabled_style.content_margin_top = 8
+		disabled_style.content_margin_bottom = 8
+		end_turn_btn.add_theme_stylebox_override("disabled", disabled_style)
+		end_turn_btn.add_theme_color_override("font_disabled_color", Color(0.5, 0.5, 0.5))
+	else:
 		_setup_button_style(end_turn_btn, Color(0.2, 0.5, 0.3), Color(0.3, 0.7, 0.4))
-	
-	# 确保按钮在面板中
-	if end_turn_btn.get_parent() != turn_panel:
-		turn_panel.add_child(end_turn_btn)
-	
-	# 根据回合状态禁用/启用按钮
-	end_turn_btn.disabled = (_phase != Phase.PLAYER_TURN)
 
 func _refresh_player_area():
 	# 清空现有UI
@@ -821,7 +913,7 @@ func _create_hand_card_ui(card: CardDataClass, index: int) -> Control:
 	
 	var panel = PanelContainer.new()
 	panel.custom_minimum_size = Vector2(110, 150)
-	panel.tooltip_text = card.description
+	panel.tooltip_text = card.description  # 使用内置tooltip
 	container.add_child(panel)
 	
 	# 设置面板样式
@@ -841,7 +933,7 @@ func _create_hand_card_ui(card: CardDataClass, index: int) -> Control:
 	style.content_margin_top = 8
 	style.content_margin_bottom = 8
 	
-	# 高亮选中
+	# 高亮选中（点击选择状态）
 	if _selected_hand_card == index:
 		style.border_color = Color(0.3, 1.0, 0.3, 1.0)
 		style.border_width_left = 4
@@ -849,6 +941,12 @@ func _create_hand_card_ui(card: CardDataClass, index: int) -> Control:
 		style.border_width_top = 4
 		style.border_width_bottom = 4
 		style.bg_color = Color(0.2, 0.3, 0.2, 0.95)
+		# 选中时向上移动
+		container.position.y -= 20
+	
+	# 拖动时隐藏原始卡牌
+	if _dragging_card == index:
+		panel.modulate = Color(1.0, 1.0, 1.0, 0.3)  # 半透明显示原位置
 	
 	# 费用不足变灰
 	if card.cost > _player_energy:
@@ -897,22 +995,40 @@ func _create_hand_card_ui(card: CardDataClass, index: int) -> Control:
 		cost_label.add_theme_color_override("font_color", Color(0.4, 0.8, 1.0))
 	vbox.add_child(cost_label)
 	
-	# 添加点击按钮
+	# 创建可拖动的按钮
+	var drag_btn = _create_draggable_card_button(index, card)
+	container.add_child(drag_btn)
+	
+	return container
+
+func _create_draggable_card_button(index: int, card: CardDataClass) -> Button:
+	"""创建可拖动的卡牌按钮"""
 	var btn = Button.new()
 	btn.text = ""
-	btn.custom_minimum_size = panel.custom_minimum_size
+	btn.custom_minimum_size = Vector2(110, 150)
 	btn.flat = true
 	btn.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	btn.tooltip_text = card.description
-	btn.pressed.connect(_on_hand_card_clicked.bind(index))
-	container.add_child(btn)
 	
 	# 费用不足时禁用
 	if card.cost > _player_energy:
 		btn.disabled = true
 		btn.mouse_default_cursor_shape = Control.CURSOR_FORBIDDEN
+	else:
+		# 点击事件
+		btn.pressed.connect(_on_hand_card_clicked.bind(index))
+		
+		# 拖动事件（使用gui_input）
+		btn.gui_input.connect(func(event: InputEvent):
+			if event is InputEventMouseButton:
+				if event.button_index == MOUSE_BUTTON_LEFT:
+					if event.pressed:
+						_on_hand_card_drag_start(index, event.global_position)
+					else:
+						_on_hand_card_drag_end(index, event.global_position)
+		)
 	
-	return container
+	return btn
 
 func _update_info(text: String):
 	print("[战斗] " + text)

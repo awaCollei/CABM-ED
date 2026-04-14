@@ -22,7 +22,7 @@ func execute(player_unit_index: int = -1, enemy_unit_index: int = -1) -> bool:
 	poison_effect.value = 1  # 每回合1点伤害
 	poison_effect.duration = 3  # 持续3回合
 	
-	battle_scene._add_effect(enemy_unit_index, false, poison_effect)
+	battle_scene._action_resolver.add_effect(enemy_unit_index, false, poison_effect)
 	
 	battle_scene._update_info("敌人 " + str(enemy_unit_index + 1) + " 中了【剧毒】!")
 	
