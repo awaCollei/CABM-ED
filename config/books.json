@@ -3,7 +3,7 @@
     {
       "id": "cabmed",
       "title": "游戏手册",
-      "author": "awaCollei et al.",
+      "author": ["awaCollei", "Claude", "DeepSeek"],
       "icon": "res://assets/images/books/book1.png",
       "description": "⚠此文档可能更新不及时，最新文档请在官网(https://cabm.shasnow.top/site/CABM-ED)查看",
       "chapters": [
@@ -20,7 +20,7 @@
     {
       "id": "ryqs",
       "title": "日月前事",
-      "author": "N/A",
+      "author": ["N/A"],
       "icon": "res://assets/images/books/book2.png",
       "description": "我们想要记录的事情，是天上的意志如何在大地上拥有了形态。啊，天上之神，这些创造都是你们的作为。 那就请你们启发我的神智，让我源源不断地记录。",
       "chapters": [
@@ -30,7 +30,7 @@
     {
       "id": "icebreaker1",
       "title": "破冰者（一）",
-      "author": "awaCollei et al.",
+      "author": ["awaCollei", "DeepSeek"],
       "icon": "res://assets/images/books/book2.png",
       "description": "雪狐原作的小说，第一部。但是全是AI写的，而且没写完……以后肯定是要重写的，毕竟AI写的也是一坨（",
       "chapters": [
@@ -47,12 +47,15 @@
     {
       "id": "snowfox",
       "title": "雪狐の奇妙冒险",
-      "author": "awaCollei et al.",
+      "author": ["awaCollei", "Qwen", "DeepSeek"],
       "icon": "res://assets/images/books/book3.png",
       "description": "雪狐的短篇二创（三创）",
       "chapters": [
         { "index": 1, "title": "在古代拥有一只雪狐到底有多爽" },
-        { "index": 2, "title": "在现代拥有一只雪狐到底有多爽" }
+        { "index": 2, "title": "在现代拥有一只雪狐到底有多爽" },
+        { "index": 3, "title": "全民穿越CABM-ED，只有我看过项目文档" },
+        { "index": 4, "title": "转生成为雪狐，只要提升好感度就能变强" },
+        { "index": 5, "title": "全世界CABM-ED水平下降一万倍，而我不变" }
       ]
     },
     {

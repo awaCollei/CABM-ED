@@ -18,10 +18,17 @@ var current_book: Dictionary = {}
 func _ready():
 	back_btn.pressed.connect(func(): back_requested.emit())
 
+func _format_author_full(authors) -> String:
+	if authors is String:
+		return authors
+	if authors.size() == 0:
+		return ""
+	return "、".join(authors)
+
 func setup(book: Dictionary):
 	current_book = book
 	title_label.text = book.get("title", "")
-	author_label.text = "作者：" + book.get("author", "")
+	author_label.text = "作者：" + _format_author_full(book.get("author", []))
 	desc_label.text = book.get("description", "")
 
 	title_label2.text = book.get("title", "")

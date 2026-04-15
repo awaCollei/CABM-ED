@@ -17,6 +17,17 @@ func setup(books: Array):
 	for book in books:
 		grid.add_child(_create_book_card(book))
 
+func _format_author_short(authors) -> String:
+	if authors is String:
+		return authors
+	if authors.size() == 0:
+		return ""
+	if authors.size() == 1:
+		return authors[0]
+	if authors.size() == 2:
+		return authors[0] + " & " + authors[1]
+	return authors[0] + " et al."
+
 func _create_book_card(book: Dictionary) -> Control:
 	# 使用按钮作为主容器，这样悬停效果才能正常工作
 	var btn = Button.new()
@@ -134,7 +145,7 @@ func _create_book_card(book: Dictionary) -> Control:
 	# 作者（更柔和的颜色）
 	var author_lbl = Label.new()
 	author_lbl.mouse_filter = Control.MOUSE_FILTER_IGNORE  # 让鼠标事件穿透
-	author_lbl.text = book.get("author", "")
+	author_lbl.text = _format_author_short(book.get("author", []))
 	author_lbl.custom_minimum_size = Vector2(156, 0)
 	author_lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	author_lbl.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
