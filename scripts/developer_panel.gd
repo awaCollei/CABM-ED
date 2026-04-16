@@ -14,6 +14,12 @@ extends Control
 @onready var confirm_dialog: ConfirmationDialog = $ConfirmDialog
 @onready var dont_save_button: Button = $ConfirmDialog/DontSaveButton
 
+# 记忆检索节点引用
+@onready var memory_query_line_edit: LineEdit = $MarginContainer/VBoxContainer/TabContainer/记忆检索/VBoxContainer/SearchHBox/MemoryQueryLineEdit
+@onready var memory_search_button: Button = $MarginContainer/VBoxContainer/TabContainer/记忆检索/VBoxContainer/SearchHBox/MemorySearchButton
+@onready var memory_status_label: Label = $MarginContainer/VBoxContainer/TabContainer/记忆检索/VBoxContainer/MemoryStatusLabel
+@onready var memory_results_container: VBoxContainer = $MarginContainer/VBoxContainer/TabContainer/记忆检索/VBoxContainer/MemoryResultsScroll/MemoryResultsContainer
+
 # 状态变量
 var original_identity: String = ""
 var original_uuid: String = ""
@@ -25,6 +31,8 @@ func _ready():
 	# 连接按钮信号
 	save_button.pressed.connect(_on_save_button_pressed)
 	back_button.pressed.connect(_on_back_button_pressed)
+	memory_search_button.pressed.connect(_on_memory_search_pressed)
+	memory_query_line_edit.text_submitted.connect(_on_memory_query_submitted)
 	
 	# 连接文本编辑信号
 	identity_text_edit.text_changed.connect(_on_text_changed)
@@ -199,3 +207,78 @@ func _return_to_main_menu():
 	else:
 		# 如果没有过渡管理器，直接切换
 		get_tree().change_scene_to_file("res://scenes/main_menu.tscn")
+
+# ---- 记忆检索 ----
+
+func _on_memory_query_submitted(text: String):
+	_start_memory_search(text)
+
+func _on_memory_search_pressed():
+	_start_memory_search(memory_query_line_edit.text)
+
+func _start_memory_search(query: String):
+	query = query.strip_edges()
+	if query.is_empty():
+		memory_status_label.text = "请输入查询词"
+		return
+	memory_search_button.disabled = true
+	memory_status_label.text = "检索中..."
+	_clear_memory_results()
+	_do_memory_search(query)
+
+func _do_memory_search(query: String):
+	var memory_mgr = get_node_or_null("/root/MemoryManager")
+	if not memory_mgr:
+		memory_status_label.text = "✗ MemoryManager 未找到"
+		memory_search_button.disabled = false
+		return
+
+	# 等待记忆系统就绪
+	if not memory_mgr.is_initialized:
+		memory_status_label.text = "等待记忆系统就绪..."
+		await memory_mgr.memory_system_ready
+
+	var memory_system = memory_mgr.memory_system
+	if not memory_system:
+		memory_status_label.text = "✗ memory_system 未找到"
+		memory_search_button.disabled = false
+		return
+
+	var results = await memory_system.search(query, 10, 0.3)
+	memory_search_button.disabled = false
+
+	if results.is_empty():
+		memory_status_label.text = "未找到相关记忆"
+		return
+
+	memory_status_label.text = "找到 %d 条结果" % results.size()
+	_show_memory_results(results)
+
+func _clear_memory_results():
+	for child in memory_results_container.get_children():
+		child.queue_free()
+
+func _show_memory_results(results: Array):
+	for result in results:
+		var panel = PanelContainer.new()
+		var vbox = VBoxContainer.new()
+		vbox.add_theme_constant_override("separation", 4)
+		panel.add_child(vbox)
+
+		# 相似度 + 时间戳
+		var meta_label = Label.new()
+		var ts = result.get("timestamp", "")
+		var sim = result.get("similarity", 0.0)
+		meta_label.text = "[相似度：%.1f%%]  %s" % [sim*100, ts]
+		meta_label.add_theme_font_size_override("font_size", 16)
+		meta_label.add_theme_color_override("font_color", Color(0.6, 0.9, 1.0))
+		vbox.add_child(meta_label)
+
+		# 正文
+		var text_label = Label.new()
+		text_label.text = result.get("text", "")
+		text_label.add_theme_font_size_override("font_size", 20)
+		text_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		vbox.add_child(text_label)
+
+		memory_results_container.add_child(panel)

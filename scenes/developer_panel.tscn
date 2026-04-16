@@ -53,7 +53,7 @@ text = "开发者选项"
 horizontal_alignment = 1
 
 [node name="TabContainer" type="TabContainer" parent="MarginContainer/VBoxContainer"]
-custom_minimum_size = Vector2(0, 520)
+custom_minimum_size = Vector2(0, 550)
 layout_mode = 2
 current_tab = 0
 
@@ -110,7 +110,7 @@ placeholder_text = "请输入角色的基础提示词..."
 wrap_mode = 1
 autowrap_mode = 1
 
-[node name="存档" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+[node name="记忆检索" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
 visible = false
 layout_mode = 2
 theme_override_constants/margin_left = 20
@@ -118,6 +118,51 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 metadata/_tab_index = 1
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/记忆检索"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SearchHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/记忆检索/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MemoryQueryLineEdit" type="LineEdit" parent="MarginContainer/VBoxContainer/TabContainer/记忆检索/VBoxContainer/SearchHBox"]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+placeholder_text = "输入查询词..."
+
+[node name="MemorySearchButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/记忆检索/VBoxContainer/SearchHBox"]
+custom_minimum_size = Vector2(120, 50)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "检索"
+
+[node name="MemoryStatusLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/记忆检索/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+
+[node name="MemoryResultsScroll" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/记忆检索/VBoxContainer"]
+custom_minimum_size = Vector2(0, 370)
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="MemoryResultsContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/记忆检索/VBoxContainer/MemoryResultsScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="存档" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+metadata/_tab_index = 2
 
 [node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/存档"]
 layout_mode = 2
