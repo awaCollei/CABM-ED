@@ -457,7 +457,7 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 			print("召回前推理失败，使用原始查询")
 
 	# 对所有查询进行检索并合并结果
-	var seen_items = {}  # 用于去重，key为item的索引
+	var seen_items = {}  # 用于去重，key为item的文本内容
 
 	for search_query in queries_to_search:
 		var query_vector = await get_embedding(search_query)
@@ -465,7 +465,7 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 			print("警告: 获取查询向量失败，跳过查询: %s" % search_query.substr(0, 30))
 			continue
 
-		# 使用最大堆维护top_k*2个最相似的结果（因为有多路查询）
+		# 使用最大堆维护top_k*5个最相似的结果（因为有多路查询）
 		var max_candidates_per_query = top_k * 5
 		var top_similarities = []
 
@@ -477,7 +477,6 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 				continue
 
 			var similarity = _calculate_similarity(query_vector, item.vector, item.metadata)
-
 			if similarity >= min_similarity:
 				var candidate = {
 					"index": i,
@@ -502,13 +501,25 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 			top_similarities.pop_back()
 			_heapify_down(top_similarities, 0)
 
-			# 去重：如果已经见过这个item，取相似度更高的那个
-			var item_index = candidate.index
-			if seen_items.has(item_index):
-				if candidate.similarity > seen_items[item_index].similarity:
-					seen_items[item_index] = candidate
+			# 去重：按文本内容去重，合并时间戳
+			var item_text = candidate.item.text
+			if seen_items.has(item_text):
+				var existing = seen_items[item_text]
+				if candidate.similarity > existing.similarity:
+					# 相似度更高：替换主条目，但保留已收集的时间戳
+					var merged_timestamps = existing.merged_timestamps.duplicate()
+					if not merged_timestamps.has(candidate.item.timestamp):
+						merged_timestamps.append(candidate.item.timestamp)
+					candidate["merged_timestamps"] = merged_timestamps
+					seen_items[item_text] = candidate
+				elif candidate.similarity == existing.similarity:
+					# 相似度相同：仅追加时间戳
+					if not existing.merged_timestamps.has(candidate.item.timestamp):
+						existing.merged_timestamps.append(candidate.item.timestamp)
+				# 相似度更低：丢弃，不做任何操作
 			else:
-				seen_items[item_index] = candidate
+				candidate["merged_timestamps"] = [candidate.item.timestamp]
+				seen_items[item_text] = candidate
 
 	# 将去重后的候选转换为排序列表
 	var similarities = []
@@ -528,10 +539,10 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 				"text": similarities[i].item.text,
 				"similarity": similarities[i].similarity,
 				"timestamp": similarities[i].item.timestamp,
+				"merged_timestamps": similarities[i].merged_timestamps,
 				"type": similarities[i].item.type
 			})
 		return results_without_reranking
-
 	# 获取前top_k*5个结果用于重排序
 	var use_time_aware_reranking := _should_enable_time_aware_reranking()
 	var initial_results = []
@@ -539,19 +550,19 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 	for i in range(num_candidates):
 		var base_text: String = similarities[i].item.text
 		if use_time_aware_reranking:
-			var ts = str(similarities[i].item.timestamp)
-			if not ts.is_empty():
-				base_text = "%s %s" % [TimeUtil.to_relative_time_prefix(ts), base_text]
+			var merged_ts: Array = similarities[i].merged_timestamps
+			if not merged_ts.is_empty():
+				base_text = "%s %s" % [TimeUtil.to_merged_relative_time_prefix(merged_ts), base_text]
 		initial_results.append({
 			"text": base_text,
 			"similarity": similarities[i].similarity,
 			"timestamp": similarities[i].item.timestamp,
+			"merged_timestamps": similarities[i].merged_timestamps,
 			"type": similarities[i].item.type
 		})
 
 	# 进行重排序
 	var reranked_results = await rerank_documents(query, initial_results)
-
 	# 返回重排序后的结果，如果重排序失败则返回原始检索结果
 	var final_results = []
 	if not reranked_results.is_empty():
@@ -566,6 +577,7 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 				"text": similarities[i].item.text,
 				"similarity": similarities[i].similarity,
 				"timestamp": similarities[i].item.timestamp,
+				"merged_timestamps": similarities[i].merged_timestamps,
 				"type": similarities[i].item.type
 			})
 
@@ -687,7 +699,10 @@ func get_relevant_memory(query: String, top_k: int, _timeout: float, min_similar
 		if use_time_aware_reranking:
 			memory_texts.append(result.text)
 		else:
-			if result.has("timestamp") and not str(result.timestamp).is_empty():
+			var merged_ts: Array = result.get("merged_timestamps", [])
+			if not merged_ts.is_empty():
+				memory_texts.append("%s %s" % [TimeUtil.to_merged_relative_time_prefix(merged_ts), result.text])
+			elif result.has("timestamp") and not str(result.timestamp).is_empty():
 				memory_texts.append("%s %s" % [TimeUtil.to_relative_time_prefix(result.timestamp), result.text])
 			else:
 				memory_texts.append(result.text)
@@ -889,7 +904,7 @@ func rerank_documents(query: String, documents: Array) -> Array:
 			var original_doc = documents[index]
 			reranked_results.append({
 				"text": text,
-				"similarity": relevance_score / 100.0,  # 将重排序分数转换为0-1范围
+				"similarity": relevance_score,
 				"timestamp": original_doc.timestamp,
 				"type": original_doc.type
 			})

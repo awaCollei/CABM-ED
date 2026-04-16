@@ -170,6 +170,32 @@ func to_relative_time_prefix(timestamp) -> String:
 	var desc = to_natural_description(timestamp)
 	return "[%s]" % desc
 
+# 将多个时间戳转换为合并的相对时间前缀
+# 例如："[昨天、上个月]"，超过3个则截断："[昨天、上个月、两个月前...]"
+func to_merged_relative_time_prefix(timestamps: Array) -> String:
+	if timestamps.is_empty():
+		return ""
+	if timestamps.size() == 1:
+		return to_relative_time_prefix(timestamps[0])
+	# 转为文本后去重，保持顺序
+	var seen = {}
+	var unique_descs = []
+	for ts in timestamps:
+		var desc = to_natural_description(ts)
+		if not seen.has(desc):
+			seen[desc] = true
+			unique_descs.append(desc)
+	if unique_descs.size() == 1:
+		return "[%s]" % unique_descs[0]
+	var parts = []
+	var limit = min(3, unique_descs.size())
+	for i in range(limit):
+		parts.append(unique_descs[i])
+	var inner = "、".join(parts)
+	if unique_descs.size() > 3:
+		inner += "..."
+	return "[%s]" % inner
+
 # 辅助：判断是否为同一天
 func is_same_day(dict1: Dictionary, dict2: Dictionary) -> bool:
 	return dict1.year == dict2.year and dict1.month == dict2.month and dict1.day == dict2.day
