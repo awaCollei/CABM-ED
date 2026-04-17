@@ -970,7 +970,7 @@ func _on_event_completed(event_name: String, result):
 		print("事件成功: ", event_name)
 		
 		if event_name == "idle_timeout":
-			if result.message == "active" or result.message == "idle":
+			if result.message == "idle":
 				interaction_handler.trigger_active_chat()
 			elif result.message == "idle_position_change":
 				interaction_handler.trigger_idle_position_change()

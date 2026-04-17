@@ -328,7 +328,7 @@ func _setup_input_mode():
 
 func show_dialog(mode: String = "passive"):
 	"""显示对话框
-	mode: "passive" = 用户先说（输入模式）, "active" = 角色先说（回复模式）, 
+	mode: "passive" = 用户先说（输入模式）, "idle" = 角色先说（回复模式）, 
 		  "called" = 被呼唤来到场景（角色先说）, "called_here" = 被呼唤但已在场景（角色先说）
 	"""
 	# 如果已经可见，忽略重复调用
@@ -343,7 +343,7 @@ func show_dialog(mode: String = "passive"):
 	if auto_button:
 		auto_button.visible = true
 	
-	if mode == "active" or mode == "called" or mode == "called_here" or mode == "enter_scene" or mode == "leave_scene" or mode == "idle":
+	if mode == "called" or mode == "called_here" or mode == "enter_scene" or mode == "leave_scene" or mode == "idle":
 		_setup_reply_mode()
 		message_label.text = ""
 	else:
@@ -363,7 +363,7 @@ func show_dialog(mode: String = "passive"):
 	# 更新顶部输入框可见性
 	_update_top_input_visibility(visible and is_input_mode and top_input_enabled)
 	
-	if mode == "active" or mode == "called" or mode == "called_here" or mode == "enter_scene" or mode == "leave_scene" or mode == "idle":
+	if mode == "called" or mode == "called_here" or mode == "enter_scene" or mode == "leave_scene" or mode == "idle":
 		if has_node("/root/AIService"):
 			var ai_service = get_node("/root/AIService")
 			ai_service.start_chat("", mode)

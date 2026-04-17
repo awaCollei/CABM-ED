@@ -119,7 +119,7 @@ func trigger_active_chat():
 		event_mgr.reset_idle_timer()
 	
 	character.start_chat()
-	chat_dialog.show_dialog("active")
+	chat_dialog.show_dialog("idle")
 	
 	if has_node("/root/UIManager"):
 		get_node("/root/UIManager").disable_all()
