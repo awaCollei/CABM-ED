@@ -332,15 +332,16 @@ func _build_trigger_placeholder(trigger_mode: String) -> String:
 			if save_mgr and prompt_builder:
 				var char_scene_id = save_mgr.get_character_scene()
 				var char_scene_name = prompt_builder._get_scene_description(char_scene_id)
-				var from_scene_name = ""
-				if save_mgr.has_meta("user_old_scene"):
-					var from_id = save_mgr.get_meta("user_old_scene")
-					from_scene_name = prompt_builder._get_scene_description(from_id)
-					save_mgr.remove_meta("user_old_scene")
-				if from_scene_name != "":
-					return "（我从%s进入了%s）" % [from_scene_name, char_scene_name]
-				else:
-					return "（我来到了%s）" % char_scene_name
+				return "（我来到了%s）" % char_scene_name
+				# var from_scene_name = ""
+				# if save_mgr.has_meta("user_old_scene"):
+				# 	var from_id = save_mgr.get_meta("user_old_scene")
+				# 	from_scene_name = prompt_builder._get_scene_description(from_id)
+				# 	save_mgr.remove_meta("user_old_scene")
+				# if from_scene_name != "":
+				# 	return "（我从%s进入了%s）" % [from_scene_name, char_scene_name]
+				# else:
+				# 	return "（我来到了%s）" % char_scene_name
 			return "（我进入了你所在的地方）"
 		"leave_scene":
 			if save_mgr and prompt_builder:
