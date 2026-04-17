@@ -125,7 +125,9 @@ func _create_popup_panel():
 	_popup_panel.add_child(margin)
 
 	var btn = Button.new()
-	btn.text = "🖼 壁纸"
+	btn.text = "🖼 更换壁纸"
+	btn.theme=load("res://theme/blue_button.tres")
+	btn.add_theme_font_size_override("font_size",30)
 	btn.pressed.connect(_on_change_wallpaper_pressed)
 	margin.add_child(btn)
 

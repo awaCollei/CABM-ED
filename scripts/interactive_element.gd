@@ -58,7 +58,7 @@ func _ready():
 func _create_options_panel():
 	"""创建选项面板"""
 	options_panel = Panel.new()
-	options_panel.custom_minimum_size = Vector2(150, 0)
+	options_panel.custom_minimum_size = Vector2(200, 0)
 	options_panel.visible = false
 	options_panel.modulate.a = 0.0
 	add_child(options_panel)
@@ -84,6 +84,8 @@ func _create_options_panel():
 		text = _process_text_placeholders(text)
 		
 		btn.text = text
+		btn.theme=load("res://theme/blue_button.tres")
+		btn.add_theme_font_size_override("font_size",30)
 		btn.pressed.connect(_on_option_pressed.bind(option))
 		options_container.add_child(btn)
 		option_buttons.append(btn)
