@@ -451,8 +451,14 @@ func _on_scene_changed(scene_id: String, weather_id: String, time_id: String):
 	# 触发场景交互
 	if scene_actually_changed:
 		if scene_manager.has_character_in_scene(target_scene):
+			# 记录用户来自的旧场景，供占位符使用
+			if has_node("/root/SaveManager") and old_scene != "":
+				get_node("/root/SaveManager").set_meta("user_old_scene", old_scene)
 			interaction_handler.try_scene_interaction("enter_scene")
 		elif scene_manager.has_character_in_scene(old_scene):
+			# 记录用户去往的新场景，供占位符使用
+			if has_node("/root/SaveManager") and target_scene != "":
+				get_node("/root/SaveManager").set_meta("user_new_scene", target_scene)
 			interaction_handler.try_scene_interaction("leave_scene")
 
 func _on_scene_menu_selected(scene_id: String):
@@ -480,8 +486,14 @@ func _on_scene_menu_selected(scene_id: String):
 	
 	# 触发场景交互
 	if scene_manager.has_character_in_scene(scene_id):
+		# 记录用户来自的旧场景，供占位符使用
+		if has_node("/root/SaveManager") and old_scene != "":
+			get_node("/root/SaveManager").set_meta("user_old_scene", old_scene)
 		interaction_handler.try_scene_interaction("enter_scene")
 	elif scene_manager.has_character_in_scene(old_scene):
+		# 记录用户去往的新场景，供占位符使用
+		if has_node("/root/SaveManager") and scene_id != "":
+			get_node("/root/SaveManager").set_meta("user_new_scene", scene_id)
 		interaction_handler.try_scene_interaction("leave_scene")
 
 func _on_character_clicked(char_position: Vector2, char_size: Vector2):
@@ -958,7 +970,7 @@ func _on_event_completed(event_name: String, result):
 		print("事件成功: ", event_name)
 		
 		if event_name == "idle_timeout":
-			if result.message == "active":
+			if result.message == "active" or result.message == "idle":
 				interaction_handler.trigger_active_chat()
 			elif result.message == "idle_position_change":
 				interaction_handler.trigger_idle_position_change()

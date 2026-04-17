@@ -312,19 +312,57 @@ func start_chat(user_message: String = "", trigger_mode: String = "passive", ite
 	# 检查最后一个消息是否为assistant，如果是则添加user占位符
 	# 注意：这个占位符只用于API调用，不记录到历史中
 	var last_role = messages[-1].role if messages.size() > 0 else ""
-	if last_role == "assistant":
-		messages.append({"role": "user", "content": "……"})
-		print("检测到最后一条消息为assistant，添加user占位符以避免前缀读写")
-	elif last_role == "system":
-		# 主动对话时，如果没有历史记录，添加一个空的user消息作为触发
-		# 避免messages数组只有system消息导致API错误
-		messages.append({"role": "user", "content": "……"})
-		print("主动对话且无历史记录，添加空user消息作为触发")
+	if last_role == "assistant" or last_role == "system":
+		var placeholder = _build_trigger_placeholder(trigger_mode)
+		messages.append({"role": "user", "content": placeholder})
+		print("添加触发占位符（%s）: %s" % [trigger_mode, placeholder])
 
 	if is_first_message:
 		is_first_message = false
 
 	_call_chat_api(messages, user_message, item_data)
+
+func _build_trigger_placeholder(trigger_mode: String) -> String:
+	"""根据触发模式构建占位符内容"""
+	var save_mgr = get_node_or_null("/root/SaveManager")
+	var prompt_builder = get_node_or_null("/root/PromptBuilder")
+	
+	match trigger_mode:
+		"enter_scene":
+			if save_mgr and prompt_builder:
+				var char_scene_id = save_mgr.get_character_scene()
+				var char_scene_name = prompt_builder._get_scene_description(char_scene_id)
+				var from_scene_name = ""
+				if save_mgr.has_meta("user_old_scene"):
+					var from_id = save_mgr.get_meta("user_old_scene")
+					from_scene_name = prompt_builder._get_scene_description(from_id)
+					save_mgr.remove_meta("user_old_scene")
+				if from_scene_name != "":
+					return "（我从%s进入了%s）" % [from_scene_name, char_scene_name]
+				else:
+					return "（我来到了%s）" % char_scene_name
+			return "（我进入了你所在的地方）"
+		"leave_scene":
+			if save_mgr and prompt_builder:
+				var char_scene_id = save_mgr.get_character_scene()
+				var char_scene_name = prompt_builder._get_scene_description(char_scene_id)
+				var to_scene_name = ""
+				if save_mgr.has_meta("user_new_scene"):
+					var to_id = save_mgr.get_meta("user_new_scene")
+					to_scene_name = prompt_builder._get_scene_description(to_id)
+					save_mgr.remove_meta("user_new_scene")
+				if to_scene_name != "":
+					return "（我离开%s去了%s）" % [char_scene_name, to_scene_name]
+				else:
+					return "（我离开了%s）" % char_scene_name
+			return "（我离开了你所在的地方）"
+		"called", "called_here":
+			if save_mgr:
+				var char_name = save_mgr.get_character_name()
+				return char_name
+			return "……"
+		_:
+			return "……"
 
 func _call_chat_api(messages: Array, _user_message: String, item_data: Dictionary = {}):
 	"""调用对话 API"""

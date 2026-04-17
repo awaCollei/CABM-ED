@@ -146,7 +146,7 @@ func on_enter_scene() -> EventResult:
 	var success = randf() < success_chance
 	
 	var result = EventResult.new(success)
-	result.message = "active" # chat_mode
+	result.message = "enter_scene" # chat_mode
 	
 	if success:
 		result.affection_change = randi_range(0, 2)
@@ -177,7 +177,7 @@ func on_leave_scene() -> EventResult:
 	var success = randf() < success_chance
 	
 	var result = EventResult.new(success)
-	result.message = "active" # chat_mode
+	result.message = "leave_scene" # chat_mode
 	
 	if success:
 		result.willingness_change = randi_range(-10, -5)
@@ -321,7 +321,7 @@ func on_idle_timeout() -> EventResult:
 			var base_willingness = 50
 			var success_chance = helpers.calculate_success_chance(base_willingness)
 			if randf() < success_chance:
-				result.message = "active" # 触发主动聊天
+				result.message = "idle" # 触发主动聊天（空闲超时）
 				print("空闲超时触发主动聊天")
 			# 如果没有触发主动聊天，尝试触发位置变动（100%概率）
 			elif randf() < 1.0:

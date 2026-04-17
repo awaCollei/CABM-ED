@@ -343,7 +343,7 @@ func show_dialog(mode: String = "passive"):
 	if auto_button:
 		auto_button.visible = true
 	
-	if mode == "active" or mode == "called" or mode == "called_here":
+	if mode == "active" or mode == "called" or mode == "called_here" or mode == "enter_scene" or mode == "leave_scene" or mode == "idle":
 		_setup_reply_mode()
 		message_label.text = ""
 	else:
@@ -363,7 +363,7 @@ func show_dialog(mode: String = "passive"):
 	# 更新顶部输入框可见性
 	_update_top_input_visibility(visible and is_input_mode and top_input_enabled)
 	
-	if mode == "active" or mode == "called" or mode == "called_here":
+	if mode == "active" or mode == "called" or mode == "called_here" or mode == "enter_scene" or mode == "leave_scene" or mode == "idle":
 		if has_node("/root/AIService"):
 			var ai_service = get_node("/root/AIService")
 			ai_service.start_chat("", mode)

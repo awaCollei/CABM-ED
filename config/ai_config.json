@@ -79,7 +79,10 @@
             "active": "现在，你想主动找{user_name}聊天，说点什么吧。",
             "ongoing": "你在和{user_name}聊天。",
             "called": "现在，{user_name}在{current_scene}呼唤了你，你从{character_scene}来到了他面前，主动说点什么吧。",
-            "called_here": "现在，{user_name}呼唤了你，主动说点什么吧。"
+            "called_here": "现在，{user_name}呼唤了你，主动说点什么吧。",
+            "enter_scene": "现在，{user_name}来到了你所在的{current_scene}，说点什么吧。",
+            "leave_scene": "现在，{user_name}离开了你所在的{current_scene}，说点什么吧。",
+            "idle": "现在，你想主动找{user_name}聊天，说点什么吧。"
         },
         "response_style":{
             "verbal":"你要说的话。根据实际情况可长可短，可以是简短的语气词，也可以是长篇大论。禁止换行，禁止使用markdown。必须使用中文标点。",
