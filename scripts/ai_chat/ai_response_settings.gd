@@ -23,6 +23,7 @@ const TYPING_PREVIEW_TEXT = "这是一段示例文本，你可以拖动滑杆观
 @onready var status_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/StatusContainer/StatusCheckButton
 @onready var typing_speed_slider: HSlider = $VBoxContainer/HBoxContainer/RightContainer/HSlider
 @onready var typing_speed_preview_text_edit: TextEdit = $VBoxContainer/HBoxContainer/RightContainer/TextEdit
+@onready var offline_mode_option_button: OptionButton = $VBoxContainer/HBoxContainer/RightContainer/OfflineModeContainer/OfflineModeOptionButton
 
 # 回复风格配置
 var response_styles: Dictionary = {
@@ -70,6 +71,7 @@ func _ready() -> void:
 	offline_diary_checkbutton.toggled.connect(_on_offline_diary_toggled)
 	status_checkbutton.toggled.connect(_on_status_check_toggled)
 	typing_speed_slider.value_changed.connect(_on_typing_speed_slider_changed)
+	offline_mode_option_button.item_selected.connect(_on_offline_mode_selected)
 	
 	# 加载设置
 	if config_manager:
@@ -123,6 +125,9 @@ func load_response_settings() -> void:
 	_is_loading_typing_speed = false
 	_apply_typing_speed_to_chat_dialog(typing_speed_seconds)
 	_restart_typing_speed_preview()
+	
+	# 加载离线模式设置
+	offline_mode_option_button.selected = config_manager.load_offline_mode()
 
 ## 回复模式改变
 func _on_response_mode_changed(enabled: bool, mode: String) -> void:
@@ -196,6 +201,11 @@ func _on_status_check_toggled(enabled: bool) -> void:
 		var chat_dialog = main_scene.get_node_or_null("ChatDialog")
 		if chat_dialog and chat_dialog.has_method("set_status_check_enabled"):
 			chat_dialog.set_status_check_enabled(enabled)
+
+## 离线模式选择
+func _on_offline_mode_selected(index: int) -> void:
+	config_manager.save_offline_mode(index)
+	print("离线模式已设置为: %d" % index)
 
 func _on_typing_speed_slider_changed(value: float) -> void:
 	typing_speed_seconds = clampf(value, 0.01, 0.09)

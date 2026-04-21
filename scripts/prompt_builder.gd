@@ -518,7 +518,8 @@ func build_offline_diary_prompt(start_time: String, end_time: String, event_coun
 		"{start_time}": start_time,
 		"{end_time}": end_time,
 		"{event_count}": str(event_count),
-		"{memory_context}": memory_context
+		"{memory_context}": memory_context,
+		"{offline_prompt}": _get_offline_prompt(user_name)
 	}
 	
 	# 使用offline框架
@@ -738,3 +739,24 @@ func _get_item_prompt() -> String:
 			options += "，3=使用全部"
 	
 	return "\"item\": <int> 是否接受物品：" + options + "\n"
+
+func _get_offline_prompt(user_name: String) -> String:
+	"""根据离线模式设置返回对应的offline_prompt文本
+	
+	三个选项的模板（需要用user_name二次format）：
+	  0=自动:       "时间里"
+	  1=视为玩家离开: "{user_name}不在的时间里"
+	  2=视为玩家在家: "时间里和{user_name}一起"
+	"""
+	var config_mgr = get_node_or_null("/root/AIConfigManager")
+	var mode = 0
+	if config_mgr:
+		mode = config_mgr.load_offline_mode()
+	
+	match mode:
+		1:
+			return "%s不在的时间里" % user_name
+		2:
+			return "时间里和%s一起" % user_name
+		_: # 0 = 自动
+			return "时间里"

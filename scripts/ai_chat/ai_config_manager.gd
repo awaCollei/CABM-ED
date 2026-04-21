@@ -306,6 +306,17 @@ func load_active_chat() -> bool:
 	var config = load_config()
 	return config.get("active_chat", true) # 默认开启
 
+## 保存离线模式设置（0=自动, 1=视为玩家离开, 2=视为玩家在家）
+func save_offline_mode(mode: int) -> bool:
+	var config = load_config()
+	config["offline_mode"] = mode
+	return save_config(config)
+
+## 加载离线模式设置
+func load_offline_mode() -> int:
+	var config = load_config()
+	return int(config.get("offline_mode", 0)) # 默认自动
+
 ## 保存启用离线日记设置
 func save_offline_diary(enabled: bool) -> bool:
 	var config = load_config()

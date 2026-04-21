@@ -235,3 +235,26 @@ size_flags_horizontal = 0
 editable = false
 wrap_mode = 1
 autowrap_mode = 1
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer/HBoxContainer/RightContainer"]
+layout_mode = 2
+
+[node name="OfflineModeContainer" type="HBoxContainer" parent="VBoxContainer/HBoxContainer/RightContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="OfflineModeLabel" type="Label" parent="VBoxContainer/HBoxContainer/RightContainer/OfflineModeContainer"]
+layout_mode = 2
+text = "离线时"
+
+[node name="OfflineModeOptionButton" type="OptionButton" parent="VBoxContainer/HBoxContainer/RightContainer/OfflineModeContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+selected = 0
+item_count = 3
+popup/item_0/text = "自动"
+popup/item_0/id = 0
+popup/item_1/text = "视为玩家离开"
+popup/item_1/id = 1
+popup/item_2/text = "视为玩家在家"
+popup/item_2/id = 2
