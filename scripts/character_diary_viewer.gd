@@ -310,16 +310,34 @@ func show_diary():
 
 	# 加载可用日期列表
 	_load_available_dates()
-	if available_dates.is_empty():
-		print("没有角色日记记录")
-		return
-
-	# 显示最新日期
-	current_date_index = 0
-	_load_date_content(available_dates[0])
 
 	# 设置鼠标过滤，阻止鼠标事件穿透到下面的元素
 	mouse_filter = Control.MOUSE_FILTER_STOP
+
+	if available_dates.is_empty():
+		print("没有角色日记记录")
+		# 清空内容区域并显示提示
+		for child in content_vbox.get_children():
+			child.queue_free()
+		if date_label:
+			date_label.text = "暂无记录"
+		if prev_date_button:
+			prev_date_button.disabled = true
+		if next_date_button:
+			next_date_button.disabled = true
+		if prev_month_button:
+			prev_month_button.disabled = true
+		if next_month_button:
+			next_month_button.disabled = true
+		var empty_label = Label.new()
+		empty_label.text = "还没有任何日记记录"
+		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		empty_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+		content_vbox.add_child(empty_label)
+	else:
+		# 显示最新日期
+		current_date_index = 0
+		_load_date_content(available_dates[0])
 
 	visible = true
 	pivot_offset = size / 2.0
