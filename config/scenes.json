@@ -49,14 +49,14 @@
       "name": "天台",
       "icon": "🌇",
       "weight": 1,
-      "class": "outdoor",
+      "class": "home",
       "connect": ["entryway","livingroom"]
     },
     "shop": {
       "name": "超市",
       "icon": "🏪",
       "weight": 1,
-      "class": "outdoor",
+      "class": "home",
       "connect": ["entryway","library"]
     },
     "entryway": {
@@ -70,8 +70,15 @@
       "name": "图书馆",
       "icon": "📚",
       "weight": 1,
-      "class": "outdoor",
+      "class": "home",
       "connect": ["entryway","shop","rooftop"]
+    },
+    "beach": {
+      "name": "海滩",
+      "icon": "🏖️",
+      "weight": 1,
+      "class": "outdoor",
+      "connect": []
     }
   }
 }
