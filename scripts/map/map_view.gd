@@ -3,6 +3,7 @@ extends Control
 signal map_closed
 signal go_selected(scene_id: String)
 var current_explore_id: String = ""
+var current_target_type: String = "explore"
 var on_go_selected: Callable
 var scenes_config: Dictionary = {}
 var map_config: Dictionary = {}
@@ -151,6 +152,8 @@ func _build_world_points():
 					name = id
 				elif t == "explore" or t == "safe":
 					name = "探索区"
+				elif t == "outdoor":
+					name = "户外场景"
 			
 			# 根据类型确定颜色和连接函数
 			var btn_color: Color
@@ -169,6 +172,10 @@ func _build_world_points():
 				"safe":
 					btn_color = Color(0.3, 0.8, 0.3, 0.9)  # 绿色 - 安全区域
 					border_color = Color(0.1, 0.6, 0.1, 1.0)  # 深绿色边框
+					connect_func = _on_explore_point_pressed
+				"outdoor":
+					btn_color = Color(0.95, 0.65, 0.25, 0.9)  # 橙色 - 户外场景
+					border_color = Color(0.8, 0.45, 0.1, 1.0)  # 深橙色边框
 					connect_func = _on_explore_point_pressed
 				_:
 					continue  # 未知类型跳过
@@ -307,12 +314,18 @@ func _center_initial_view():
 		var sm = get_node("/root/SaveManager")
 		if sm.has_meta("map_origin"):
 			var origin = sm.get_meta("map_origin")
-			if origin == "explore":
+			if origin == "explore" or origin == "outdoor":
 				var eid := ""
-				if sm.has_meta("explore_current_id"):
-					eid = sm.get_meta("explore_current_id")
-				elif sm.has_meta("explore_target_id"):
-					eid = sm.get_meta("explore_target_id")
+				if origin == "outdoor":
+					if sm.has_meta("outdoor_current_id"):
+						eid = sm.get_meta("outdoor_current_id")
+					elif sm.has_meta("outdoor_target_id"):
+						eid = sm.get_meta("outdoor_target_id")
+				else:
+					if sm.has_meta("explore_current_id"):
+						eid = sm.get_meta("explore_current_id")
+					elif sm.has_meta("explore_target_id"):
+						eid = sm.get_meta("explore_target_id")
 				var pos = _get_world_point_pos(eid if eid != "" else "explore")
 				if pos != Vector2.ZERO:
 					_center_on_point(pos)
@@ -354,7 +367,7 @@ func _on_explore_point_pressed(explore_id: String):
 	for p in map_config.world.points:
 		var pid = p.get("id")
 		var ptype = p.get("type")
-		if pid == explore_id and (ptype == "explore" or ptype == "safe"):
+		if pid == explore_id and (ptype == "explore" or ptype == "safe" or ptype == "outdoor"):
 			explore_data = p
 			break
 	if explore_data.is_empty():
@@ -372,33 +385,47 @@ func _on_explore_point_pressed(explore_id: String):
 		type_text = "[color=#FF6666]探索区域[/color]"
 	elif point_type == "safe":
 		type_text = "[color=#66FF66]安全区域[/color]"
+	elif point_type == "outdoor":
+		type_text = "[color=#FFB347]户外场景[/color]"
 	
 	sidebar_title.text = explore_data.get("name", "探索区")
 	var intro = explore_data.get("intro", "")
 	# 在描述前添加类型信息
 	sidebar_description.text = "[b]类型：[/b]" + type_text + "\n\n" + intro
 	current_explore_id = explore_id
+	current_target_type = point_type
+	enter_button.text = "前往此处" if point_type == "outdoor" else "进入区域"
 	if has_node("/root/SaveManager"):
 		var sm = get_node("/root/SaveManager")
-		sm.set_meta("explore_target_id", explore_id)
+		if point_type == "outdoor":
+			sm.set_meta("outdoor_target_id", explore_id)
+		else:
+			sm.set_meta("explore_target_id", explore_id)
 	_show_sidebar()
 
 func _on_enter_explore():
+	var target_scene_path := "res://scenes/explore_scene.tscn"
 	if has_node("/root/SaveManager"):
 		var sm = get_node("/root/SaveManager")
 		if current_explore_id != "":
-			if not sm.save_data.has("explore_checkpoint"):
-				sm.save_data.explore_checkpoint = {"active": true, "scene_id": current_explore_id}
+			if current_target_type == "outdoor":
+				sm.set_meta("outdoor_target_id", current_explore_id)
+				target_scene_path = "res://scenes/outdoor.tscn"
 			else:
-				sm.save_data.explore_checkpoint.active = true
-				sm.save_data.explore_checkpoint.scene_id = current_explore_id
-			sm.save_game(sm.current_slot)
+				if not sm.save_data.has("explore_checkpoint"):
+					sm.save_data.explore_checkpoint = {"active": true, "scene_id": current_explore_id}
+				else:
+					sm.save_data.explore_checkpoint.active = true
+					sm.save_data.explore_checkpoint.scene_id = current_explore_id
+				sm.save_game(sm.current_slot)
 		if sm.has_meta("map_origin"):
 			sm.remove_meta("map_origin")
+	if current_target_type == "outdoor":
+		target_scene_path = "res://scenes/outdoor.tscn"
 	if has_node("/root/SceneTransition"):
-		get_node("/root/SceneTransition").change_scene_with_fade("res://scenes/explore_scene.tscn")
+		get_node("/root/SceneTransition").change_scene_with_fade(target_scene_path)
 	else:
-		get_tree().change_scene_to_file("res://scenes/explore_scene.tscn")
+		get_tree().change_scene_to_file(target_scene_path)
 
 func _on_backdrop_input(event):
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
