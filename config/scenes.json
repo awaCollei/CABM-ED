@@ -72,13 +72,6 @@
       "weight": 1,
       "class": "home",
       "connect": ["entryway","shop","rooftop"]
-    },
-    "beach": {
-      "name": "海滩",
-      "icon": "🏖️",
-      "weight": 1,
-      "class": "outdoor",
-      "connect": []
     }
   }
 }

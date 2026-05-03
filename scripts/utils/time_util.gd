@@ -227,3 +227,18 @@ func get_days_diff(dict1: Dictionary, dict2: Dictionary) -> int:
 func get_months_diff(dict1: Dictionary, dict2: Dictionary) -> int:
 	var months = (dict2.year - dict1.year) * 12 + (dict2.month - dict1.month)
 	return abs(months)
+
+#用于背景的简化时间段
+func get_time_period_from_hour(hour: int) -> String:
+	# 7:00-17:59 = 白天 (day)
+	# 17:00-18:59 = 黄昏 (dusk)
+	# 20:00-3:59 = 夜晚 (night)
+	# 4:00-6:59 (凌晨) = 黄昏 (dusk)
+	if hour >= 4 and hour < 7:
+		return "dusk" # 凌晨算作黄昏
+	elif hour >= 7 and hour < 17:
+		return "day"
+	elif hour >= 17 and hour < 19:
+		return "dusk"
+	else:
+		return "night"

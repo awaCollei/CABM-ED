@@ -76,7 +76,7 @@ func _ready():
 	# 如果启用了自动时间，在构建UI之前先调整时间
 	if auto_time_enabled:
 		var time_dict = Time.get_time_dict_from_system()
-		var time_id = _get_time_period_from_hour(time_dict["hour"])
+		var time_id = TimeUtil.get_time_period_from_hour(time_dict["hour"])
 		current_time_id = time_id
 		print("初始化自动时间: ", time_id)
 	
@@ -228,27 +228,13 @@ func _update_clock():
 		_auto_adjust_time_period(hour)
 
 func _auto_adjust_time_period(hour: int):
-	var time_id = _get_time_period_from_hour(hour)
+	var time_id = TimeUtil.get_time_period_from_hour(hour)
 	
 	# 更新当前时间选择
 	if current_time_id != time_id:
 		current_time_id = time_id
 		_update_button_states()
 		_emit_scene_change()
-
-func _get_time_period_from_hour(hour: int) -> String:
-	# 7:00-17:59 = 白天 (day)
-	# 17:00-18:59 = 黄昏 (dusk)
-	# 20:00-3:59 = 夜晚 (night)
-	# 4:00-6:59 (凌晨) = 黄昏 (dusk)
-	if hour >= 4 and hour < 7:
-		return "dusk" # 凌晨算作黄昏
-	elif hour >= 7 and hour < 17:
-		return "day"
-	elif hour >= 17 and hour < 19:
-		return "dusk"
-	else:
-		return "night"
 
 func _on_auto_time_toggled(enabled: bool):
 	auto_time_enabled = enabled

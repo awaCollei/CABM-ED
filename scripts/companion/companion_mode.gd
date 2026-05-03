@@ -127,33 +127,18 @@ func _load_studyroom_scene():
 	# 获取当前系统时间并转换为时间段
 	var time_dict = Time.get_time_dict_from_system()
 	var hour = time_dict["hour"]
-	current_time_id = _get_time_period_from_hour(hour)
+	current_time_id = TimeUtil.get_time_period_from_hour(hour)
 	print("根据系统时间设置时间段: ", current_time_id, " (当前小时: ", hour, ")")
 	
 	# 加载书房场景
 	await scene_manager.load_scene("studyroom", current_weather_id, current_time_id)
 	print("书房场景已加载: 天气=%s, 时间=%s" % [current_weather_id, current_time_id])
 
-func _get_time_period_from_hour(hour: int) -> String:
-	"""根据小时数获取时间段"""
-	# 7:00-16:59 = 白天 (day)
-	# 17:00-18:59 = 黄昏 (dusk)
-	# 19:00-3:59 = 夜晚 (night)
-	# 4:00-6:59 (凌晨) = 黄昏 (dusk)
-	if hour >= 4 and hour < 7:
-		return "dusk" # 凌晨算作黄昏
-	elif hour >= 7 and hour < 17:
-		return "day"
-	elif hour >= 17 and hour < 19:
-		return "dusk"
-	else:
-		return "night"
-
 func _on_time_update_timer_timeout():
 	"""定时检查时间变化，自动更新背景"""
 	var time_dict = Time.get_time_dict_from_system()
 	var hour = time_dict["hour"]
-	var new_time_id = _get_time_period_from_hour(hour)
+	var new_time_id = TimeUtil.get_time_period_from_hour(hour)
 	
 	# 如果时间段发生变化，重新加载场景
 	if new_time_id != current_time_id:
