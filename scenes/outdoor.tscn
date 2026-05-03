@@ -1,6 +1,8 @@
-[gd_scene load_steps=2 format=3 uid="uid://db6bgeon5bnwi"]
+[gd_scene load_steps=4 format=3 uid="uid://db6bgeon5bnwi"]
 
 [ext_resource type="Script" uid="uid://b6gl42ae7l1qh" path="res://scripts/outdoor/outdoor_scene.gd" id="1"]
+[ext_resource type="Script" uid="uid://dx7qx267uux0h" path="res://scripts/outdoor/outdoor_character.gd" id="2"]
+[ext_resource type="Script" uid="uid://dvxm7qwxqj003" path="res://scripts/character_debug.gd" id="3"]
 
 [node name="OutdoorScene" type="Control"]
 layout_mode = 3
@@ -18,14 +20,28 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-stretch_mode = 6
+stretch_mode = 5
+
+[node name="Character" type="TextureButton" parent="Background"]
+layout_mode = 1
+script = ExtResource("2")
+
+[node name="CharacterDebugHelper" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3")
 
 [node name="TimeLabel" type="Label" parent="."]
 layout_mode = 0
-offset_left = 30.0
-offset_top = 30.0
-offset_right = 230.0
-offset_bottom = 70.0
+offset_left = 24.0
+offset_top = 20.0
+offset_right = 260.0
+offset_bottom = 60.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 28
 text = "12:00  白天"
@@ -39,5 +55,98 @@ offset_top = 20.0
 offset_right = -24.0
 offset_bottom = 70.0
 grow_horizontal = 0
-theme_override_font_sizes/font_size = 30
-text = "🗺打开地图"
+theme_override_font_sizes/font_size = 24
+text = "打开地图"
+
+[node name="FloatingBar" type="PanelContainer" parent="."]
+custom_minimum_size = Vector2(400, 0)
+layout_mode = 0
+offset_left = 24.0
+offset_top = 120.0
+offset_right = 292.0
+offset_bottom = 410.0
+
+[node name="MarginContainer" type="MarginContainer" parent="FloatingBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="FloatingBar/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Header" type="HBoxContainer" parent="FloatingBar/MarginContainer/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DragHint" type="Label" parent="FloatingBar/MarginContainer/VBox/Header"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "海滩"
+
+[node name="CostumeButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
+custom_minimum_size = Vector2(90, 34)
+layout_mode = 2
+text = "👘换装"
+
+[node name="CollapseInputButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
+custom_minimum_size = Vector2(90, 34)
+layout_mode = 2
+text = "🔼收起"
+
+[node name="InputTextEdit" type="TextEdit" parent="FloatingBar/MarginContainer/VBox"]
+custom_minimum_size = Vector2(0, 220)
+layout_mode = 2
+size_flags_vertical = 3
+placeholder_text = "输入任意文本..."
+
+[node name="CostumePanel" type="PanelContainer" parent="."]
+visible = false
+custom_minimum_size = Vector2(420, 520)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -210.0
+offset_top = -260.0
+offset_right = 210.0
+offset_bottom = 260.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CostumePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
+
+[node name="VBox" type="VBoxContainer" parent="CostumePanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="Title" type="Label" parent="CostumePanel/MarginContainer/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "户外换装"
+horizontal_alignment = 1
+
+[node name="Preview" type="TextureRect" parent="CostumePanel/MarginContainer/VBox"]
+custom_minimum_size = Vector2(0, 170)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 3
+
+[node name="CostumeList" type="ItemList" parent="CostumePanel/MarginContainer/VBox"]
+custom_minimum_size = Vector2(0, 250)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CloseButton" type="Button" parent="CostumePanel/MarginContainer/VBox"]
+custom_minimum_size = Vector2(0, 44)
+layout_mode = 2
+text = "关闭"

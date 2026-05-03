@@ -56,7 +56,8 @@
       "snow_fox_inventory": {
         "storage": [],
         "weapon_slot": {}
-      }
+      },
+      "outdoor_scene_costumes": {}
     }
   },
   "settings": {

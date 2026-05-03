@@ -447,6 +447,23 @@ func set_costume_id(costume_id: String):
 	save_data.character_data.costume_id = costume_id
 	_auto_save()
 
+func get_outdoor_scene_costume(scene_id: String) -> String:
+	"""获取户外场景独立服装ID（与 character_data.costume_id 无关）"""
+	if scene_id == "":
+		return ""
+	if not save_data.has("outdoor_scene_costumes"):
+		save_data.outdoor_scene_costumes = {}
+	return str(save_data.outdoor_scene_costumes.get(scene_id, ""))
+
+func set_outdoor_scene_costume(scene_id: String, costume_id: String):
+	"""设置户外场景独立服装ID（按 scene_id 存储）"""
+	if scene_id == "" or costume_id == "":
+		return
+	if not save_data.has("outdoor_scene_costumes"):
+		save_data.outdoor_scene_costumes = {}
+	save_data.outdoor_scene_costumes[scene_id] = costume_id
+	_auto_save()
+
 func get_affection() -> int:
 	return save_data.character_data.get("affection", 0)
 
