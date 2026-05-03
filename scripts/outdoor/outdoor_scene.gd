@@ -32,7 +32,10 @@ func _ready():
 	_resolve_outdoor_id()
 	_load_outdoor_config()
 	_init_selected_costume()
+	call_deferred("_init_scene_safe")
 	_setup_character()
+	character.gui_input.connect(_on_character_gui_input)
+	get_viewport().size_changed.connect(_on_viewport_size_changed)
 	_update_by_system_time()
 	open_map_button.pressed.connect(_on_open_map_pressed)
 	collapse_input_button.pressed.connect(_on_collapse_input_pressed)
@@ -42,7 +45,7 @@ func _ready():
 	floating_header.gui_input.connect(_on_floating_header_gui_input)
 	
 	var refresh_timer = Timer.new()
-	refresh_timer.wait_time = 30.0
+	refresh_timer.wait_time =1.0
 	refresh_timer.autostart = true
 	refresh_timer.timeout.connect(_update_by_system_time)
 	add_child(refresh_timer)
@@ -50,6 +53,19 @@ func _ready():
 	# 执行淡入动画
 	if has_node("/root/SceneTransition"):
 		get_node("/root/SceneTransition").fade_in()
+
+func _init_scene_safe():
+	_setup_character()
+	_update_by_system_time()
+	_randomize_initial_pose()
+
+func _randomize_initial_pose():
+	var poses = _get_pose_list()
+	if poses.is_empty():
+		return
+	
+	var index = rng.randi_range(0, poses.size() - 1)
+	_apply_pose_by_index(index)
 
 func _resolve_outdoor_id():
 	if not has_node("/root/SaveManager"):
@@ -111,8 +127,6 @@ func _init_selected_costume():
 func _setup_character():
 	if character.has_method("set_background_reference"):
 		character.set_background_reference(background)
-	character.gui_input.connect(_on_character_gui_input)
-	get_viewport().size_changed.connect(_on_viewport_size_changed)
 	_apply_pose_by_index(0)
 
 func _on_viewport_size_changed():
@@ -122,11 +136,17 @@ func _on_viewport_size_changed():
 func _update_by_system_time():
 	var time_dict = Time.get_time_dict_from_system()
 	var hour = int(time_dict.get("hour", 12))
+	var minute = int(time_dict.get("minute", 0)) 
 	var time_id = TimeUtil.get_time_period_from_hour(hour)
 	if time_id != current_time_id:
 		current_time_id = time_id
 		_apply_background()
-	_update_time_label(hour)
+
+	_update_time_label(hour, minute)
+
+func _update_time_label(hour: int, minute: int):
+	var time_name := TimeUtil.get_time_period(hour)
+	time_label.text = "%02d:%02d  %s" % [hour, minute, time_name]
 
 func _apply_background():
 	var time_path = "res://assets/images/scenes_outdoor/%s/%s.png" % [outdoor_id, current_time_id]
@@ -136,15 +156,6 @@ func _apply_background():
 		background.texture = load(load_path)
 	else:
 		background.texture = null
-
-func _update_time_label(hour: int):
-	var time_name := "白天"
-	match TimeUtil.get_time_period_from_hour(hour):
-		"dusk":
-			time_name = "黄昏"
-		"night":
-			time_name = "夜晚"
-	time_label.text = "%02d:00  %s" % [hour, time_name]
 
 func _find_costume_by_id(costume_id: String) -> Dictionary:
 	for entry in costume_entries:
@@ -160,23 +171,33 @@ func _apply_pose_by_index(index: int):
 	if poses.is_empty():
 		character.visible = false
 		return
+	
 	if index < 0 or index >= poses.size():
 		index = 0
 	
 	current_pose_index = index
 	var pose = poses[index]
-	var image_name = str(pose.get("image", ""))
-	var texture = _load_character_texture(selected_costume_id, image_name)
+	var texture = _load_character_texture(selected_costume_id, str(pose.get("image", "")))
+	
 	if texture == null:
 		character.visible = false
 		return
 	
-	character.visible = true
-	character.texture_normal = texture
-	character.texture_hover = texture
-	character.texture_pressed = texture
-	character.scale = Vector2(float(pose.get("scale", 1.0)), float(pose.get("scale", 1.0)))
-	_apply_character_position(pose.get("position", {}))
+	# ⭐淡出
+	var tween = create_tween()
+	tween.tween_property(character, "modulate:a", 0.0, 0.15)
+	
+	tween.tween_callback(func():
+		character.texture_normal = texture
+		character.texture_hover = texture
+		character.texture_pressed = texture
+		character.scale = Vector2(pose.get("scale", 1.0), pose.get("scale", 1.0))
+		_apply_character_position(pose.get("position", {}))
+	)
+	
+	# ⭐淡入
+	tween.tween_property(character, "modulate:a", 1.0, 0.15)
+
 
 func _load_character_texture(costume_id: String, image_name: String) -> Texture2D:
 	var path = "res://assets/images/character_outdoor/%s/%s" % [costume_id, image_name]
@@ -219,13 +240,14 @@ func _on_character_pressed():
 
 func _on_collapse_input_pressed():
 	var collapsed = input_text_edit.visible
+	var tween = create_tween()
+	
+	if collapsed:
+		tween.tween_property(floating_bar, "size:y", 40, 0.2)
+	else:
+		tween.tween_property(floating_bar, "size:y", 200, 0.2)
 	
 	input_text_edit.visible = not collapsed
-	
-	# 控制 VBox 高度效果（关键）
-	for child in floating_bar.get_node("MarginContainer/VBox").get_children():
-		if child != floating_header:
-			child.visible = not collapsed
 	
 	collapse_input_button.text = "🔽展开" if collapsed else "🔼收起"
 
