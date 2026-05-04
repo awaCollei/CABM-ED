@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://db6bgeon5bnwi"]
+[gd_scene load_steps=8 format=3 uid="uid://db6bgeon5bnwi"]
 
 [ext_resource type="Script" uid="uid://b6gl42ae7l1qh" path="res://scripts/outdoor/outdoor_scene.gd" id="1"]
 [ext_resource type="Script" uid="uid://dx7qx267uux0h" path="res://scripts/outdoor/outdoor_character.gd" id="2"]
@@ -6,6 +6,17 @@
 [ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="4_qkxme"]
 [ext_resource type="Script" uid="uid://c11x7upyjhy5v" path="res://scripts/outdoor/outdoor_dialogue_controller.gd" id="5_dialogue"]
 [ext_resource type="PackedScene" uid="uid://bige5yr00vvic" path="res://scenes/outdoor_chat_bubble.tscn" id="6_bubble"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_n15xk"]
+bg_color = Color(0, 0.78039217, 0.8745098, 0.6666667)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
 [node name="OutdoorScene" type="Control"]
 layout_mode = 3
@@ -30,6 +41,16 @@ layout_mode = 1
 script = ExtResource("2")
 
 [node name="CharacterDebugHelper" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3")
+
+[node name="CharacterDebugHelper2" type="Control" parent="."]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -69,6 +90,7 @@ offset_left = 810.0
 offset_top = 100.0
 offset_right = 1210.0
 offset_bottom = 300.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_n15xk")
 
 [node name="MarginContainer" type="MarginContainer" parent="FloatingBar"]
 layout_mode = 2
@@ -91,14 +113,15 @@ layout_mode = 2
 text = "🔼"
 
 [node name="CostumeButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
-custom_minimum_size = Vector2(34, 34)
 layout_mode = 2
 text = "👘"
 
 [node name="DragHint" type="Label" parent="FloatingBar/MarginContainer/VBox/Header"]
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
 text = "户外"
+clip_text = true
 
 [node name="SendButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
 custom_minimum_size = Vector2(90, 34)
