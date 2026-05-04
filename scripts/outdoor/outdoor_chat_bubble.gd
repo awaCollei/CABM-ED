@@ -45,6 +45,8 @@ func show_page(text: String) -> void:
 	_is_waiting_indicator = false
 	visible = true
 	content_label.text = ""
+	size = Vector2.ZERO
+	update_minimum_size()
 	hint_label.visible = false
 	typing_timer.start()
 	_update_position_near_target()
