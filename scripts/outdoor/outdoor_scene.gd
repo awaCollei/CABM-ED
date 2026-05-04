@@ -14,6 +14,7 @@ extends Control
 @onready var costume_list: ItemList = $CostumePanel/MarginContainer/VBox/CostumeList
 @onready var costume_close_button: Button = $CostumePanel/MarginContainer/VBox/CloseButton
 @onready var drag_hint_label: Label = $FloatingBar/MarginContainer/VBox/Header/DragHint
+@onready var dialogue_controller: Node = $OutdoorDialogueController
 
 var outdoor_id: String = "beach"
 var current_time_id: String = ""
@@ -26,6 +27,11 @@ var rng := RandomNumberGenerator.new()
 
 var bar_dragging: bool = false
 var bar_drag_offset: Vector2 = Vector2.ZERO
+var bar_is_expanded: bool = true
+
+const FLOATING_BAR_DEFAULT_POS := Vector2(810.0, 100.0)
+const FLOATING_BAR_EXPANDED_HEIGHT := 200.0
+const FLOATING_BAR_COLLAPSED_HEIGHT := 40.0
 
 func _ready():
 	rng.randomize()
@@ -43,6 +49,7 @@ func _ready():
 	costume_close_button.pressed.connect(func(): costume_panel.visible = false)
 	costume_list.item_selected.connect(_on_costume_item_selected)
 	floating_header.gui_input.connect(_on_floating_header_gui_input)
+	_connect_dialogue_signals()
 	
 	var refresh_timer = Timer.new()
 	refresh_timer.wait_time =1.0
@@ -50,6 +57,7 @@ func _ready():
 	refresh_timer.timeout.connect(_update_by_system_time)
 	add_child(refresh_timer)
 	_update_drag_hint()
+	_restore_floating_bar_state()
 	# 执行淡入动画
 	if has_node("/root/SceneTransition"):
 		get_node("/root/SceneTransition").fade_in()
@@ -238,17 +246,7 @@ func _on_character_pressed():
 	_apply_pose_by_index(next_index)
 
 func _on_collapse_input_pressed():
-	var collapsed = input_text_edit.visible
-	var tween = create_tween()
-	
-	if collapsed:
-		tween.tween_property(floating_bar, "size:y", 40, 0.2)
-	else:
-		tween.tween_property(floating_bar, "size:y", 200, 0.2)
-	
-	input_text_edit.visible = not collapsed
-	send_button.disabled = collapsed
-	collapse_input_button.text = "🔽" if collapsed else "🔼"
+	_apply_floating_bar_expanded(not bar_is_expanded, true, true)
 
 func _on_costume_button_pressed():
 	costume_panel.visible = true
@@ -288,15 +286,26 @@ func _on_floating_header_gui_input(event: InputEvent):
 			bar_drag_offset = event.global_position - floating_bar.global_position
 		else:
 			bar_dragging = false
+			_save_floating_bar_state()
 	elif event is InputEventMouseMotion and bar_dragging:
 		var new_pos = event.global_position - bar_drag_offset
-		var viewport_size = get_viewport_rect().size
-		var bar_size = floating_bar.size
-		new_pos.x = clamp(new_pos.x, 0.0, max(0.0, viewport_size.x - bar_size.x))
-		new_pos.y = clamp(new_pos.y, 0.0, max(0.0, viewport_size.y - bar_size.y))
-		floating_bar.global_position = new_pos
+		floating_bar.global_position = _clamp_floating_bar_position(new_pos)
 
 func _on_open_map_pressed():
+	var dialog := ConfirmationDialog.new()
+	dialog.title = "打开地图"
+	dialog.dialog_text = "确定要离开这里了吗？"
+	dialog.ok_button_text = "离开"
+	if dialog.get_cancel_button():
+		dialog.get_cancel_button().text = "取消"
+	add_child(dialog)
+	dialog.popup_centered()
+	
+	# 直接连接 confirmed 信号到退出逻辑
+	dialog.confirmed.connect(_perform_open_map)
+	# canceled 不需要做任何事情，只是关闭对话框
+
+func _perform_open_map():
 	if has_node("/root/SaveManager"):
 		var sm = get_node("/root/SaveManager")
 		sm.set_meta("open_map_on_load", true)
@@ -306,3 +315,64 @@ func _on_open_map_pressed():
 		get_node("/root/SceneTransition").change_scene_with_fade("res://scripts/main.tscn")
 	else:
 		get_tree().change_scene_to_file("res://scripts/main.tscn")
+
+func _connect_dialogue_signals():
+	if dialogue_controller == null:
+		return
+	if dialogue_controller.has_signal("dialog_reply_started"):
+		dialogue_controller.connect("dialog_reply_started", _on_dialog_reply_started)
+	if dialogue_controller.has_signal("dialog_reply_finished"):
+		dialogue_controller.connect("dialog_reply_finished", _on_dialog_reply_finished)
+
+func _on_dialog_reply_started():
+	_apply_floating_bar_expanded(false, true, false)
+	collapse_input_button.disabled = true
+
+func _on_dialog_reply_finished():
+	collapse_input_button.disabled = false
+	_apply_floating_bar_expanded(true, true, false)
+
+func _apply_floating_bar_expanded(expanded: bool, animate: bool = true, save_state: bool = true):
+	bar_is_expanded = expanded
+	var target_height = FLOATING_BAR_EXPANDED_HEIGHT if expanded else FLOATING_BAR_COLLAPSED_HEIGHT
+	if animate:
+		var tween = create_tween()
+		tween.tween_property(floating_bar, "size:y", target_height, 0.2)
+	else:
+		floating_bar.size.y = target_height
+	input_text_edit.visible = expanded
+	send_button.disabled = not expanded
+	collapse_input_button.text = "🔼" if expanded else "🔽"
+	if save_state:
+		_save_floating_bar_state()
+
+func _restore_floating_bar_state():
+	var target_pos = FLOATING_BAR_DEFAULT_POS
+	var expanded = true
+	if has_node("/root/SaveManager"):
+		var sm = get_node("/root/SaveManager")
+		var state = sm.get_outdoor_floating_bar_state(outdoor_id)
+		if state is Dictionary and not state.is_empty():
+			target_pos.x = float(state.get("x", FLOATING_BAR_DEFAULT_POS.x))
+			target_pos.y = float(state.get("y", FLOATING_BAR_DEFAULT_POS.y))
+			expanded = bool(state.get("expanded", true))
+	floating_bar.global_position = _clamp_floating_bar_position(target_pos)
+	_apply_floating_bar_expanded(expanded, false, false)
+
+func _save_floating_bar_state():
+	if not has_node("/root/SaveManager"):
+		return
+	var sm = get_node("/root/SaveManager")
+	sm.set_outdoor_floating_bar_state(outdoor_id, {
+		"x": floating_bar.global_position.x,
+		"y": floating_bar.global_position.y,
+		"expanded": bar_is_expanded
+	})
+
+func _clamp_floating_bar_position(pos: Vector2) -> Vector2:
+	var viewport_size = get_viewport_rect().size
+	var bar_size = floating_bar.size
+	return Vector2(
+		clamp(pos.x, 0.0, max(0.0, viewport_size.x - bar_size.x)),
+		clamp(pos.y, 0.0, max(0.0, viewport_size.y - bar_size.y))
+	)

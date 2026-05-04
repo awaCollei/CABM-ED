@@ -464,6 +464,26 @@ func set_outdoor_scene_costume(scene_id: String, costume_id: String):
 	save_data.outdoor_scene_costumes[scene_id] = costume_id
 	_auto_save()
 
+func get_outdoor_floating_bar_state(scene_id: String) -> Dictionary:
+	"""获取户外场景浮动面板状态（按 scene_id 存储）"""
+	if scene_id == "":
+		return {}
+	if not save_data.has("outdoor_scene_ui_states"):
+		save_data.outdoor_scene_ui_states = {}
+	var raw = save_data.outdoor_scene_ui_states.get(scene_id, {})
+	if raw is Dictionary:
+		return (raw as Dictionary).duplicate(true)
+	return {}
+
+func set_outdoor_floating_bar_state(scene_id: String, state: Dictionary):
+	"""设置户外场景浮动面板状态（按 scene_id 存储）"""
+	if scene_id == "":
+		return
+	if not save_data.has("outdoor_scene_ui_states"):
+		save_data.outdoor_scene_ui_states = {}
+	save_data.outdoor_scene_ui_states[scene_id] = state.duplicate(true)
+	_auto_save()
+
 func get_affection() -> int:
 	return save_data.character_data.get("affection", 0)
 

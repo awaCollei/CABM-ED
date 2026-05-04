@@ -130,7 +130,7 @@ func _update_position_near_target() -> void:
 	pos_y = clampf(pos_y, screen_padding, max(screen_padding, viewport_size.y - bubble_size.y - screen_padding))
 	global_position = Vector2(pos_x, pos_y)
 	var target_center_y = target_rect.position.y + target_rect.size.y * 0.5
-	_tail_anchor_y = clampf(target_center_y - global_position.y, 16.0, max(16.0, bubble_size.y - 16.0))
+	_tail_anchor_y = clampf(target_center_y - global_position.y, 16.0, max(19.0, bubble_size.y - 19.0))
 	queue_redraw()
 
 func _draw() -> void:

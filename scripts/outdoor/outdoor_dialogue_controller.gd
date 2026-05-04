@@ -1,5 +1,8 @@
 extends Node
 
+signal dialog_reply_started
+signal dialog_reply_finished
+
 @export var input_path: NodePath
 @export var send_button_path: NodePath
 @export var bubble_path: NodePath
@@ -77,6 +80,7 @@ func _try_send_text(raw_text: String) -> void:
 	if _input:
 		_input.clear()
 	_set_status("正在回复...")
+	dialog_reply_started.emit()
 	_start_fake_stream(FAKE_REPLY)
 
 func _start_fake_stream(full_text: String) -> void:
@@ -157,6 +161,7 @@ func _finish_dialog() -> void:
 	_set_status("")
 	if _bubble and _bubble.has_method("clear_page"):
 		_bubble.clear_page()
+	dialog_reply_finished.emit()
 
 func _is_dialog_busy() -> bool:
 	if _is_streaming:
