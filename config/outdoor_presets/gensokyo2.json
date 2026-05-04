@@ -3,7 +3,7 @@
     "prompt":"一个与世隔绝的地方，神社拜殿",
     "presets": [
         {
-            "id": "mikooutfit",
+            "id": "mikooutfit2",
             "name": "巫女服",
             "description": "经典的日式巫女服",
             "prompt": "你现在穿着巫女服",
@@ -13,8 +13,8 @@
                 "image": "1.png",
                 "scale": 0.6,
                 "position": {
-                "x": 0.17,
-                "y": 0.70
+                "x": 0.19,
+                "y": 0.75
                 }
             }
             ]

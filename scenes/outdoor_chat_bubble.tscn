@@ -39,7 +39,7 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.95, 0.97, 1, 1)
 theme_override_font_sizes/font_size = 24
-autowrap_mode = 2
+autowrap_mode = 1
 
 [node name="HintLabel" type="Label" parent="Margin/VBox"]
 layout_mode = 2
