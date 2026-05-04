@@ -27,6 +27,11 @@ var _is_showing_page := false
 var _has_received_first_token: bool = false
 var _last_user_message: String = ""
 
+# 按钮动画相关
+var _waiting_animation_timer: Timer = null
+var _waiting_dot_count: int = 0
+var _original_button_text: String = "发送"
+
 func _ready() -> void:
 	_resolve_nodes()
 	_init_modules()
@@ -35,6 +40,17 @@ func _ready() -> void:
 	_set_input_enabled(true)
 	if _bubble and _character and _bubble.has_method("set_target"):
 		_bubble.set_target(_character)
+	
+	# 初始化按钮动画定时器
+	_waiting_animation_timer = Timer.new()
+	_waiting_animation_timer.wait_time = 0.5
+	_waiting_animation_timer.one_shot = false
+	add_child(_waiting_animation_timer)
+	_waiting_animation_timer.timeout.connect(_on_waiting_animation_timeout)
+	
+	# 保存原始按钮文本
+	if _send_button:
+		_original_button_text = _send_button.text
 
 func _resolve_nodes() -> void:
 	_input = get_node_or_null(input_path) as TextEdit
@@ -122,7 +138,7 @@ func _start_real_stream(user_text: String) -> void:
 	_is_showing_page = false
 	_has_received_first_token = false
 	_set_input_enabled(false)
-	_show_waiting_indicator()
+	_start_waiting_animation()  # 启动按钮动画，不显示气泡对话框
 
 	var outdoor_scene_name = _get_outdoor_scene_name()
 	var costume_data = _get_selected_costume_data()
@@ -167,7 +183,7 @@ func _on_ai_stream_text_received(text: String) -> void:
 		return
 	if not _has_received_first_token:
 		_has_received_first_token = true
-		_hide_waiting_indicator()
+		_stop_waiting_animation()  # 停止按钮动画，恢复按钮文本
 		_set_status("正在回复...")
 
 	_ingest_stream_chunk(text, false)
@@ -176,7 +192,7 @@ func _on_ai_stream_text_received(text: String) -> void:
 
 func _on_ai_stream_completed(full_text: String) -> void:
 	_is_streaming = false
-	_hide_waiting_indicator()
+	_stop_waiting_animation()  # 确保停止动画
 	_set_status("")
 	_ingest_stream_chunk("", true)
 
@@ -195,7 +211,7 @@ func _on_ai_stream_error(error_message: String) -> void:
 	_is_streaming = false
 	_awaiting_user_continue = false
 	_is_showing_page = false
-	_hide_waiting_indicator()
+	_stop_waiting_animation()  # 停止按钮动画
 	_set_input_enabled(true)
 	_set_status("请求失败：" + error_message)
 	if _input and _input.text.is_empty():
@@ -269,6 +285,7 @@ func _notification(what: int) -> void:
 	if what == NOTIFICATION_EXIT_TREE:
 		if _memory_manager:
 			_memory_manager.clear_scene_memory()
+		_stop_waiting_animation()  # 清理动画定时器
 
 func _is_dialog_busy() -> bool:
 	if _is_streaming:
@@ -295,17 +312,44 @@ func _set_status(text: String) -> void:
 	if _status_label:
 		_status_label.text = text
 
-func _show_waiting_indicator() -> void:
-	if _bubble == null:
+# ========== 按钮等待动画相关 ==========
+
+func _start_waiting_animation() -> void:
+	if not _send_button:
 		return
-	if _bubble.has_method("show_waiting_indicator"):
-		_bubble.show_waiting_indicator("...")
+	_waiting_dot_count = 1
+	_send_button.text = "."
+	_waiting_animation_timer.start()
+
+func _stop_waiting_animation() -> void:
+	if _waiting_animation_timer and _waiting_animation_timer.is_inside_tree():
+		_waiting_animation_timer.stop()
+	if _send_button:
+		_send_button.text = _original_button_text
+
+func _on_waiting_animation_timeout() -> void:
+	if not _send_button:
+		return
+	_waiting_dot_count = (_waiting_dot_count + 1) % 4
+	match _waiting_dot_count:
+		0:
+			_send_button.text = " "
+		1:
+			_send_button.text = "."
+		2:
+			_send_button.text = ".."
+		3:
+			_send_button.text = "..."
+
+# ========== 原气泡等待指示器被禁用 ==========
+
+func _show_waiting_indicator() -> void:
+	# 不再显示气泡对话框，改由按钮动画替代
+	pass
 
 func _hide_waiting_indicator() -> void:
-	if _bubble == null:
-		return
-	if _bubble.has_method("hide_waiting_indicator"):
-		_bubble.hide_waiting_indicator()
+	# 不再隐藏气泡对话框
+	pass
 
 func _notify_tts_sentence_displayed(sentence_hash: String, no_tts: bool) -> void:
 	if no_tts or sentence_hash.is_empty():
