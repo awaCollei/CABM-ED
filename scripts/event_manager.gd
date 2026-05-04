@@ -82,7 +82,7 @@ func on_character_clicked() -> EventResult:
 		return EventResult.new(false, helpers.get_character_name() + "似乎没注意到你")
 	
 	# 计算成功率
-	var base_willingness = 200
+	var base_willingness = 190
 	var success_chance = helpers.calculate_success_chance(base_willingness)
 	var success = randf() < success_chance
 	

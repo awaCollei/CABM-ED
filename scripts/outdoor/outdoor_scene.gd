@@ -10,7 +10,6 @@ extends Control
 @onready var costume_button: Button = $FloatingBar/MarginContainer/VBox/Header/CostumeButton
 @onready var input_text_edit: TextEdit = $FloatingBar/MarginContainer/VBox/InputTextEdit
 @onready var costume_panel: PanelContainer = $CostumePanel
-@onready var costume_preview: TextureRect = $CostumePanel/MarginContainer/VBox/Preview
 @onready var costume_list: ItemList = $CostumePanel/MarginContainer/VBox/CostumeList
 @onready var costume_close_button: Button = $CostumePanel/MarginContainer/VBox/CloseButton
 @onready var drag_hint_label: Label = $FloatingBar/MarginContainer/VBox/Header/DragHint
@@ -122,7 +121,6 @@ func _init_selected_costume():
 		sm2.set_outdoor_scene_costume(outdoor_id, selected_costume_id)
 	
 	_rebuild_costume_list_ui()
-	_update_costume_preview()
 
 func _setup_character():
 	if character.has_method("set_background_reference"):
@@ -249,12 +247,11 @@ func _on_collapse_input_pressed():
 	
 	input_text_edit.visible = not collapsed
 	
-	collapse_input_button.text = "🔽展开" if collapsed else "🔼收起"
+	collapse_input_button.text = "🔽" if collapsed else "🔼"
 
 func _on_costume_button_pressed():
 	costume_panel.visible = true
 	_rebuild_costume_list_ui()
-	_update_costume_preview()
 
 func _rebuild_costume_list_ui():
 	costume_list.clear()
@@ -279,26 +276,9 @@ func _on_costume_item_selected(index: int):
 	selected_costume_data = _find_costume_by_id(selected_costume_id)
 	current_pose_index = -1
 	_apply_pose_by_index(0)
-	_update_costume_preview()
 	if has_node("/root/SaveManager"):
 		var sm = get_node("/root/SaveManager")
 		sm.set_outdoor_scene_costume(outdoor_id, selected_costume_id)
-
-func _update_costume_preview():
-	if selected_costume_id == "":
-		costume_preview.texture = null
-		return
-	var preview_path = "res://assets/images/character_outdoor/%s/preview.png" % selected_costume_id
-	if ResourceLoader.exists(preview_path):
-		costume_preview.texture = load(preview_path)
-		return
-	
-	var poses = _get_pose_list()
-	if poses.is_empty():
-		costume_preview.texture = null
-		return
-	var first_image = str(poses[0].get("image", ""))
-	costume_preview.texture = _load_character_texture(selected_costume_id, first_image)
 
 func _on_floating_header_gui_input(event: InputEvent):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:

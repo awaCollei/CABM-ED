@@ -1,8 +1,9 @@
-[gd_scene load_steps=4 format=3 uid="uid://db6bgeon5bnwi"]
+[gd_scene load_steps=5 format=3 uid="uid://db6bgeon5bnwi"]
 
 [ext_resource type="Script" uid="uid://b6gl42ae7l1qh" path="res://scripts/outdoor/outdoor_scene.gd" id="1"]
 [ext_resource type="Script" uid="uid://dx7qx267uux0h" path="res://scripts/outdoor/outdoor_character.gd" id="2"]
 [ext_resource type="Script" uid="uid://dvxm7qwxqj003" path="res://scripts/character_debug.gd" id="3"]
+[ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="4_qkxme"]
 
 [node name="OutdoorScene" type="Control"]
 layout_mode = 3
@@ -62,10 +63,10 @@ text = "🗺打开地图"
 clip_contents = true
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 0
-offset_left = 800.0
-offset_top = 120.0
-offset_right = 1200.0
-offset_bottom = 320.0
+offset_left = 809.0
+offset_top = 99.0
+offset_right = 1209.0
+offset_bottom = 299.0
 
 [node name="MarginContainer" type="MarginContainer" parent="FloatingBar"]
 layout_mode = 2
@@ -82,20 +83,26 @@ theme_override_constants/separation = 8
 layout_mode = 2
 theme_override_constants/separation = 8
 
+[node name="CollapseInputButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
+custom_minimum_size = Vector2(34, 34)
+layout_mode = 2
+text = "🔼"
+
+[node name="CostumeButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
+custom_minimum_size = Vector2(34, 34)
+layout_mode = 2
+text = "👘"
+
 [node name="DragHint" type="Label" parent="FloatingBar/MarginContainer/VBox/Header"]
 layout_mode = 2
 size_flags_horizontal = 3
 text = "户外"
 
-[node name="CostumeButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
+[node name="SendButton2" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
 custom_minimum_size = Vector2(90, 34)
 layout_mode = 2
-text = "👘换装"
-
-[node name="CollapseInputButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
-custom_minimum_size = Vector2(90, 34)
-layout_mode = 2
-text = "🔼收起"
+theme = ExtResource("4_qkxme")
+text = "发送"
 
 [node name="InputTextEdit" type="TextEdit" parent="FloatingBar/MarginContainer/VBox"]
 layout_mode = 2
@@ -134,12 +141,6 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "户外换装"
 horizontal_alignment = 1
-
-[node name="Preview" type="TextureRect" parent="CostumePanel/MarginContainer/VBox"]
-custom_minimum_size = Vector2(0, 170)
-layout_mode = 2
-expand_mode = 1
-stretch_mode = 3
 
 [node name="CostumeList" type="ItemList" parent="CostumePanel/MarginContainer/VBox"]
 custom_minimum_size = Vector2(0, 250)
