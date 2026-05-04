@@ -8,27 +8,26 @@ signal dialog_reply_finished
 @export var bubble_path: NodePath
 @export var character_path: NodePath
 
-const FAKE_REPLY := "好的。现在先用固定回复把户外场景对话流程跑通，后续再接入真实 AI 接口。你可以继续点击气泡查看下一句。"
-const STREAM_CHUNK_SIZE := 6
-
-@onready var fake_stream_timer: Timer = $FakeStreamTimer
-
 var _input: TextEdit
 var _send_button: Button
 var _status_label: Label
 var _bubble: PanelContainer
 var _character: Control
 
+var _prompt_builder: Node
+var _ai_request_service: Node
+
 var _stream_state: SentenceSplitter.StreamState = SentenceSplitter.StreamState.new()
-var _pending_pages: Array[String] = []
-var _streaming_text: String = ""
-var _stream_cursor: int = 0
+var _pending_pages: Array[Dictionary] = []
 var _is_streaming: bool = false
 var _awaiting_user_continue: bool = false
 var _is_showing_page := false
+var _has_received_first_token: bool = false
+var _last_user_message: String = ""
 
 func _ready() -> void:
 	_resolve_nodes()
+	_init_modules()
 	_connect_signals()
 	_set_status("")
 	_set_input_enabled(true)
@@ -40,19 +39,31 @@ func _resolve_nodes() -> void:
 	_send_button = get_node_or_null(send_button_path) as Button
 	_bubble = get_node_or_null(bubble_path) as PanelContainer
 	_character = get_node_or_null(character_path) as Control
+	_status_label = get_node_or_null("../FloatingBar/MarginContainer/VBox/StatusLabel") as Label
+
+func _init_modules() -> void:
+	_prompt_builder = preload("res://scripts/outdoor/outdoor_prompt_builder.gd").new()
+	_prompt_builder.name = "OutdoorPromptBuilder"
+	add_child(_prompt_builder)
+
+	_ai_request_service = preload("res://scripts/outdoor/outdoor_ai_request_service.gd").new()
+	_ai_request_service.name = "OutdoorAIRequestService"
+	add_child(_ai_request_service)
 
 func _connect_signals() -> void:
 	if _send_button:
 		_send_button.pressed.connect(_on_send_pressed)
 	if _input:
 		_input.gui_input.connect(_on_input_gui_input)
-	if fake_stream_timer:
-		fake_stream_timer.timeout.connect(_on_fake_stream_tick)
 	if _bubble:
 		if _bubble.has_signal("next_page_requested"):
 			_bubble.connect("next_page_requested", _on_bubble_next_page_requested)
 		if _bubble.has_signal("page_fully_shown"):
 			_bubble.connect("page_fully_shown", _on_bubble_page_fully_shown)
+	if _ai_request_service:
+		_ai_request_service.stream_text_received.connect(_on_ai_stream_text_received)
+		_ai_request_service.stream_completed.connect(_on_ai_stream_completed)
+		_ai_request_service.stream_error.connect(_on_ai_stream_error)
 
 func _on_send_pressed() -> void:
 	if not _input:
@@ -79,38 +90,32 @@ func _try_send_text(raw_text: String) -> void:
 
 	if _input:
 		_input.clear()
-	_set_status("正在回复...")
+	_last_user_message = text
+	_set_status("...")
 	dialog_reply_started.emit()
-	_start_fake_stream(FAKE_REPLY)
+	_start_real_stream(text)
 
-func _start_fake_stream(full_text: String) -> void:
+func _start_real_stream(user_text: String) -> void:
+	# 每轮回复前重置流式状态，避免上轮残留数据污染。
 	_pending_pages.clear()
 	_stream_state = SentenceSplitter.StreamState.new()
-	_streaming_text = full_text
-	_stream_cursor = 0
 	_is_streaming = true
 	_awaiting_user_continue = false
+	_is_showing_page = false
+	_has_received_first_token = false
 	_set_input_enabled(false)
-	if _bubble and _bubble.has_method("clear_page"):
-		_bubble.clear_page()
-	fake_stream_timer.start()
+	_show_waiting_indicator()
 
-func _on_fake_stream_tick() -> void:
-	if _stream_cursor >= _streaming_text.length():
-		fake_stream_timer.stop()
-		_ingest_stream_chunk("", true)
-		_is_streaming = false
-		if not _awaiting_user_continue:
-			_try_show_next_page_or_finish()
+	var outdoor_scene_name = _get_outdoor_scene_name()
+	var costume_data = _get_selected_costume_data()
+	var system_prompt = _prompt_builder.build_outdoor_prompt(user_text, outdoor_scene_name, costume_data)
+	if system_prompt.strip_edges().is_empty():
+		_on_ai_stream_error("提示词构建失败")
 		return
 
-	var left = _streaming_text.length() - _stream_cursor
-	var step = min(STREAM_CHUNK_SIZE, left)
-	var chunk = _streaming_text.substr(_stream_cursor, step)
-	_stream_cursor += step
-	_ingest_stream_chunk(chunk, false)
-	if not _awaiting_user_continue:
-		_try_show_next_page_or_finish()
+	var started = _ai_request_service.start_stream_chat(system_prompt, user_text)
+	if not started:
+		_on_ai_stream_error("无法发起 AI 请求")
 
 func _ingest_stream_chunk(chunk: String, is_end: bool) -> void:
 	# 使用统一的 SentenceSplitter 做流式分句，把每一句作为一个“页”进入队列。
@@ -119,7 +124,65 @@ func _ingest_stream_chunk(chunk: String, is_end: bool) -> void:
 		var sentence_text = str(sentence_data.get("text", "")).strip_edges()
 		if sentence_text.is_empty():
 			continue
-		_pending_pages.append(sentence_text)
+		var no_tts = bool(sentence_data.get("no_tts", false))
+		var sentence_hash = _prepare_tts_for_sentence(sentence_text, no_tts)
+		_pending_pages.append({
+			"text": sentence_text,
+			"no_tts": no_tts,
+			"sentence_hash": sentence_hash
+		})
+
+func _prepare_tts_for_sentence(sentence_text: String, no_tts: bool) -> String:
+	if no_tts:
+		return ""
+	var tts = get_node_or_null("/root/TTSService")
+	if tts == null or not tts.is_enabled:
+		return ""
+	var sentence_hash = ""
+	if tts.has_method("compute_sentence_hash"):
+		sentence_hash = tts.compute_sentence_hash(sentence_text)
+	tts.synthesize_speech(sentence_text)
+	return sentence_hash
+
+func _on_ai_stream_text_received(text: String) -> void:
+	if text.is_empty():
+		return
+	if not _has_received_first_token:
+		_has_received_first_token = true
+		_hide_waiting_indicator()
+		_set_status("正在回复...")
+
+	_ingest_stream_chunk(text, false)
+	if not _awaiting_user_continue:
+		_try_show_next_page_or_finish()
+
+func _on_ai_stream_completed(full_text: String) -> void:
+	_is_streaming = false
+	_hide_waiting_indicator()
+	_set_status("")
+	_ingest_stream_chunk("", true)
+
+	# 兜底：如果模型空回复，避免 UI 卡住。
+	if _pending_pages.is_empty() and full_text.strip_edges().is_empty():
+		_pending_pages.append({
+			"text": "……",
+			"no_tts": true,
+			"sentence_hash": ""
+		})
+
+	if not _awaiting_user_continue:
+		_try_show_next_page_or_finish()
+
+func _on_ai_stream_error(error_message: String) -> void:
+	_is_streaming = false
+	_awaiting_user_continue = false
+	_is_showing_page = false
+	_hide_waiting_indicator()
+	_set_input_enabled(true)
+	_set_status("请求失败：" + error_message)
+	if _input and _input.text.is_empty():
+		_input.text = _last_user_message
+	dialog_reply_finished.emit()
 
 func _on_bubble_next_page_requested() -> void:
 	if _bubble and _bubble.has_method("is_typing") and _bubble.is_typing():
@@ -146,10 +209,11 @@ func _try_show_next_page_or_finish() -> void:
 		return
 
 	if not _pending_pages.is_empty():
-		var next_text = _pending_pages.pop_front()
+		var next_page = _pending_pages.pop_front()
 		_is_showing_page = true   # 🔒 上锁
 		if _bubble and _bubble.has_method("show_page"):
-			_bubble.show_page(next_text)
+			_bubble.show_page(str(next_page.get("text", "")))
+		_notify_tts_sentence_displayed(str(next_page.get("sentence_hash", "")), bool(next_page.get("no_tts", false)))
 		return
 
 	if not _is_streaming:
@@ -170,6 +234,8 @@ func _is_dialog_busy() -> bool:
 		return true
 	if _awaiting_user_continue:
 		return true
+	if _bubble and _bubble.has_method("has_active_page") and _bubble.has_active_page():
+		return true
 	if _bubble and _bubble.has_method("is_typing") and _bubble.is_typing():
 		return true
 	return false
@@ -185,3 +251,41 @@ func _set_input_enabled(enabled: bool) -> void:
 func _set_status(text: String) -> void:
 	if _status_label:
 		_status_label.text = text
+
+func _show_waiting_indicator() -> void:
+	if _bubble == null:
+		return
+	if _bubble.has_method("show_waiting_indicator"):
+		_bubble.show_waiting_indicator("...")
+
+func _hide_waiting_indicator() -> void:
+	if _bubble == null:
+		return
+	if _bubble.has_method("hide_waiting_indicator"):
+		_bubble.hide_waiting_indicator()
+
+func _notify_tts_sentence_displayed(sentence_hash: String, no_tts: bool) -> void:
+	if no_tts or sentence_hash.is_empty():
+		return
+	var tts = get_node_or_null("/root/TTSService")
+	if tts and tts.is_enabled and tts.has_method("on_new_sentence_displayed"):
+		tts.on_new_sentence_displayed(sentence_hash)
+
+func _get_outdoor_scene_name() -> String:
+	var scene_name = "户外场景"
+	var scene_node = get_parent()
+	if scene_node == null:
+		return scene_name
+	var cfg = scene_node.get("outdoor_config")
+	if cfg is Dictionary:
+		scene_name = str(cfg.get("name", scene_name))
+	return scene_name
+
+func _get_selected_costume_data() -> Dictionary:
+	var scene_node = get_parent()
+	if scene_node == null:
+		return {}
+	var costume_data = scene_node.get("selected_costume_data")
+	if costume_data is Dictionary:
+		return costume_data
+	return {}

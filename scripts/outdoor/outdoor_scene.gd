@@ -334,14 +334,22 @@ func _on_dialog_reply_finished():
 
 func _apply_floating_bar_expanded(expanded: bool, animate: bool = true, save_state: bool = true):
 	bar_is_expanded = expanded
+	
+	# ⭐ 先改变可见性
+	input_text_edit.visible = expanded
+	send_button.disabled = not expanded
+	
+	# ⭐ 等一帧让布局更新
+	await get_tree().process_frame
+	
 	var target_height = FLOATING_BAR_EXPANDED_HEIGHT if expanded else FLOATING_BAR_COLLAPSED_HEIGHT
+	
 	if animate:
 		var tween = create_tween()
 		tween.tween_property(floating_bar, "size:y", target_height, 0.2)
 	else:
 		floating_bar.size.y = target_height
-	input_text_edit.visible = expanded
-	send_button.disabled = not expanded
+	
 	collapse_input_button.text = "🔼" if expanded else "🔽"
 	if save_state:
 		_save_floating_bar_state()

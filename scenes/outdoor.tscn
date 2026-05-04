@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://dvxm7qwxqj003" path="res://scripts/character_debug.gd" id="3"]
 [ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="4_qkxme"]
 [ext_resource type="Script" uid="uid://c11x7upyjhy5v" path="res://scripts/outdoor/outdoor_dialogue_controller.gd" id="5_dialogue"]
-[ext_resource type="PackedScene" path="res://scenes/outdoor_chat_bubble.tscn" id="6_bubble"]
+[ext_resource type="PackedScene" uid="uid://bige5yr00vvic" path="res://scenes/outdoor_chat_bubble.tscn" id="6_bubble"]
 
 [node name="OutdoorScene" type="Control"]
 layout_mode = 3
@@ -110,6 +110,8 @@ text = "发送"
 layout_mode = 2
 size_flags_vertical = 3
 placeholder_text = "输入消息，按 Enter 发送..."
+wrap_mode = 1
+autowrap_mode = 1
 
 [node name="CostumePanel" type="PanelContainer" parent="."]
 visible = false

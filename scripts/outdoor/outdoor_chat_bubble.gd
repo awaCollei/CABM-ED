@@ -19,6 +19,7 @@ var _target_node: Control
 var _full_text: String = ""
 var _typing_index: int = 0
 var _is_typing: bool = false
+var _is_waiting_indicator: bool = false
 var _tail_on_left: bool = true
 var _tail_anchor_y: float = 20.0
 
@@ -41,17 +42,36 @@ func show_page(text: String) -> void:
 	_full_text = text.strip_edges()
 	_typing_index = 0
 	_is_typing = true
+	_is_waiting_indicator = false
 	visible = true
 	content_label.text = ""
 	hint_label.visible = false
 	typing_timer.start()
 	_update_position_near_target()
 
+func show_waiting_indicator(text: String = "...") -> void:
+	# 等待首个 token 时显示占位符，不触发分页逻辑。
+	typing_timer.stop()
+	_full_text = text
+	_typing_index = text.length()
+	_is_typing = false
+	_is_waiting_indicator = true
+	visible = true
+	content_label.text = text
+	hint_label.visible = false
+	_update_position_near_target()
+
+func hide_waiting_indicator() -> void:
+	if not _is_waiting_indicator:
+		return
+	clear_page()
+
 func clear_page() -> void:
 	typing_timer.stop()
 	_full_text = ""
 	_typing_index = 0
 	_is_typing = false
+	_is_waiting_indicator = false
 	content_label.text = ""
 	hint_label.visible = false
 	visible = false
@@ -65,6 +85,8 @@ func has_active_page() -> bool:
 
 func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		if _is_waiting_indicator:
+			return
 		if _full_text.is_empty():
 			return
 		if _is_typing:
