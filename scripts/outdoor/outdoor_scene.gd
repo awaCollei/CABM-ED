@@ -8,6 +8,7 @@ extends Control
 @onready var floating_header: HBoxContainer = $FloatingBar/MarginContainer/VBox/Header
 @onready var collapse_input_button: Button = $FloatingBar/MarginContainer/VBox/Header/CollapseInputButton
 @onready var costume_button: Button = $FloatingBar/MarginContainer/VBox/Header/CostumeButton
+@onready var send_button: Button = $FloatingBar/MarginContainer/VBox/Header/SendButton
 @onready var input_text_edit: TextEdit = $FloatingBar/MarginContainer/VBox/InputTextEdit
 @onready var costume_panel: PanelContainer = $CostumePanel
 @onready var costume_list: ItemList = $CostumePanel/MarginContainer/VBox/CostumeList
@@ -246,7 +247,7 @@ func _on_collapse_input_pressed():
 		tween.tween_property(floating_bar, "size:y", 200, 0.2)
 	
 	input_text_edit.visible = not collapsed
-	
+	send_button.disabled = collapsed
 	collapse_input_button.text = "🔽" if collapsed else "🔼"
 
 func _on_costume_button_pressed():

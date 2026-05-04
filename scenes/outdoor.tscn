@@ -1,9 +1,11 @@
-[gd_scene load_steps=5 format=3 uid="uid://db6bgeon5bnwi"]
+[gd_scene load_steps=7 format=3 uid="uid://db6bgeon5bnwi"]
 
 [ext_resource type="Script" uid="uid://b6gl42ae7l1qh" path="res://scripts/outdoor/outdoor_scene.gd" id="1"]
 [ext_resource type="Script" uid="uid://dx7qx267uux0h" path="res://scripts/outdoor/outdoor_character.gd" id="2"]
 [ext_resource type="Script" uid="uid://dvxm7qwxqj003" path="res://scripts/character_debug.gd" id="3"]
 [ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="4_qkxme"]
+[ext_resource type="Script" uid="uid://c11x7upyjhy5v" path="res://scripts/outdoor/outdoor_dialogue_controller.gd" id="5_dialogue"]
+[ext_resource type="PackedScene" path="res://scenes/outdoor_chat_bubble.tscn" id="6_bubble"]
 
 [node name="OutdoorScene" type="Control"]
 layout_mode = 3
@@ -98,7 +100,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 text = "户外"
 
-[node name="SendButton2" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
+[node name="SendButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
 custom_minimum_size = Vector2(90, 34)
 layout_mode = 2
 theme = ExtResource("4_qkxme")
@@ -107,7 +109,7 @@ text = "发送"
 [node name="InputTextEdit" type="TextEdit" parent="FloatingBar/MarginContainer/VBox"]
 layout_mode = 2
 size_flags_vertical = 3
-placeholder_text = "输入文本..."
+placeholder_text = "输入消息，按 Enter 发送..."
 
 [node name="CostumePanel" type="PanelContainer" parent="."]
 visible = false
@@ -151,3 +153,16 @@ size_flags_vertical = 3
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 text = "关闭"
+
+[node name="CharacterBubble" parent="." instance=ExtResource("6_bubble")]
+layout_mode = 0
+
+[node name="OutdoorDialogueController" type="Node" parent="."]
+script = ExtResource("5_dialogue")
+input_path = NodePath("../FloatingBar/MarginContainer/VBox/InputTextEdit")
+send_button_path = NodePath("../FloatingBar/MarginContainer/VBox/Header/SendButton")
+bubble_path = NodePath("../CharacterBubble")
+character_path = NodePath("../Background/Character")
+
+[node name="FakeStreamTimer" type="Timer" parent="OutdoorDialogueController"]
+wait_time = 0.22
