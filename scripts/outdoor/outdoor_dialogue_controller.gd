@@ -141,8 +141,9 @@ func _start_real_stream(user_text: String) -> void:
 	_start_waiting_animation()  # 启动按钮动画，不显示气泡对话框
 
 	var outdoor_scene_name = _get_outdoor_scene_name()
+	var outdoor_scene_prompt=_get_outdoor_scene_prompt()
 	var costume_data = _get_selected_costume_data()
-	var system_prompt = _prompt_builder.build_outdoor_prompt(user_text, outdoor_scene_name, costume_data)
+	var system_prompt = _prompt_builder.build_outdoor_prompt(user_text, outdoor_scene_name,outdoor_scene_prompt, costume_data)
 	if system_prompt.strip_edges().is_empty():
 		_on_ai_stream_error("提示词构建失败")
 		return
@@ -366,6 +367,16 @@ func _get_outdoor_scene_name() -> String:
 	var cfg = scene_node.get("outdoor_config")
 	if cfg is Dictionary:
 		scene_name = str(cfg.get("name", scene_name))
+	return scene_name
+
+func _get_outdoor_scene_prompt() -> String:
+	var scene_name = "户外区域"
+	var scene_node = get_parent()
+	if scene_node == null:
+		return scene_name
+	var cfg = scene_node.get("outdoor_config")
+	if cfg is Dictionary:
+		scene_name = str(cfg.get("prompt", scene_name))
 	return scene_name
 
 func _get_selected_costume_data() -> Dictionary:

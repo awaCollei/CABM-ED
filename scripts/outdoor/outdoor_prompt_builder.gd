@@ -9,7 +9,7 @@ extends Node
 # 当前场景的记忆管理器引用，由 outdoor_dialogue_controller 注入
 var memory_manager: Node = null
 
-func build_outdoor_prompt(user_input: String, outdoor_scene_name: String, costume_data: Dictionary) -> String:
+func build_outdoor_prompt(user_input: String, outdoor_scene_name: String,outdoor_scene_prompt:String, costume_data: Dictionary) -> String:
 	var save_mgr = get_node_or_null("/root/SaveManager")
 	var prompt_builder = get_node_or_null("/root/PromptBuilder")
 	if save_mgr == null or prompt_builder == null:
@@ -40,7 +40,7 @@ func build_outdoor_prompt(user_input: String, outdoor_scene_name: String, costum
 	var current_time = prompt_builder._format_current_time()
 
 	# 户外场景统一按 ongoing 触发上下文。
-	var trigger_context = _build_ongoing_trigger_context(outdoor_scene_name, user_name)
+	var trigger_context = "你现在和%s来到了%s，这里是%s。" % [user_name,outdoor_scene_name,outdoor_scene_prompt]
 
 	var sections: Array[String] = []
 	sections.append("## 身份\n%s" % identity)
@@ -79,9 +79,6 @@ func _build_identity(character_name: String, user_name: String, user_address: St
 	identity = identity.replace("{character_name}", character_name)
 	identity = identity.replace("{user_name}", user_name)
 	return identity
-
-func _build_ongoing_trigger_context(outdoor_scene_name: String, user_name: String) -> String:
-	return "你现在和%s来到了%s。" % [user_name,outdoor_scene_name]
 
 func _build_outdoor_costume_prompt(costume_data: Dictionary) -> String:
 	var prompt_text = str(costume_data.get("prompt", "")).strip_edges()

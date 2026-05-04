@@ -1,0 +1,23 @@
+{
+    "name":"符縁の里",
+    "prompt":"一个与世隔绝的地方，日式庭院",
+    "presets": [
+        {
+            "id": "mikooutfit",
+            "name": "巫女服",
+            "description": "经典的日式巫女服",
+            "prompt": "你现在穿着巫女服",
+            "presets": [
+            {
+                "des": "坐在屋檐下",
+                "image": "1.png",
+                "scale": 0.6,
+                "position": {
+                "x": 0.37,
+                "y": 0.74
+                }
+            }
+            ]
+        }
+    ]
+}

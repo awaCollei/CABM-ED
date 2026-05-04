@@ -1,0 +1,23 @@
+{
+    "name":"雪山",
+    "prompt":"海拔4500米的雪山，是北方雪原的壁垒",
+    "presets": [
+        {
+            "id": "polarwear",
+            "name": "极地服",
+            "description": "",
+            "prompt": "你现在穿着白色的极地防寒服",
+            "presets": [
+            {
+                "des": "站着",
+                "image": "1.png",
+                "scale": 0.6,
+                "position": {
+                "x": 0.17,
+                "y": 0.70
+                }
+            }
+            ]
+        }
+    ]
+}
