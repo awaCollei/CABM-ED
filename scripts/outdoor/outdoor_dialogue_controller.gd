@@ -16,6 +16,8 @@ var _character: Control
 
 var _prompt_builder: Node
 var _ai_request_service: Node
+var _memory_manager: Node
+var _summary_manager: Node
 
 var _stream_state: SentenceSplitter.StreamState = SentenceSplitter.StreamState.new()
 var _pending_pages: Array[Dictionary] = []
@@ -50,6 +52,20 @@ func _init_modules() -> void:
 	_ai_request_service.name = "OutdoorAIRequestService"
 	add_child(_ai_request_service)
 
+	# 初始化户外记忆管理器
+	_memory_manager = preload("res://scripts/outdoor/outdoor_memory_manager.gd").new()
+	_memory_manager.name = "OutdoorMemoryManager"
+	add_child(_memory_manager)
+
+	# 初始化户外总结管理器
+	_summary_manager = preload("res://scripts/outdoor/outdoor_summary_manager.gd").new()
+	_summary_manager.name = "OutdoorSummaryManager"
+	add_child(_summary_manager)
+	_summary_manager.memory_manager = _memory_manager
+
+	# 延迟注入依赖（等待子节点 _ready 执行完毕，config_loader 和 logger 才可用）
+	call_deferred("_inject_module_dependencies")
+
 func _connect_signals() -> void:
 	if _send_button:
 		_send_button.pressed.connect(_on_send_pressed)
@@ -64,6 +80,8 @@ func _connect_signals() -> void:
 		_ai_request_service.stream_text_received.connect(_on_ai_stream_text_received)
 		_ai_request_service.stream_completed.connect(_on_ai_stream_completed)
 		_ai_request_service.stream_error.connect(_on_ai_stream_error)
+		_ai_request_service.auto_save_started.connect(_on_auto_save_started)
+		_ai_request_service.auto_save_completed.connect(_on_auto_save_completed)
 
 func _on_send_pressed() -> void:
 	if not _input:
@@ -226,6 +244,31 @@ func _finish_dialog() -> void:
 	if _bubble and _bubble.has_method("clear_page"):
 		_bubble.clear_page()
 	dialog_reply_finished.emit()
+
+func _on_auto_save_started(message: String) -> void:
+	_set_status(message)
+
+func _on_auto_save_completed(_summary: String) -> void:
+	_set_status("")
+
+## 延迟注入模块依赖（在子节点 _ready 执行后调用）
+func _inject_module_dependencies() -> void:
+	_summary_manager.config_loader = _ai_request_service.config_loader
+	_summary_manager.logger = _ai_request_service.logger
+	_ai_request_service.summary_manager = _summary_manager
+	_prompt_builder.memory_manager = _memory_manager
+
+## 离开场景前调用，总结未保存的对话并等待完成。
+## outdoor_scene 在切换场景前 await 此函数。
+func end_and_summarize() -> void:
+	if _ai_request_service:
+		await _ai_request_service.end_and_summarize()
+
+## 场景退出时清除当前场景的内存记忆（持久化数据不受影响）
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_EXIT_TREE:
+		if _memory_manager:
+			_memory_manager.clear_scene_memory()
 
 func _is_dialog_busy() -> bool:
 	if _is_streaming:

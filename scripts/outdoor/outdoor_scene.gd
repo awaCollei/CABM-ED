@@ -311,9 +311,18 @@ func _perform_open_map():
 		sm.set_meta("open_map_on_load", true)
 		sm.set_meta("map_origin", "outdoor")
 		sm.set_meta("outdoor_current_id", outdoor_id)
+
 	if has_node("/root/SceneTransition"):
-		get_node("/root/SceneTransition").change_scene_with_fade("res://scripts/main.tscn")
+		var st = get_node("/root/SceneTransition")
+		# 先淡出到黑屏，再进行总结，黑屏期间用户看不到等待过程
+		await st.fade_out()
+		if dialogue_controller and dialogue_controller.has_method("end_and_summarize"):
+			await dialogue_controller.end_and_summarize()
+		# 总结完成后直接加载（已处于黑屏，跳过重复淡出）
+		st.change_scene_already_faded("res://scripts/main.tscn")
 	else:
+		if dialogue_controller and dialogue_controller.has_method("end_and_summarize"):
+			await dialogue_controller.end_and_summarize()
 		get_tree().change_scene_to_file("res://scripts/main.tscn")
 
 func _connect_dialogue_signals():

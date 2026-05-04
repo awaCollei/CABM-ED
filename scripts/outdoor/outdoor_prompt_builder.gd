@@ -2,6 +2,12 @@ extends Node
 
 # 户外场景提示词构建器
 # 目标：复用主系统已有的记忆/配置能力，但按户外规则生成纯文本提示词。
+# 记忆策略：使用当前场景的短期记忆（outdoor_memory_manager），
+#           不使用主系统的 prompt_builder.get_memory_context()，
+#           避免其他场景的记忆干扰户外场景。
+
+# 当前场景的记忆管理器引用，由 outdoor_dialogue_controller 注入
+var memory_manager: Node = null
 
 func build_outdoor_prompt(user_input: String, outdoor_scene_name: String, costume_data: Dictionary) -> String:
 	var save_mgr = get_node_or_null("/root/SaveManager")
@@ -19,10 +25,15 @@ func build_outdoor_prompt(user_input: String, outdoor_scene_name: String, costum
 	var character_prompt = _build_outdoor_costume_prompt(costume_data)
 	var identity = _build_identity(character_name, user_name, user_address, character_prompt)
 
-	# 复用主系统已有上下文能力：关系、知识、最近发生（中期记忆）。
+	# 复用主系统已有上下文能力：关系、知识记忆。
+	# 注意：不使用 prompt_builder.get_memory_context()，改用当前场景的短期记忆。
 	var relationship_context = prompt_builder.get_relationship_context()
 	var knowledge_memory = prompt_builder._retrieve_knowledge_memory(user_input)
-	var recent_memory = prompt_builder.get_memory_context()
+
+	# 使用当前场景的短期记忆（仅包含本次户外场景中产生的记忆）
+	var scene_memory = ""
+	if memory_manager and memory_manager.has_method("get_scene_memory_context"):
+		scene_memory = memory_manager.get_scene_memory_context()
 
 	var affection_level = prompt_builder._convert_affection_to_text(save_mgr.get_affection())
 	var interaction_level = prompt_builder._convert_willingness_to_text(save_mgr.get_reply_willingness())
@@ -46,8 +57,9 @@ func build_outdoor_prompt(user_input: String, outdoor_scene_name: String, costum
 		sections.append("## 你们之间的关系\n%s" % relationship_context)
 	if not String(knowledge_memory).strip_edges().is_empty():
 		sections.append("## 相关的知识记忆\n%s" % knowledge_memory)
-	# if not String(recent_memory).strip_edges().is_empty():
-	# 	sections.append("## 最近发生的事情\n```\n%s\n```" % recent_memory)
+	# 注入当前场景的短期记忆（离开场景时会清除，不会被其他场景污染）
+	if not scene_memory.strip_edges().is_empty():
+		sections.append("## 最近发生的事情\n```\n%s\n```" % scene_memory)
 
 	sections.append(trigger_context)
 	return "\n\n".join(sections)

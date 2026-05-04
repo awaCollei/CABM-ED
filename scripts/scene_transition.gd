@@ -246,7 +246,21 @@ func change_scene_with_fade(scene_path: String) -> void:
 	print("[SceneTransition] 开始切换场景: ", scene_path)
 
 	await fade_out()
+	await _load_and_switch_scene(scene_path)
 
+func change_scene_already_faded(scene_path: String) -> void:
+	"""已处于黑屏状态时直接加载场景（跳过淡出步骤）。
+	适用于：外部已调用 fade_out() 并完成其他异步操作后，再触发场景切换。"""
+	if is_transitioning:
+		print("[SceneTransition] 警告: 已经在进行场景切换，跳过本次请求: ", scene_path)
+		return
+	is_transitioning = true
+	pending_scene_path = scene_path
+	print("[SceneTransition] 黑屏后切换场景: ", scene_path)
+	await _load_and_switch_scene(scene_path)
+
+func _load_and_switch_scene(scene_path: String) -> void:
+	"""内部：异步加载并切换场景（调用前应已处于黑屏状态）"""
 	# 检查资源是否已经加载，或者已经在加载队列中
 	var load_err = ResourceLoader.load_threaded_request(scene_path)
 	if load_err != OK:

@@ -1166,7 +1166,6 @@ func _clear_conversation_context():
 	# 重置为第一条消息状态
 	is_first_message = true
 
-
 func _post_reply_auto_summary_check():
 	"""在回复结束后检查是否需要自动保存（总结最近几条对话），但不结束对话。"""
 	if not config_loader:
