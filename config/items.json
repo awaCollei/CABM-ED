@@ -228,6 +228,14 @@
       "weight": 0,
       "max_stack": 1024
     },
+    "credbit": {
+      "name": "信甩点",
+      "type": "货币...？",
+      "description": "这是什么？",
+      "icon": "credit.png",
+      "weight": 0,
+      "max_stack": 1024
+    },
     "cooked_meal_veg": {
       "name": "谜之炖菜",
       "type": "食品",
