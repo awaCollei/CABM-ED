@@ -8,12 +8,13 @@ extends Control
 @onready var floating_header: HBoxContainer = $FloatingBar/MarginContainer/VBox/Header
 @onready var collapse_input_button: Button = $FloatingBar/MarginContainer/VBox/Header/CollapseInputButton
 @onready var costume_button: Button = $FloatingBar/MarginContainer/VBox/Header/CostumeButton
+@onready var music_panel_button: Button = $FloatingBar/MarginContainer/VBox/Header/MusicPanelButton
 @onready var send_button: Button = $FloatingBar/MarginContainer/VBox/Header/SendButton
 @onready var input_text_edit: TextEdit = $FloatingBar/MarginContainer/VBox/InputTextEdit
 @onready var costume_panel: PanelContainer = $CostumePanel
 @onready var costume_list: ItemList = $CostumePanel/MarginContainer/VBox/CostumeList
 @onready var costume_close_button: Button = $CostumePanel/MarginContainer/VBox/CloseButton
-@onready var drag_hint_label: Label = $FloatingBar/MarginContainer/VBox/Header/DragHint
+@onready var drag_hint_label: Label = $DragHint
 @onready var dialogue_controller: Node = $OutdoorDialogueController
 
 var outdoor_id: String = "beach"
@@ -44,6 +45,7 @@ func _ready():
 	get_viewport().size_changed.connect(_on_viewport_size_changed)
 	_update_by_system_time()
 	open_map_button.pressed.connect(_on_open_map_pressed)
+	music_panel_button.pressed.connect(_on_music_panel_pressed)
 	collapse_input_button.pressed.connect(_on_collapse_input_pressed)
 	costume_button.pressed.connect(_on_costume_button_pressed)
 	costume_close_button.pressed.connect(func(): costume_panel.visible = false)
@@ -66,6 +68,7 @@ func _init_scene_safe():
 	_setup_character()
 	_update_by_system_time()
 	_randomize_initial_pose()
+	_play_outdoor_audio()
 
 func _randomize_initial_pose():
 	var poses = _get_pose_list()
@@ -148,6 +151,7 @@ func _update_by_system_time():
 	if time_id != current_time_id:
 		current_time_id = time_id
 		_apply_background()
+		_update_outdoor_audio()
 
 	_update_time_label(hour, minute)
 
@@ -393,3 +397,76 @@ func _clamp_floating_bar_position(pos: Vector2) -> Vector2:
 		clamp(pos.x, 0.0, max(0.0, viewport_size.x - bar_size.x)),
 		clamp(pos.y, 0.0, max(0.0, viewport_size.y - bar_size.y))
 	)
+
+func _on_music_panel_pressed():
+	"""音乐面板按钮被点击：打开或关闭音乐设置面板"""
+	# 查找现有的音乐面板
+	var existing_panel = get_tree().root.find_child("MusicPlayerPanel", true, false)
+	
+	if existing_panel:
+		# 如果音乐面板存在，关闭它
+		existing_panel._on_close_pressed()
+	else:
+		# 如果音乐面板不存在，创建并显示它
+		var music_panel_scene = load("res://scenes/music_player_panel.tscn")
+		if music_panel_scene:
+			var music_panel = music_panel_scene.instantiate()
+			get_tree().root.add_child(music_panel)
+			music_panel.show_panel()
+			
+			# 设置当前场景为户外场景，以便音乐面板显示户外音乐
+			if music_panel.has_method("_set_current_outdoor_scene"):
+				music_panel._set_current_outdoor_scene(outdoor_id)
+
+func _play_outdoor_audio():
+	"""播放户外场景的BGM和环境音"""
+	# 查找AudioManager
+	var audio_manager = null
+	if has_node("/root/Main/AudioManager"):
+		audio_manager = get_node("/root/Main/AudioManager")
+	elif has_node("/root/AudioManager"):
+		audio_manager = get_node("/root/AudioManager")
+	else:
+		# 尝试从场景树中查找
+		var root = get_tree().root
+		for child in root.get_children():
+			var am = child.find_child("AudioManager", true, false)
+			if am:
+				audio_manager = am
+				break
+	
+	if audio_manager and audio_manager.has_method("play_background_music"):
+		# 获取当前天气（默认晴天）
+		var weather_id = "sunny"  # 默认晴天，实际应该从天气系统获取
+		
+		# 播放户外场景的BGM和环境音
+		# 注意：户外场景ID直接使用，不需要加"outdoor_"前缀
+		# current_time_id 已经在 _update_by_system_time() 中设置
+		audio_manager.play_background_music(outdoor_id, current_time_id, weather_id)
+		print("🎵 播放户外场景音频: ", outdoor_id, " (时间: ", current_time_id, ", 天气: ", weather_id, ")")
+
+func _update_outdoor_audio():
+	"""更新户外场景音频（当时间变化时）"""
+	# 查找AudioManager
+	var audio_manager = null
+	if has_node("/root/Main/AudioManager"):
+		audio_manager = get_node("/root/Main/AudioManager")
+	elif has_node("/root/AudioManager"):
+		audio_manager = get_node("/root/AudioManager")
+	else:
+		# 尝试从场景树中查找
+		var root = get_tree().root
+		for child in root.get_children():
+			var am = child.find_child("AudioManager", true, false)
+			if am:
+				audio_manager = am
+				break
+	
+	if audio_manager and audio_manager.has_method("play_background_music"):
+		# 获取当前天气（默认晴天）
+		var weather_id = "sunny"  # 实际应该从天气系统获取
+		
+		# 更新户外场景的BGM和环境音
+		# 注意：如果用户锁定了BGM，audio_manager会自动处理不切换音乐
+		audio_manager.play_background_music(outdoor_id, current_time_id, weather_id)
+		print("🔄 更新户外场景音频: ", outdoor_id, " (时间: ", current_time_id, ", 天气: ", weather_id, ")")

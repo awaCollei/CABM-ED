@@ -119,6 +119,17 @@ func show_panel():
 	_refresh_music_list()
 	_load_volume_settings()
 
+func _set_current_outdoor_scene(outdoor_id: String):
+	"""设置当前户外场景（从户外场景调用时自动选中）"""
+	selected_scene = outdoor_id
+	_refresh_scene_list()
+	_refresh_music_list()
+	_update_ui_for_scene()
+	
+	# 完全居中（覆盖之前可能存在的偏移）
+	var viewport_size = get_viewport_rect().size
+	position = (viewport_size - size) / 2.0
+
 func _on_close_pressed():
 	"""关闭按钮"""
 	# 如果处于编辑模式，先退出编辑模式
@@ -216,6 +227,7 @@ func _refresh_scene_list():
 	all_button.toggle_mode = true
 	all_button.button_pressed = (selected_scene == "all")
 	all_button.pressed.connect(_on_scene_selected.bind("all"))
+	all_button.clip_text=true
 	_style_scene_button(all_button, selected_scene == "all")
 	scene_list_container.add_child(all_button)
 	
@@ -229,6 +241,7 @@ func _refresh_scene_list():
 			button.toggle_mode = true
 			button.button_pressed = (selected_scene == scene_id)
 			button.pressed.connect(_on_scene_selected.bind(scene_id))
+			button.clip_text=true
 			_style_scene_button(button, selected_scene == scene_id)
 			scene_list_container.add_child(button)
 
@@ -245,8 +258,11 @@ func _style_scene_button(button: Button, is_selected: bool):
 		button.add_theme_color_override("font_hover_color", Color(0.9, 0.9, 0.9))
 
 func _load_scenes_config() -> Dictionary:
-	"""加载场景配置"""
+	"""加载场景配置（包括室内和户外场景）"""
+	var scenes_config = {}
 	var config_path = "res://config/scenes.json"
+	
+	# 加载室内场景配置
 	if FileAccess.file_exists(config_path):
 		var file = FileAccess.open(config_path, FileAccess.READ)
 		if file:
@@ -254,8 +270,42 @@ func _load_scenes_config() -> Dictionary:
 			file.close()
 			var json = JSON.new()
 			if json.parse(json_string) == OK:
-				return json.data
-	return {}
+				scenes_config = json.data
+	
+	# 添加户外场景
+	if not scenes_config.has("scenes"):
+		scenes_config["scenes"] = {}
+	
+	# 扫描户外场景预设文件夹
+	var outdoor_presets_path = "res://config/outdoor_presets/"
+	var dir = DirAccess.open(outdoor_presets_path)
+	if dir:
+		dir.list_dir_begin()
+		var file_name = dir.get_next()
+		while file_name != "":
+			if not dir.current_is_dir() and file_name.get_extension() == "json":
+				var scene_id = file_name.get_basename()
+				# 加载户外场景配置获取显示名称
+				var outdoor_config_path = outdoor_presets_path + file_name
+				var outdoor_file = FileAccess.open(outdoor_config_path, FileAccess.READ)
+				if outdoor_file:
+					var outdoor_json_string = outdoor_file.get_as_text()
+					outdoor_file.close()
+					var outdoor_json = JSON.new()
+					if outdoor_json.parse(outdoor_json_string) == OK:
+						var outdoor_data = outdoor_json.data
+						var scene_name = outdoor_data.get("name", scene_id)
+						# 添加户外场景到场景列表
+						scenes_config["scenes"][scene_id] = {
+							"name": scene_name,
+							"icon": "🌳",
+							"weight": 1,
+							"class": "outdoor"
+						}
+			file_name = dir.get_next()
+		dir.list_dir_end()
+	
+	return scenes_config
 
 func _on_scene_selected(scene_id: String):
 	"""场景被选中"""

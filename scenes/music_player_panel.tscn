@@ -81,7 +81,7 @@ layout_mode = 2
 theme_override_constants/separation = 10
 
 [node name="SceneListPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer"]
-custom_minimum_size = Vector2(120, 0)
+custom_minimum_size = Vector2(130, 0)
 layout_mode = 2
 
 [node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/切换音乐/HBoxContainer/SceneListPanel"]

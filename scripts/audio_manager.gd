@@ -623,18 +623,33 @@ func _apply_scene_bgm_config(scene_config: Dictionary):
 		print("🎵 切换到新的播放列表")
 		play_playlist(valid_music, play_mode, 0, false)  # 不锁定BGM
 
-func _play_ambient_for_scene(_scene_id: String, _time_id: String, weather_id: String):
+func _play_ambient_for_scene(scene_id: String, _time_id: String, weather_id: String):
 	"""根据场景、时间和天气播放氛围音"""
 	if not ambient_player:
 		return
 	
 	var ambient_path = ""
 	
-	# 检查天气氛围音（如雨声）
-	if weather_id in ["rainy", "storm"]:
-		ambient_path = "res://assets/audio/rain.mp3"
-	elif weather_id in["snowy"]:
-		ambient_path="res://assets/audio/snow.mp3"
+	# 检查是否为户外场景
+	if scene_id.begins_with("outdoor_") or _is_outdoor_scene(scene_id):
+		# 户外场景：播放对应的户外环境音
+		var outdoor_scene_id = scene_id
+		if scene_id.begins_with("outdoor_"):
+			outdoor_scene_id = scene_id.substr(8)  # 移除"outdoor_"前缀
+		
+		ambient_path = "res://assets/audio/outdoor/%s.mp3" % outdoor_scene_id
+		
+		# 检查文件是否存在
+		if not ResourceLoader.exists(ambient_path):
+			print("户外环境音文件不存在: ", ambient_path)
+			ambient_path = ""
+	
+	# 如果户外环境音不存在，检查天气氛围音（如雨声）
+	if ambient_path.is_empty():
+		if weather_id in ["rainy", "storm"]:
+			ambient_path = "res://assets/audio/rain.mp3"
+		elif weather_id in["snowy"]:
+			ambient_path="res://assets/audio/snow.mp3"
 	
 	# 播放或停止氛围音
 	if ambient_path.is_empty():
@@ -659,6 +674,12 @@ func _play_ambient_for_scene(_scene_id: String, _time_id: String, weather_id: St
 					ambient_player.finished.connect(_on_ambient_finished)
 		else:
 			print("氛围音文件不存在: ", ambient_path)
+
+func _is_outdoor_scene(scene_id: String) -> bool:
+	"""检查是否为户外场景"""
+	# 检查常见的户外场景ID
+	var outdoor_scenes = ["beach", "gensokyo1", "gensokyo2", "snowy_mountain"]
+	return scene_id in outdoor_scenes
 
 func get_current_bgm_path() -> String:
 	"""获取当前播放的BGM路径"""

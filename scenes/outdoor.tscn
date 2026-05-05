@@ -1,4 +1,4 @@
-[gd_scene load_steps=8 format=3 uid="uid://db6bgeon5bnwi"]
+[gd_scene load_steps=9 format=3 uid="uid://db6bgeon5bnwi"]
 
 [ext_resource type="Script" uid="uid://b6gl42ae7l1qh" path="res://scripts/outdoor/outdoor_scene.gd" id="1"]
 [ext_resource type="Script" uid="uid://dx7qx267uux0h" path="res://scripts/outdoor/outdoor_character.gd" id="2"]
@@ -6,6 +6,7 @@
 [ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="4_qkxme"]
 [ext_resource type="Script" uid="uid://c11x7upyjhy5v" path="res://scripts/outdoor/outdoor_dialogue_controller.gd" id="5_dialogue"]
 [ext_resource type="PackedScene" uid="uid://bige5yr00vvic" path="res://scenes/outdoor_chat_bubble.tscn" id="6_bubble"]
+[ext_resource type="Script" uid="uid://dhaaxgkx54mkg" path="res://scripts/audio_manager.gd" id="6_u55dx"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_n15xk"]
 bg_color = Color(0, 0.78039217, 0.8745098, 0.6666667)
@@ -60,12 +61,24 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("3")
 
+[node name="DragHint" type="Label" parent="."]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 0
+offset_left = 31.0
+offset_top = 15.0
+offset_right = 231.0
+offset_bottom = 43.0
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "户外场景"
+clip_text = true
+
 [node name="TimeLabel" type="Label" parent="."]
 layout_mode = 0
 offset_left = 30.0
-offset_top = 30.0
+offset_top = 45.0
 offset_right = 230.0
-offset_bottom = 70.0
+offset_bottom = 85.0
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 28
 text = "12:00  白天"
@@ -74,10 +87,10 @@ text = "12:00  白天"
 layout_mode = 0
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -200.0
-offset_top = 20.0
-offset_right = -24.0
-offset_bottom = 70.0
+offset_left = -195.0
+offset_top = 15.0
+offset_right = -19.0
+offset_bottom = 65.0
 grow_horizontal = 0
 theme_override_font_sizes/font_size = 30
 text = "🗺打开地图"
@@ -116,16 +129,18 @@ text = "🔼"
 layout_mode = 2
 text = "👘"
 
-[node name="DragHint" type="Label" parent="FloatingBar/MarginContainer/VBox/Header"]
+[node name="MusicPanelButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 24
-text = "户外"
-clip_text = true
+text = "🎵"
+
+[node name="SettingsButton2" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
+layout_mode = 2
+text = "⚙"
 
 [node name="SendButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
 custom_minimum_size = Vector2(90, 34)
 layout_mode = 2
+size_flags_horizontal = 10
 theme = ExtResource("4_qkxme")
 text = "发送"
 
@@ -181,6 +196,9 @@ text = "关闭"
 
 [node name="CharacterBubble" parent="." instance=ExtResource("6_bubble")]
 layout_mode = 0
+
+[node name="AudioManager" type="Node" parent="."]
+script = ExtResource("6_u55dx")
 
 [node name="OutdoorDialogueController" type="Node" parent="."]
 script = ExtResource("5_dialogue")
