@@ -25,6 +25,8 @@ func build_outdoor_prompt(user_input: String, outdoor_scene_name: String,outdoor
 	var character_prompt = _build_outdoor_costume_prompt(costume_data)
 	var identity = _build_identity(character_name, user_name, user_address, character_prompt)
 
+	var response_style = prompt_builder._get_response_style()
+
 	# 复用主系统已有上下文能力：关系、知识记忆。
 	# 注意：不使用 prompt_builder.get_memory_context()，改用当前场景的短期记忆。
 	var relationship_context = prompt_builder.get_relationship_context()
@@ -44,6 +46,7 @@ func build_outdoor_prompt(user_input: String, outdoor_scene_name: String,outdoor
 
 	var sections: Array[String] = []
 	sections.append("## 身份\n%s" % identity)
+	sections.append("## 输出要求\n输出%s" % response_style)
 	sections.append("## 当前状态\n时间：%s\n你和%s位于：%s\n对%s的好感度：%s\n互动意愿：%s" % [
 		current_time,
 		user_name,

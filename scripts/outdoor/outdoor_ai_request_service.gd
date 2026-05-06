@@ -156,12 +156,14 @@ func _parse_sse_json_line(json_str: String) -> void:
 func _on_stream_error(error_message: String) -> void:
 	if _has_received_token and not _assistant_buffer.is_empty():
 		# 流中途断开但已有可用文本时，按"部分成功"结束，避免白屏。
+		MessageDisplay.show_failure_message(error_message + "，但已获取部分回复")
 		_finalize_stream_success()
 		return
 
 	# 完全失败：不保存任何内容（用户消息和助手消息都不保存）
 	is_chatting = false
 	_current_user_message = ""  # 清空暂存的用户消息
+	MessageDisplay.show_failure_message(error_message)
 	stream_error.emit(error_message)
 
 func _finalize_stream_success() -> void:

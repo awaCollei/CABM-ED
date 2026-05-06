@@ -133,8 +133,7 @@ text = "👘"
 layout_mode = 2
 text = "🎵"
 
-[node name="SettingsButton2" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
-visible = false
+[node name="SettingsButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
 layout_mode = 2
 text = "⚙"
 

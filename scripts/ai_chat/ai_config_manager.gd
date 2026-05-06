@@ -83,7 +83,7 @@ const CONFIG_TEMPLATES = {
 			"base_url": "https://api.siliconflow.cn/v1"
 		},
 		"tts_model": {
-			"model": "IndexTeam/IndexTTS-2",
+			"model": "FunAudioLLM/CosyVoice2-0.5B",
 			"base_url": "https://api.siliconflow.cn/v1"
 		},
 		"embedding_model": {

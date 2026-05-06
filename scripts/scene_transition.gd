@@ -61,11 +61,11 @@ func _ready():
 	loading_label.grow_vertical = Control.GROW_DIRECTION_BEGIN
 
 	# 设置偏移量，留出边距
-	loading_label.offset_left = -300  # 增百分比
+	loading_label.offset_left = -280  # 增百分比
 	loading_label.offset_top = -60    # 距离底部60像素
 	loading_label.offset_right = -20  # 距离右边20像素
 	loading_label.offset_bottom = -20 # 距离底部20像素
-	loading_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	loading_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_LEFT
 
 	loading_label.visible = false  # 初始隐藏
 	loading_label.z_index = 1001   # 在遮罩层之上
@@ -274,9 +274,8 @@ func _load_and_switch_scene(scene_path: String) -> void:
 
 	while true:
 		var status = ResourceLoader.load_threaded_get_status(scene_path, progress)
-
+		# status=ResourceLoader.THREAD_LOAD_IN_PROGRESS # 测试卡死
 		if status == ResourceLoader.THREAD_LOAD_LOADED:
-			# status=ResourceLoader.THREAD_LOAD_IN_PROGRESS # 测试卡死
 			# 加载完成
 			current_progress = 1.0
 			_update_label_text()
@@ -362,8 +361,9 @@ func _update_dots():
 func _update_label_text():
 	"""统一更新标签文本，合并点号和进度"""
 	var text = "✨少女祈祷中"
-	for i in range(current_dots):
-		text += "."
+	for i in range(3):
+		text += "." if i<current_dots else " "
+		
 	if current_progress >= 0:
 		text += " %d%%" % int(current_progress * 100)
 

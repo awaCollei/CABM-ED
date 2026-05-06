@@ -9,6 +9,7 @@ extends Control
 @onready var collapse_input_button: Button = $FloatingBar/MarginContainer/VBox/Header/CollapseInputButton
 @onready var costume_button: Button = $FloatingBar/MarginContainer/VBox/Header/CostumeButton
 @onready var music_panel_button: Button = $FloatingBar/MarginContainer/VBox/Header/MusicPanelButton
+@onready var settings_button: Button = $FloatingBar/MarginContainer/VBox/Header/SettingsButton
 @onready var send_button: Button = $FloatingBar/MarginContainer/VBox/Header/SendButton
 @onready var input_text_edit: TextEdit = $FloatingBar/MarginContainer/VBox/InputTextEdit
 @onready var costume_panel: PanelContainer = $CostumePanel
@@ -16,6 +17,9 @@ extends Control
 @onready var costume_close_button: Button = $CostumePanel/MarginContainer/VBox/CloseButton
 @onready var drag_hint_label: Label = $DragHint
 @onready var dialogue_controller: Node = $OutdoorDialogueController
+
+const MusicPlayerPanelScene = preload("res://scenes/music_player_panel.tscn")
+const AIConfigPanelScene = preload("res://scenes/ai_config_panel.tscn")
 
 var outdoor_id: String = "beach"
 var current_time_id: String = ""
@@ -46,6 +50,7 @@ func _ready():
 	_update_by_system_time()
 	open_map_button.pressed.connect(_on_open_map_pressed)
 	music_panel_button.pressed.connect(_on_music_panel_pressed)
+	settings_button.pressed.connect(_on_settings_pressed)
 	collapse_input_button.pressed.connect(_on_collapse_input_pressed)
 	costume_button.pressed.connect(_on_costume_button_pressed)
 	costume_close_button.pressed.connect(func(): costume_panel.visible = false)
@@ -400,6 +405,13 @@ func _clamp_floating_bar_position(pos: Vector2) -> Vector2:
 
 func _on_music_panel_pressed():
 	"""音乐面板按钮被点击：打开或关闭音乐设置面板"""
+
+	# 先关闭AI配置面板
+	for child in get_tree().root.get_children():
+		if child is Panel and child.name == "AIConfigPanel":
+			child.queue_free()
+			break
+
 	# 查找现有的音乐面板
 	var existing_panel = get_tree().root.find_child("MusicPlayerPanel", true, false)
 	
@@ -407,16 +419,35 @@ func _on_music_panel_pressed():
 		# 如果音乐面板存在，关闭它
 		existing_panel._on_close_pressed()
 	else:
-		# 如果音乐面板不存在，创建并显示它
-		var music_panel_scene = load("res://scenes/music_player_panel.tscn")
-		if music_panel_scene:
-			var music_panel = music_panel_scene.instantiate()
-			get_tree().root.add_child(music_panel)
-			music_panel.show_panel()
-			
-			# 设置当前场景为户外场景，以便音乐面板显示户外音乐
-			if music_panel.has_method("_set_current_outdoor_scene"):
-				music_panel._set_current_outdoor_scene(outdoor_id)
+		# 使用预加载的场景实例化
+		var music_panel = MusicPlayerPanelScene.instantiate()
+		get_tree().root.add_child(music_panel)
+		music_panel.show_panel()
+		
+		# 设置当前场景为户外场景
+		if music_panel.has_method("_set_current_outdoor_scene"):
+			music_panel._set_current_outdoor_scene(outdoor_id)
+		
+func _on_settings_pressed():
+	"""打开AI配置面板"""
+	# 先关闭音乐设置面板（如果存在）
+	for child in get_tree().root.get_children():
+		if child is Panel and child.name in ["MusicPlayerPanel", "AboutDialog"]:
+			child.queue_free()
+			break
+		if child is Panel and child.name == "AIConfigPanel":
+			# 如果已存在，关闭它（切换显示状态）
+			if child.visible:
+				child.queue_free()
+			else:
+				child.show()
+			return
+	
+	# 使用预加载的场景实例化
+	var config_panel = AIConfigPanelScene.instantiate()
+	config_panel.name = "AIConfigPanel"  # 设置一个固定的名称便于识别
+	get_tree().root.add_child(config_panel)
+	config_panel.position = (get_viewport_rect().size - config_panel.size) / 2
 
 func _play_outdoor_audio():
 	"""播放户外场景的BGM和环境音"""
