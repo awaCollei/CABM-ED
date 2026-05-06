@@ -9,12 +9,21 @@
             "prompt": "你现在穿着白色的极地防寒服",
             "presets": [
             {
-                "des": "站着",
+                "des": "跪坐在篝火边",
                 "image": "1.png",
                 "scale": 0.6,
                 "position": {
                 "x": 0.68,
                 "y": 0.72
+                }
+            },
+            {
+                "des": "站在面前",
+                "image": "2.png",
+                "scale": 0.6,
+                "position": {
+                "x": 0.24,
+                "y": 0.59
                 }
             }
             ]
