@@ -1,0 +1,42 @@
+{
+    "name":"温泉",
+    "prompt":"雪地与森林的交界处，一个与世隔绝的「幻想乡」",
+    "presets": [
+        {
+            "id": "yukata",
+            "name": "浴衣",
+            "description": "",
+            "prompt": "你现在穿着白色的浴衣",
+            "presets": [
+            {
+                "des": "站在温泉边",
+                "image": "1.png",
+                "scale": 0.6,
+                "position": {
+                "x": 0.75,
+                "y": 0.71
+                }
+            },
+            {
+                "des": "坐在温泉边",
+                "image": "2.png",
+                "scale": 0.6,
+                "position": {
+                "x": 0.13,
+                "y": 0.61
+                }
+            }
+            ,
+            {
+                "des": "坐在温泉边",
+                "image": "3.png",
+                "scale": 0.6,
+                "position": {
+                "x": 0.62,
+                "y": 0.75
+                }
+            }
+            ]
+        }
+    ]
+}

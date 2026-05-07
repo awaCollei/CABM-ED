@@ -368,7 +368,7 @@ func _apply_floating_bar_expanded(expanded: bool, animate: bool = true, save_sta
 	else:
 		floating_bar.size.y = target_height
 	
-	collapse_input_button.text = "🔼" if expanded else "🔽"
+	collapse_input_button.text = "🔼" if expanded else "💬"
 	if save_state:
 		_save_floating_bar_state()
 
