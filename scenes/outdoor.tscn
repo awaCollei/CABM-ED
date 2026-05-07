@@ -84,14 +84,14 @@ theme_override_font_sizes/font_size = 28
 text = "12:00  白天"
 
 [node name="OpenMapButton" type="Button" parent="."]
-layout_mode = 0
+layout_mode = 1
+anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
 offset_left = -195.0
 offset_top = 15.0
 offset_right = -19.0
 offset_bottom = 65.0
-grow_horizontal = 0
 theme_override_font_sizes/font_size = 30
 text = "🗺打开地图"
 

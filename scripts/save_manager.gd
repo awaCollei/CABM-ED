@@ -484,6 +484,27 @@ func set_outdoor_floating_bar_state(scene_id: String, state: Dictionary):
 	save_data.outdoor_scene_ui_states[scene_id] = state.duplicate(true)
 	_auto_save()
 
+# === 求签数据方法 ===
+
+func get_omikuji_date() -> String:
+	"""获取上次求签日期"""
+	return save_data.get("omikuji_date", "")
+
+func get_omikuji_outdoor_id() -> String:
+	"""获取上次求签的场景ID"""
+	return save_data.get("omikuji_outdoor_id", "")
+
+func get_omikuji_fortune_id() -> String:
+	"""获取上次求签的结果ID"""
+	return save_data.get("omikuji_fortune_id", "")
+
+func set_omikuji_data(date: String, outdoor_id: String, fortune_id: String):
+	"""保存求签数据"""
+	save_data.omikuji_date = date
+	save_data.omikuji_outdoor_id = outdoor_id
+	save_data.omikuji_fortune_id = fortune_id
+	_auto_save()
+
 func get_affection() -> int:
 	return save_data.character_data.get("affection", 0)
 

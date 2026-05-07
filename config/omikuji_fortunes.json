@@ -1,0 +1,239 @@
+{
+    "fortunes": [
+        {
+            "id": "da_daikichi",
+            "name": "大吉",
+            "description": "极好的运气今天做任何事都会顺利，是神明特别眷顾的日子",
+            "advice": "把握今天的机会，勇敢前行！"
+        },
+        {
+            "id": "kichijou",
+            "name": "吉",
+            "description": "好运气保持积极的心态会遇到好事",
+            "advice": "顺其自然，好事将近"
+        },
+        {
+            "id": "sue_kichi",
+            "name": "末吉",
+            "description": "中等的运气初期可能会有些困难，但坚持就会有收获",
+            "advice": "耐心等待，不要急于求成"
+        },
+        {
+            "id": "kyou",
+            "name": "凶",
+            "description": "运气不佳今天需要特别注意言行，避免与人发生冲突",
+            "advice": "保持低调，三思而后行"
+        },
+        {
+            "id": "dai_kyou",
+            "name": "大凶",
+            "description": "最坏的运势今天最好避免重要决定，待在家中休息为佳",
+            "advice": "保持谨慎，注意安全"
+        },
+
+        {
+            "id": "kichi_lazy_cat",
+            "name": "吉",
+            "description": "今天像一只晒太阳的猫一样悠闲不会发生特别惊喜，但也不会出问题",
+            "advice": "适合摸鱼，但别摸太久"
+        },
+        {
+            "id": "kichi_save_point",
+            "name": "吉",
+            "description": "你似乎站在了人生的存档点前今天适合整理思绪与重新出发",
+            "advice": "记得存档真的"
+        },
+        {
+            "id": "kichi_packet_loss",
+            "name": "吉",
+            "description": "虽然偶尔会有一点延迟，但整体连接稳定",
+            "advice": "不要因为短暂卡顿就怀疑人生"
+        },
+        {
+            "id": "suekichi_compile",
+            "name": "末吉",
+            "description": "人生正在编译中，虽然报了几个 warning，但还没 error",
+            "advice": "先别急着 Ctrl+C"
+        },
+        {
+            "id": "suekichi_rng",
+            "name": "末吉",
+            "description": "今天的随机数生成器有点偏心，但总体仍在可接受范围",
+            "advice": "不要赌概率，尤其是 1% 掉率"
+        },
+        {
+            "id": "kyou_nullpointer",
+            "name": "凶",
+            "description": "今天容易在关键时刻突然脑袋一片空白",
+            "advice": "请检查对象是否为空"
+        },
+        {
+            "id": "kyou_merge_conflict",
+            "name": "凶",
+            "description": "人与人的沟通容易出现冲突，就像没有处理好的 merge conflict",
+            "advice": "先 pull，再说话"
+        },
+        {
+            "id": "daikyou_stackoverflow",
+            "name": "大凶",
+            "description": "事情可能会层层叠加直到彻底失控",
+            "advice": "递归之前，先想想退出条件"
+        },
+        {
+            "id": "daikyou_blue_screen",
+            "name": "大凶",
+            "description": "今天的精神状态接近蓝屏",
+            "advice": "建议重启自己"
+        },
+        {
+            "id": "large_chest",
+            "name": "大胸",
+            "description": "欸不是这对吗？",
+            "advice": "我要小雷啊啊啊啊"
+        },
+        {
+            "id": "gb_kichibyte",
+            "name": "GB",
+            "description": "吉字节也是吉，数据量级别的好运正在加载中",
+            "advice": "今天适合扩容你的梦想"
+        },
+        {
+            "id": "tb_terakichi",
+            "name": "TB",
+            "description": "太吉（Terabyte）了，好运已经多到装不下",
+            "advice": "请准备更大的存储空间"
+        },
+        {
+            "id": "fps_120",
+            "name": "120FPS",
+            "description": "今天的人生运行流畅稳定，没有明显卡顿",
+            "advice": "保持节奏，不要乱切后台"
+        },
+        {
+            "id": "fps_3",
+            "name": "3FPS",
+            "description": "今天状态有点掉帧，做事效率偏低",
+            "advice": "1帧能玩，2帧流畅，3帧电竞"
+        },
+        {
+            "id": "ping_999",
+            "name": "999ms",
+            "description": "你的反应似乎总慢半拍",
+            "advice": "今天不适合打竞技游戏"
+        },
+        {
+            "id": "critical_hit_kichi",
+            "name": "会心吉",
+            "description": "你今天可能会突然遇到意外惊喜",
+            "advice": "多出去走走，随机事件触发率提升"
+        },
+        {
+            "id": "afk_fortune",
+            "name": "挂机吉",
+            "description": "即使什么都不做，事情也会慢慢朝好的方向发展",
+            "advice": "适度摆烂也是一种策略"
+        },
+        {
+            "id": "login_bonus",
+            "name": "登录奖励",
+            "description": "神明感谢你今天也坚持活着",
+            "advice": "连续签到中断也没关系"
+        },
+        {
+            "id": "maintenance",
+            "name": "维护中",
+            "description": "命运服务器暂时关闭维护，部分功能不可用",
+            "advice": "请稍后再试"
+        },
+        {
+            "id": "forbidden_kichi",
+            "name": "禁忌吉",
+            "description": "越危险的事情今天越容易成功",
+            "advice": "但你最好别真的去试"
+        },
+        {
+            "id": "undefined",
+            "name": "undefined",
+            "description": "It's not a bug, it's a feature.",
+            "advice": "或许是机魂不悦"
+        },
+        {
+            "id": "boss_warning",
+            "name": "BOSS前兆",
+            "description": "今天可能会遇到强敌或者重大挑战",
+            "advice": "先补状态再进门"
+        },
+        {
+            "id": "kichi_git_push",
+            "name": "Push吉",
+            "description": "今天提交的努力，会在未来得到回报",
+            "advice": "commit message 写清楚一点"
+        },
+        {
+            "id": "detached_head_state",
+            "name": "游离签",
+            "description": "你似乎暂时脱离了人生主线",
+            "advice": "问题不大，只要别强制 reset"
+        },
+        {
+            "id": "sudo_kichi",
+            "name": "管理员权限",
+            "description": "今天你拥有比平时更高的行动力与影响力",
+            "advice": "能力越大，越别乱 rm -rf"
+        },
+        {
+            "id": "cache_hit",
+            "name": "缓存命中",
+            "description": "过去积累的经验会在今天派上用场",
+            "advice": "记忆是有价值的"
+        },
+        {
+            "id": "cache_miss",
+            "name": "缓存未命中",
+            "description": "今天会频繁遇到陌生情况",
+            "advice": "重新加载也不是坏事"
+        },
+        {
+            "id": "segmentation_fault",
+            "name": "段错误",
+            "description": "你试图访问不属于自己的领域",
+            "advice": "边界感很重要"
+        },
+        {
+            "id": "kichi_open_world",
+            "name": "开放世界吉",
+            "description": "今天适合探索新的地方、新的人与新的可能性",
+            "advice": "地图边界之外，说不定也有内容"
+        },
+        {
+            "id": "true_end_route",
+            "name": "真结局",
+            "description": "某条隐藏路线正在悄悄开启",
+            "advice": "别跳过对话"
+        },
+        {
+            "id": "bad_end_flag",
+            "name": "坏结局预兆",
+            "description": "你今天的某个选择可能会埋下隐患",
+            "advice": "谨慎选择对话选项"
+        },
+        {
+            "id": "overclocked_kichi",
+            "name": "超频吉",
+            "description": "今天状态爆棚，但持续太久可能会过热",
+            "advice": "记得休息降温"
+        },
+        {
+            "id": "wifi_full_signal",
+            "name": "满格信号",
+            "description": "人与人之间的连接意外顺畅",
+            "advice": "适合聊天、组队、联机"
+        },
+        {
+            "id": "internet_disconnected",
+            "name": "未连接",
+            "description": "你今天似乎与世界有些脱节",
+            "advice": "偶尔离线也没关系"
+        }
+    ]
+}

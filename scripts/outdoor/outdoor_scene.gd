@@ -20,6 +20,7 @@ extends Control
 
 const MusicPlayerPanelScene = preload("res://scenes/music_player_panel.tscn")
 const AIConfigPanelScene = preload("res://scenes/ai_config_panel.tscn")
+const OmikujiPanelScene = preload("res://scenes/omikuji_panel.tscn")
 
 var outdoor_id: String = "beach"
 var current_time_id: String = ""
@@ -29,10 +30,13 @@ var selected_costume_id: String = ""
 var selected_costume_data: Dictionary = {}
 var current_pose_index: int = -1
 var rng := RandomNumberGenerator.new()
-
+var blue_theme = preload("res://theme/blue_button.tres")
 var bar_dragging: bool = false
 var bar_drag_offset: Vector2 = Vector2.ZERO
 var bar_is_expanded: bool = true
+
+var function_buttons: Array = []
+var function_config: Array = []
 
 const FLOATING_BAR_DEFAULT_POS := Vector2(810.0, 100.0)
 const FLOATING_BAR_EXPANDED_HEIGHT := 200.0
@@ -65,6 +69,7 @@ func _ready():
 	add_child(refresh_timer)
 	_update_drag_hint()
 	_restore_floating_bar_state()
+	_init_function_buttons()
 	# 执行淡入动画
 	if has_node("/root/SceneTransition"):
 		get_node("/root/SceneTransition").fade_in()
@@ -501,3 +506,49 @@ func _update_outdoor_audio():
 		# 注意：如果用户锁定了BGM，audio_manager会自动处理不切换音乐
 		audio_manager.play_background_music(outdoor_id, current_time_id, weather_id)
 		print("🔄 更新户外场景音频: ", outdoor_id, " (时间: ", current_time_id, ", 天气: ", weather_id, ")")
+# === 功能按钮方法 ===
+
+func _init_function_buttons():
+	"""初始化功能按钮"""
+	# 清除旧按钮
+	for btn in function_buttons:
+		if is_instance_valid(btn):
+			btn.queue_free()
+	function_buttons.clear()
+	
+	# 从配置加载功能按钮
+	function_config = outdoor_config.get("functions", [])
+	
+	for func_data in function_config:
+		var btn = Button.new()
+		btn.text = str(func_data.get("text", "功能"))
+		btn.theme = blue_theme
+		btn.pressed.connect(_on_function_button_pressed.bind(func_data))
+		
+		# 设置位置
+		var pos = func_data.get("position", {"x": 0.5, "y": 0.5})
+		var ratio_x = float(pos.get("x", 0.5))
+		var ratio_y = float(pos.get("y", 0.5))
+		
+		var viewport_size = get_viewport_rect().size
+		btn.position = Vector2(
+			ratio_x * viewport_size.x,
+			ratio_y * viewport_size.y
+		)
+		
+		add_child(btn)
+		function_buttons.append(btn)
+
+func _on_function_button_pressed(func_data: Dictionary):
+	var func_id = str(func_data.get("id", ""))
+	match func_id:
+		"omikuji":
+			_show_omikuji_panel()
+		_:
+			print("未知功能: ", func_id)
+
+func _show_omikuji_panel():
+	"""显示求签面板"""
+	var omikuji_panel = OmikujiPanelScene.instantiate()
+	get_tree().root.add_child(omikuji_panel)
+	omikuji_panel.show_panel(outdoor_id)

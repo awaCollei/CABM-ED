@@ -1,6 +1,13 @@
 {
     "name":"神社",
     "prompt":"符縁稲荷神社的拜殿，一个与世隔绝的「幻想乡」",
+    "functions": [
+        {
+            "id": "omikuji",
+            "text": "🎐求签",
+            "position": {"x": 0.6, "y": 0.75}
+        }
+    ],
     "presets": [
         {
             "id": "mikooutfit2",
