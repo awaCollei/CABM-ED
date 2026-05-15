@@ -348,6 +348,12 @@ func _show_waiting_indicator() -> void:
 	# 不再显示气泡对话框，改由按钮动画替代
 	pass
 
+func get_display_history() -> Array:
+	"""获取对话历史记录，供历史面板使用"""
+	if _ai_request_service == null:
+		return []
+	return _ai_request_service.conversation_history.duplicate()
+
 func _hide_waiting_indicator() -> void:
 	# 不再隐藏气泡对话框
 	pass

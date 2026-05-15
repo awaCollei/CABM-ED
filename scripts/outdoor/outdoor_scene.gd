@@ -10,6 +10,7 @@ extends Control
 @onready var costume_button: Button = $FloatingBar/MarginContainer/VBox/Header/CostumeButton
 @onready var music_panel_button: Button = $FloatingBar/MarginContainer/VBox/Header/MusicPanelButton
 @onready var settings_button: Button = $FloatingBar/MarginContainer/VBox/Header/SettingsButton
+@onready var history_button: Button = $FloatingBar/MarginContainer/VBox/Header/HistoryButton
 @onready var send_button: Button = $FloatingBar/MarginContainer/VBox/Header/SendButton
 @onready var input_text_edit: TextEdit = $FloatingBar/MarginContainer/VBox/InputTextEdit
 @onready var costume_panel: PanelContainer = $CostumePanel
@@ -17,6 +18,11 @@ extends Control
 @onready var costume_close_button: Button = $CostumePanel/MarginContainer/VBox/CloseButton
 @onready var drag_hint_label: Label = $DragHint
 @onready var dialogue_controller: Node = $OutdoorDialogueController
+
+# 历史记录面板相关变量
+var history_panel: PanelContainer
+var history_content: VBoxContainer
+var history_scroll: ScrollContainer
 
 const MusicPlayerPanelScene = preload("res://scenes/music_player_panel.tscn")
 const AIConfigPanelScene = preload("res://scenes/ai_config_panel.tscn")
@@ -61,6 +67,9 @@ func _ready():
 	costume_list.item_selected.connect(_on_costume_item_selected)
 	floating_header.gui_input.connect(_on_floating_header_gui_input)
 	_connect_dialogue_signals()
+	
+	# 初始化历史记录面板
+	_init_history_panel()
 	
 	var refresh_timer = Timer.new()
 	refresh_timer.wait_time =1.0
@@ -319,6 +328,10 @@ func _on_open_map_pressed():
 	dialog.confirmed.connect(_perform_open_map)
 	# canceled 不需要做任何事情，只是关闭对话框
 
+func _on_history_button_pressed():
+	"""历史按钮被点击时的处理逻辑"""
+	_toggle_history_panel()
+
 func _perform_open_map():
 	if has_node("/root/SaveManager"):
 		var sm = get_node("/root/SaveManager")
@@ -546,6 +559,125 @@ func _on_function_button_pressed(func_data: Dictionary):
 			_show_omikuji_panel()
 		_:
 			print("未知功能: ", func_id)
+
+const HistoryPanelScene = preload("res://scenes/history_panel.tscn")
+
+func _init_history_panel():
+	"""初始化历史记录面板（从 tscn 文件加载）"""
+	var panel_scene = HistoryPanelScene.instantiate()
+	panel_scene.name = "HistoryPanel"
+	add_child(panel_scene)
+	
+	# 获取面板节点引用
+	history_panel = panel_scene
+	history_scroll = panel_scene.get_node_or_null("MarginContainer/VBox/ScrollContainer")
+	history_content = panel_scene.get_node_or_null("MarginContainer/VBox/ScrollContainer/HistoryContent")
+	
+	var close_button = panel_scene.get_node_or_null("MarginContainer/VBox/Header/CloseButton")
+	if close_button:
+		close_button.pressed.connect(hide_history_panel)
+	
+	# 绑定历史按钮事件
+	history_button.pressed.connect(_on_history_button_pressed)
+
+func _toggle_history_panel():
+	"""切换历史记录面板显示"""
+	if history_panel.visible:
+		hide_history_panel()
+	else:
+		show_history_panel()
+
+func show_history_panel():
+	"""显示历史记录面板"""
+	if not history_panel.visible:
+		history_panel.visible = true
+		_update_history_content()
+		call_deferred("_scroll_to_bottom")
+		
+func hide_history_panel():
+	"""隐藏历史记录面板"""
+	history_panel.visible = false
+
+func _scroll_to_bottom():
+	"""滚动到历史记录面板底部"""
+	if history_scroll and history_content:
+		await get_tree().process_frame
+		history_scroll.scroll_vertical = history_scroll.get_v_scroll_bar().max_value
+
+func _update_history_content():
+	"""更新历史记录内容显示"""
+	# 清空现有内容
+	for child in history_content.get_children():
+		child.queue_free()
+	
+	# 获取对话历史数据
+	var history_data = _get_conversation_history()
+	
+	if history_data.is_empty():
+		var empty_label = Label.new()
+		empty_label.text = "暂无对话历史"
+		empty_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		empty_label.add_theme_color_override("font_color", Color(0.6, 0.6, 0.6))
+		history_content.add_child(empty_label)
+		return
+	
+	# 处理历史数据并显示
+	var role_labels = {"user": get_user_name(), "assistant": get_character_name(), "system": "系统"}
+	for message in history_data:
+		var msg_container = HBoxContainer.new()
+		msg_container.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		msg_container.add_theme_constant_override("separation", 5)
+		
+		var role_name = role_labels.get(message.role, message.role)
+		var role_color = Color(0.2, 0.6, 1.0) if message.role == "user" else Color(0.6, 0.2, 1.0) if message.role == "assistant" else Color(0.8, 0.8, 0.2)
+		
+		var role_label = Label.new()
+		role_label.text = "[" + role_name + "] "
+		role_label.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
+		role_label.add_theme_color_override("font_color", role_color)
+		msg_container.add_child(role_label)
+		
+		var content_label = Label.new()
+		content_label.text = message.content
+		content_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		content_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		content_label.clip_text = false
+		content_label.add_theme_color_override("font_color", Color(1, 1, 1, 0.9))
+		msg_container.add_child(content_label)
+		
+		history_content.add_child(msg_container)
+
+func get_character_name() -> String:
+	"""获取角色名称"""
+	if not has_node("/root/SaveManager"):
+		return "角色"
+	
+	var save_mgr = get_node("/root/SaveManager")
+	return save_mgr.get_character_name()
+
+func get_user_name() -> String:
+	"""获取用户名称"""
+	if not has_node("/root/SaveManager"):
+		return "用户"
+	
+	var save_mgr = get_node("/root/SaveManager")
+	return save_mgr.get_user_name()
+
+func _get_conversation_history() -> Array:
+	"""获取对话历史（来自对话控制器）"""
+	if dialogue_controller == null:
+		return []
+	
+	# 从对话控制器获取对话历史，这里需要实际提供的方法从AI系统中获取历史
+	var history = []
+	
+	# 如果有可以获取历史的方法，则返回其内容
+	if dialogue_controller.has_method("get_display_history"):
+		history = dialogue_controller.get_display_history()
+	elif dialogue_controller.has_method("get_conversation_history"):
+		history = dialogue_controller.get_conversation_history()
+		
+	return history
 
 func _show_omikuji_panel():
 	"""显示求签面板"""
