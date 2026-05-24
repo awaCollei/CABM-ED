@@ -142,21 +142,14 @@ func _show_progress_ui():
 	vbox.add_child(hint)
 
 func _report_game_launch():
-	"""上报游戏启动事件（异步，不阻塞游戏启动）"""
-	# 检查脚本是否存在
-	var reporter_path = "res://scripts/analytics_reporter.gd"
-	if not ResourceLoader.exists(reporter_path):
-		print("[GameLauncher] 跳过启动事件上报：analytics_reporter.gd 不存在")
+	if not has_node("/root/AnalyticsReporter"):
+		print("[GameLauncher] 错误: AnalyticsReporter 未配置为 Autoload")
 		return
 	
-	# 创建上报器实例
-	var reporter = load(reporter_path).new()
-	add_child(reporter)
-	
-	# 异步上报登录事件
+	var reporter = get_node("/root/AnalyticsReporter")
 	reporter.report_login_event()
 	
-	print("[GameLauncher] 已触发启动事件上报")
+	print("[GameLauncher] 已触发启动事件上报（使用 Autoload）")
 
 func _ensure_uuid():
 	"""游戏启动时检查UUID，不存在则生成并保存"""

@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://db6bgeon5bnwi"]
+[gd_scene format=3 uid="uid://db6bgeon5bnwi"]
 
 [ext_resource type="Script" uid="uid://b6gl42ae7l1qh" path="res://scripts/outdoor/outdoor_scene.gd" id="1"]
 [ext_resource type="Script" uid="uid://dx7qx267uux0h" path="res://scripts/outdoor/outdoor_character.gd" id="2"]
@@ -19,7 +19,7 @@ corner_radius_top_right = 5
 corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
-[node name="OutdoorScene" type="Control"]
+[node name="OutdoorScene" type="Control" unique_id=406386317]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -28,7 +28,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=2130280271]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -37,11 +37,11 @@ grow_horizontal = 2
 grow_vertical = 2
 stretch_mode = 5
 
-[node name="Character" type="TextureButton" parent="Background"]
+[node name="Character" type="TextureButton" parent="Background" unique_id=372062432]
 layout_mode = 1
 script = ExtResource("2")
 
-[node name="CharacterDebugHelper" type="Control" parent="."]
+[node name="CharacterDebugHelper" type="Control" parent="." unique_id=1630504031]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -51,7 +51,7 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("3")
 
-[node name="CharacterDebugHelper2" type="Control" parent="."]
+[node name="CharacterDebugHelper2" type="Control" parent="." unique_id=733965708]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -61,7 +61,7 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("3")
 
-[node name="DragHint" type="Label" parent="."]
+[node name="DragHint" type="Label" parent="." unique_id=1575401986]
 custom_minimum_size = Vector2(200, 0)
 layout_mode = 0
 offset_left = 31.0
@@ -73,7 +73,7 @@ theme_override_font_sizes/font_size = 22
 text = "户外场景"
 clip_text = true
 
-[node name="TimeLabel" type="Label" parent="."]
+[node name="TimeLabel" type="Label" parent="." unique_id=1101144744]
 layout_mode = 0
 offset_left = 30.0
 offset_top = 45.0
@@ -83,7 +83,7 @@ theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_font_sizes/font_size = 28
 text = "12:00  白天"
 
-[node name="OpenMapButton" type="Button" parent="."]
+[node name="OpenMapButton" type="Button" parent="." unique_id=1479811915]
 layout_mode = 1
 anchors_preset = 1
 anchor_left = 1.0
@@ -96,7 +96,7 @@ grow_horizontal = 0
 theme_override_font_sizes/font_size = 30
 text = "🗺打开地图"
 
-[node name="FloatingBar" type="PanelContainer" parent="."]
+[node name="FloatingBar" type="PanelContainer" parent="." unique_id=260421139]
 clip_contents = true
 custom_minimum_size = Vector2(400, 0)
 layout_mode = 0
@@ -106,57 +106,57 @@ offset_right = 1210.0
 offset_bottom = 300.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_n15xk")
 
-[node name="MarginContainer" type="MarginContainer" parent="FloatingBar"]
+[node name="MarginContainer" type="MarginContainer" parent="FloatingBar" unique_id=1973703385]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="VBox" type="VBoxContainer" parent="FloatingBar/MarginContainer"]
+[node name="VBox" type="VBoxContainer" parent="FloatingBar/MarginContainer" unique_id=379952048]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="Header" type="HBoxContainer" parent="FloatingBar/MarginContainer/VBox"]
+[node name="Header" type="HBoxContainer" parent="FloatingBar/MarginContainer/VBox" unique_id=1033108999]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="CollapseInputButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
+[node name="CollapseInputButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header" unique_id=1424395767]
 custom_minimum_size = Vector2(34, 34)
 layout_mode = 2
 text = "🔼"
 
-[node name="HistoryButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
+[node name="HistoryButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header" unique_id=736586065]
 layout_mode = 2
 text = "📃"
 
-[node name="CostumeButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
+[node name="CostumeButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header" unique_id=1879762801]
 layout_mode = 2
 text = "👘"
 
-[node name="MusicPanelButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
+[node name="MusicPanelButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header" unique_id=1545041917]
 layout_mode = 2
 text = "🎵"
 
-[node name="SettingsButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
+[node name="SettingsButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header" unique_id=405372148]
 layout_mode = 2
 text = "⚙"
 
-[node name="SendButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header"]
+[node name="SendButton" type="Button" parent="FloatingBar/MarginContainer/VBox/Header" unique_id=1209374948]
 custom_minimum_size = Vector2(90, 34)
 layout_mode = 2
 size_flags_horizontal = 10
 theme = ExtResource("4_qkxme")
 text = "发送"
 
-[node name="InputTextEdit" type="TextEdit" parent="FloatingBar/MarginContainer/VBox"]
+[node name="InputTextEdit" type="TextEdit" parent="FloatingBar/MarginContainer/VBox" unique_id=1221151492]
 layout_mode = 2
 size_flags_vertical = 3
 placeholder_text = "输入消息，按 Enter 发送..."
 wrap_mode = 1
 autowrap_mode = 1
 
-[node name="CostumePanel" type="PanelContainer" parent="."]
+[node name="CostumePanel" type="PanelContainer" parent="." unique_id=405004599]
 visible = false
 custom_minimum_size = Vector2(420, 520)
 layout_mode = 1
@@ -172,45 +172,45 @@ offset_bottom = 260.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="MarginContainer" type="MarginContainer" parent="CostumePanel"]
+[node name="MarginContainer" type="MarginContainer" parent="CostumePanel" unique_id=1178212646]
 layout_mode = 2
 theme_override_constants/margin_left = 12
 theme_override_constants/margin_top = 12
 theme_override_constants/margin_right = 12
 theme_override_constants/margin_bottom = 12
 
-[node name="VBox" type="VBoxContainer" parent="CostumePanel/MarginContainer"]
+[node name="VBox" type="VBoxContainer" parent="CostumePanel/MarginContainer" unique_id=1092927804]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="Title" type="Label" parent="CostumePanel/MarginContainer/VBox"]
+[node name="Title" type="Label" parent="CostumePanel/MarginContainer/VBox" unique_id=52303582]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "户外换装"
 horizontal_alignment = 1
 
-[node name="CostumeList" type="ItemList" parent="CostumePanel/MarginContainer/VBox"]
+[node name="CostumeList" type="ItemList" parent="CostumePanel/MarginContainer/VBox" unique_id=1266361190]
 custom_minimum_size = Vector2(0, 250)
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="CloseButton" type="Button" parent="CostumePanel/MarginContainer/VBox"]
+[node name="CloseButton" type="Button" parent="CostumePanel/MarginContainer/VBox" unique_id=248950116]
 custom_minimum_size = Vector2(0, 44)
 layout_mode = 2
 text = "关闭"
 
-[node name="CharacterBubble" parent="." instance=ExtResource("6_bubble")]
+[node name="CharacterBubble" parent="." unique_id=1920008906 instance=ExtResource("6_bubble")]
 layout_mode = 0
 
-[node name="AudioManager" type="Node" parent="."]
+[node name="AudioManager" type="Node" parent="." unique_id=757186487]
 script = ExtResource("6_u55dx")
 
-[node name="OutdoorDialogueController" type="Node" parent="."]
+[node name="OutdoorDialogueController" type="Node" parent="." unique_id=2080107923]
 script = ExtResource("5_dialogue")
 input_path = NodePath("../FloatingBar/MarginContainer/VBox/InputTextEdit")
 send_button_path = NodePath("../FloatingBar/MarginContainer/VBox/Header/SendButton")
 bubble_path = NodePath("../CharacterBubble")
 character_path = NodePath("../Background/Character")
 
-[node name="FakeStreamTimer" type="Timer" parent="OutdoorDialogueController"]
+[node name="FakeStreamTimer" type="Timer" parent="OutdoorDialogueController" unique_id=986674923]
 wait_time = 0.22
