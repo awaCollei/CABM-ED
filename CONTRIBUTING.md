@@ -27,7 +27,7 @@ cd CABM-ED
 ```
 
 #### Godot 引擎安装
-- 下载 [Godot 4.5](https://godotengine.org/download/) 或更高版本
+- 下载 [Godot 4.6.3](https://godotengine.org/download/) 或更高版本
 - 确保使用与项目兼容的版本
 
 ## 贡献流程

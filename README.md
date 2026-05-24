@@ -110,7 +110,7 @@ CABM-ED 是一款 AI 驱动的养成类游戏，核心理念与 [CABM（Code Aff
 
 ## 技术栈
 
-- **引擎**：Godot 4.5
+- **引擎**：Godot 4.6.3
 - **语言**：GDScript、C++
 - **AI**：OpenAI 兼容 API
 - **数据格式**：JSON
