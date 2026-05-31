@@ -57,7 +57,13 @@
         "storage": [],
         "weapon_slot": {}
       },
-      "outdoor_scene_costumes": {}
+      "outdoor_scene_costumes": {},
+      "diary_generation_rules": [
+        {"min_seconds": 0, "max_seconds": 300, "min_count": 0, "max_count": 0},
+        {"min_seconds": 300, "max_seconds": 10800, "min_count": 0, "max_count": 2},
+        {"min_seconds": 10800, "max_seconds": 86400, "min_count": 3, "max_count": 5},
+        {"min_seconds": 86400, "max_seconds": -1, "min_count": 6, "max_count": 10}
+      ]
     }
   },
   "settings": {

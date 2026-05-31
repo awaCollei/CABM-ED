@@ -5,6 +5,13 @@ extends Node
 
 const MOOD_CONFIG_PATH = "res://config/mood_config.json"
 
+const DEFAULT_DIARY_RULES: Array = [
+	{"min_seconds": 0, "max_seconds": 300, "min_count": 0, "max_count": 0},
+	{"min_seconds": 300, "max_seconds": 10800, "min_count": 0, "max_count": 2},
+	{"min_seconds": 10800, "max_seconds": 86400, "min_count": 3, "max_count": 5},
+	{"min_seconds": 86400, "max_seconds": -1, "min_count": 6, "max_count": 10}
+]
+
 var mood_list: Array = []
 
 func _ready():
@@ -83,13 +90,17 @@ func check_and_apply_offline_changes():
 		_apply_no_change()
 	elif offline_hours < 3:
 		print("离线时间 5分钟~3小时")
-		_apply_short_offline(offline_minutes)
+		_apply_short_offline()
 	elif offline_hours < 24:
 		print("离线时间 3小时~24小时")
-		_apply_medium_offline(offline_hours)
+		_apply_medium_offline()
 	else:
 		print("离线时间 24小时以上")
-		_apply_long_offline(offline_hours)
+		_apply_long_offline()
+	
+	# 根据规则生成日记
+	var event_count = _get_diary_event_count(offline_seconds)
+	_generate_character_diary(offline_minutes, event_count)
 	
 	print("===================\n")
 
@@ -106,8 +117,8 @@ func _trigger_offline_position_change():
 		save_mgr.set_meta("pending_offline_position_change", true)
 		print("已标记离线位置变化待应用")
 
-func _apply_short_offline(minutes: float):
-	"""5分钟~3小时：心情变化，回复意愿随机增加-10~30，触发位置变化，生成1-2条日记"""
+func _apply_short_offline():
+	"""5分钟~3小时：心情变化，回复意愿随机增加-10~30，触发位置变化"""
 	# 心情变化
 	_change_mood_randomly()
 	
@@ -126,13 +137,9 @@ func _apply_short_offline(minutes: float):
 	
 	# 触发位置变化
 	_trigger_offline_position_change()
-	
-	# 生成日记（0-2条）
-	var event_count = randi_range(0, 2)
-	_generate_character_diary(minutes, event_count)
 
-func _apply_medium_offline(hours: float):
-	"""3小时~24小时：心情变化；好感度随机增加-20~10；回复意愿随机增加0~50；触发位置变化；生成3-5条日记"""
+func _apply_medium_offline():
+	"""3小时~24小时：心情变化；好感度随机增加-20~10；回复意愿随机增加0~50；触发位置变化"""
 	# 心情变化
 	_change_mood_randomly()
 	
@@ -163,13 +170,9 @@ func _apply_medium_offline(hours: float):
 	
 	# 触发位置变化
 	_trigger_offline_position_change()
-	
-	# 生成日记（3-5条）
-	var event_count = randi_range(3, 5)
-	_generate_character_diary(hours * 60, event_count)
 
-func _apply_long_offline(hours: float):
-	"""24小时以上：心情变化；好感度增加-50~0；回复意愿随机置为70~100；触发位置变化；生成6-10条日记"""
+func _apply_long_offline():
+	"""24小时以上：心情变化；好感度增加-50~0；回复意愿随机置为70~100；触发位置变化"""
 	# 心情变化
 	_change_mood_randomly()
 	
@@ -199,10 +202,6 @@ func _apply_long_offline(hours: float):
 	
 	# 触发位置变化
 	_trigger_offline_position_change()
-	
-	# 生成日记（6-10条）
-	var event_count = randi_range(6, 10)
-	_generate_character_diary(hours * 60, event_count)
 
 func _change_mood_randomly():
 	"""随机改变心情，根据配置文件中的权重"""
@@ -227,6 +226,29 @@ func _change_mood_randomly():
 	SaveManager.set_mood(new_mood)
 	
 	print("心情变化: %s -> %s" % [current_mood, new_mood])
+
+func _get_diary_rules() -> Array:
+	"""获取日记生成规则，优先从存档读取，否则使用默认规则"""
+	if has_node("/root/SaveManager"):
+		var save_mgr = get_node("/root/SaveManager")
+		if save_mgr.save_data.has("diary_generation_rules"):
+			return save_mgr.save_data.diary_generation_rules
+	return DEFAULT_DIARY_RULES
+
+func _get_diary_event_count(offline_seconds: float) -> int:
+	"""根据离线时长和规则计算生成日记的数量"""
+	var rules = _get_diary_rules()
+	for rule in rules:
+		var min_s = rule.get("min_seconds", 0)
+		var max_s = rule.get("max_seconds", -1)
+		if max_s == -1:
+			return randi_range(rule.get("min_count", 0), rule.get("max_count", 0))
+		if offline_seconds >= min_s and offline_seconds < max_s:
+			return randi_range(rule.get("min_count", 0), rule.get("max_count", 0))
+	if not rules.is_empty():
+		var last = rules.back()
+		return randi_range(last.get("min_count", 0), last.get("max_count", 0))
+	return 0
 
 func _parse_datetime(datetime_str: String) -> float:
 	"""解析日期时间字符串为Unix时间戳（兼容旧格式）"""

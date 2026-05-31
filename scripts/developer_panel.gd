@@ -20,12 +20,18 @@ extends Control
 @onready var memory_status_label: Label = $MarginContainer/VBoxContainer/TabContainer/记忆检索/VBoxContainer/MemoryStatusLabel
 @onready var memory_results_container: VBoxContainer = $MarginContainer/VBoxContainer/TabContainer/记忆检索/VBoxContainer/MemoryResultsScroll/MemoryResultsContainer
 
+# 日记生成节点引用
+@onready var rules_list: VBoxContainer = $MarginContainer/VBoxContainer/TabContainer/日记生成/ScrollContainer/VBoxContainer/RulesContainer/RulesList
+@onready var add_rule_button: Button = $MarginContainer/VBoxContainer/TabContainer/日记生成/ScrollContainer/VBoxContainer/AddRuleButton
+
 # 状态变量
 var original_identity: String = ""
 var original_uuid: String = ""
 var original_user_name: String = ""
 var original_character_name: String = ""
 var has_unsaved_changes: bool = false
+var diary_rules: Array = []
+var original_diary_rules: Array = []
 
 func _ready():
 	# 连接按钮信号
@@ -33,6 +39,7 @@ func _ready():
 	back_button.pressed.connect(_on_back_button_pressed)
 	memory_search_button.pressed.connect(_on_memory_search_pressed)
 	memory_query_line_edit.text_submitted.connect(_on_memory_query_submitted)
+	add_rule_button.pressed.connect(_on_add_rule_pressed)
 	
 	# 连接文本编辑信号
 	identity_text_edit.text_changed.connect(_on_text_changed)
@@ -52,6 +59,7 @@ func _ready():
 	_load_identity_data()
 	_load_uuid_data()
 	_load_name_data()
+	_load_diary_rules()
 	
 	print("[DeveloperPanel] 开发者选项面板已加载")
 	
@@ -115,7 +123,8 @@ func _check_changes():
 	var uuid_changed = (uuid_line_edit.text != original_uuid)
 	var user_name_changed = (user_name_line_edit.text != original_user_name)
 	var character_name_changed = (character_name_line_edit.text != original_character_name)
-	has_unsaved_changes = identity_changed or uuid_changed or user_name_changed or character_name_changed
+	var rules_changed = not _diary_rules_equal(diary_rules, original_diary_rules)
+	has_unsaved_changes = identity_changed or uuid_changed or user_name_changed or character_name_changed or rules_changed
 	_update_save_status()
 
 func _update_save_status():
@@ -165,6 +174,8 @@ func _save_changes():
 		save_mgr2.save_game()
 	else:
 		push_error("[DeveloperPanel] SaveManager未找到，无法保存用户名/角色名")
+	
+	_save_diary_rules_to_data()
 	
 	# 更新状态
 	has_unsaved_changes = false
@@ -282,3 +293,150 @@ func _show_memory_results(results: Array):
 		vbox.add_child(text_label)
 
 		memory_results_container.add_child(panel)
+
+# ---- 日记生成规则 ----
+
+const DEFAULT_DIARY_RULES: Array = [
+	{"min_seconds": 0, "max_seconds": 300, "min_count": 0, "max_count": 0},
+	{"min_seconds": 300, "max_seconds": 10800, "min_count": 0, "max_count": 2},
+	{"min_seconds": 10800, "max_seconds": 86400, "min_count": 3, "max_count": 5},
+	{"min_seconds": 86400, "max_seconds": -1, "min_count": 6, "max_count": 10}
+]
+
+func _load_diary_rules():
+	"""从存档加载日记生成规则"""
+	var save_mgr = get_node_or_null("/root/SaveManager")
+	if save_mgr and save_mgr.save_data.has("diary_generation_rules"):
+		diary_rules = save_mgr.save_data.diary_generation_rules.duplicate(true)
+	else:
+		diary_rules = DEFAULT_DIARY_RULES.duplicate(true)
+	original_diary_rules = _clone_rules(diary_rules)
+	_rebuild_rules_ui()
+
+func _clone_rules(rules: Array) -> Array:
+	var result = []
+	for rule in rules:
+		result.append(rule.duplicate())
+	return result
+
+func _diary_rules_equal(a: Array, b: Array) -> bool:
+	if a.size() != b.size():
+		return false
+	for i in range(a.size()):
+		var ra = a[i]
+		var rb = b[i]
+		for key in ra.keys():
+			if not rb.has(key) or ra[key] != rb[key]:
+				return false
+		for key in rb.keys():
+			if not ra.has(key):
+				return false
+	return true
+
+func _save_diary_rules_to_data():
+	"""将日记生成规则保存到存档"""
+	var save_mgr = get_node_or_null("/root/SaveManager")
+	if save_mgr:
+		save_mgr.save_data.diary_generation_rules = _clone_rules(diary_rules)
+		original_diary_rules = _clone_rules(diary_rules)
+		save_mgr.save_game()
+		print("[DeveloperPanel] 日记生成规则已保存")
+
+func _rebuild_rules_ui():
+	"""重建规则列表UI"""
+	for child in rules_list.get_children():
+		child.queue_free()
+	await get_tree().process_frame
+	for i in range(diary_rules.size()):
+		_create_rule_row(i, diary_rules[i])
+
+func _create_rule_row(index: int, rule: Dictionary):
+	"""创建一行规则UI"""
+	var hbox = HBoxContainer.new()
+	hbox.add_theme_constant_override("separation", 10)
+	rules_list.add_child(hbox)
+
+	var min_time_spin = SpinBox.new()
+	min_time_spin.custom_minimum_size = Vector2(0, 40)
+	min_time_spin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	min_time_spin.min_value = 0
+	min_time_spin.max_value = 999999
+	min_time_spin.step = 1
+	min_time_spin.value = rule.get("min_seconds", 0)
+	min_time_spin.add_theme_font_size_override("font_size", 20)
+	min_time_spin.value_changed.connect(_on_rule_min_time_changed.bind(index))
+	hbox.add_child(min_time_spin)
+
+	var max_time_spin = SpinBox.new()
+	max_time_spin.custom_minimum_size = Vector2(0, 40)
+	max_time_spin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	max_time_spin.min_value = -1
+	max_time_spin.max_value = 999999
+	max_time_spin.step = 1
+	max_time_spin.value = rule.get("max_seconds", -1)
+	max_time_spin.add_theme_font_size_override("font_size", 20)
+	max_time_spin.value_changed.connect(_on_rule_max_time_changed.bind(index))
+	hbox.add_child(max_time_spin)
+
+	var min_count_spin = SpinBox.new()
+	min_count_spin.custom_minimum_size = Vector2(0, 40)
+	min_count_spin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	min_count_spin.min_value = 0
+	min_count_spin.max_value = 999
+	min_count_spin.step = 1
+	min_count_spin.value = rule.get("min_count", 0)
+	min_count_spin.add_theme_font_size_override("font_size", 20)
+	min_count_spin.value_changed.connect(_on_rule_min_count_changed.bind(index))
+	hbox.add_child(min_count_spin)
+
+	var max_count_spin = SpinBox.new()
+	max_count_spin.custom_minimum_size = Vector2(0, 40)
+	max_count_spin.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	max_count_spin.min_value = 0
+	max_count_spin.max_value = 999
+	max_count_spin.step = 1
+	max_count_spin.value = rule.get("max_count", 0)
+	max_count_spin.add_theme_font_size_override("font_size", 20)
+	max_count_spin.value_changed.connect(_on_rule_max_count_changed.bind(index))
+	hbox.add_child(max_count_spin)
+
+	var remove_btn = Button.new()
+	remove_btn.custom_minimum_size = Vector2(60, 40)
+	remove_btn.text = "-"
+	remove_btn.add_theme_font_size_override("font_size", 24)
+	remove_btn.pressed.connect(_on_remove_rule_pressed.bind(index))
+	hbox.add_child(remove_btn)
+
+func _on_rule_min_time_changed(value: float, index: int):
+	diary_rules[index].min_seconds = int(value)
+	_check_changes()
+
+func _on_rule_max_time_changed(value: float, index: int):
+	diary_rules[index].max_seconds = int(value)
+	_check_changes()
+
+func _on_rule_min_count_changed(value: float, index: int):
+	diary_rules[index].min_count = int(value)
+	_check_changes()
+
+func _on_rule_max_count_changed(value: float, index: int):
+	diary_rules[index].max_count = int(value)
+	_check_changes()
+
+func _on_add_rule_pressed():
+	"""添加新规则"""
+	var last = diary_rules.back() if not diary_rules.is_empty() else null
+	var new_min = 0
+	if last:
+		new_min = last.max_seconds if last.max_seconds > 0 else last.min_seconds + 3600
+	diary_rules.append({"min_seconds": new_min, "max_seconds": new_min + 3600, "min_count": 1, "max_count": 3})
+	_rebuild_rules_ui()
+	_check_changes()
+
+func _on_remove_rule_pressed(index: int):
+	"""移除规则"""
+	if diary_rules.size() <= 1:
+		return
+	diary_rules.remove_at(index)
+	_rebuild_rules_ui()
+	_check_changes()

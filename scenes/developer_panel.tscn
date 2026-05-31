@@ -191,6 +191,83 @@ size_flags_horizontal = 0
 disabled = true
 text = "存档加密"
 
+[node name="日记生成" type="MarginContainer" parent="MarginContainer/VBoxContainer/TabContainer"]
+visible = false
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+metadata/_tab_index = 3
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer/VBoxContainer/TabContainer/日记生成"]
+layout_mode = 2
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/日记生成/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 15
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/日记生成/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "离线日记生成规则"
+
+[node name="DescriptionLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/日记生成/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "根据离线时长设置生成日记的数量范围"
+
+[node name="RulesContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/日记生成/ScrollContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="HeaderHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/日记生成/ScrollContainer/VBoxContainer/RulesContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MinTimeLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/日记生成/ScrollContainer/VBoxContainer/RulesContainer/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "最小时间(秒)"
+
+[node name="MaxTimeLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/日记生成/ScrollContainer/VBoxContainer/RulesContainer/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "最大时间(秒)"
+
+[node name="MinDiaryLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/日记生成/ScrollContainer/VBoxContainer/RulesContainer/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "最少日记数"
+
+[node name="MaxDiaryLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/日记生成/ScrollContainer/VBoxContainer/RulesContainer/HeaderHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 20
+text = "最多日记数"
+
+[node name="PlaceholderLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/日记生成/ScrollContainer/VBoxContainer/RulesContainer/HeaderHBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(60, 0)
+theme_override_font_sizes/font_size = 20
+text = "操作"
+
+[node name="RulesList" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/日记生成/ScrollContainer/VBoxContainer/RulesContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="AddRuleButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/日记生成/ScrollContainer/VBoxContainer"]
+custom_minimum_size = Vector2(150, 45)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "+ 添加规则"
+
 [node name="BottomPanel" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 20
