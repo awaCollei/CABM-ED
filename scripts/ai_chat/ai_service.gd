@@ -1324,69 +1324,23 @@ func _return_item_to_player(item_data: Dictionary, meta: Dictionary = {}):
 
 func _add_item_to_snow_fox(item_data: Dictionary, meta: Dictionary = {}):
 	"""将物品添加到雪狐背包"""
-	var save_mgr = get_node_or_null("/root/SaveManager")
-	if not save_mgr:
-		push_error("SaveManager未找到，物品放回玩家背包")
+	var inventory_mgr = get_node_or_null("/root/InventoryManager")
+	if not inventory_mgr:
+		push_error("InventoryManager未找到，物品放回玩家背包")
 		_return_item_to_player(item_data, meta)
 		return
 	
-	# 确保雪狐背包数据存在
-	if not save_mgr.save_data.has("snow_fox_inventory"):
-		save_mgr.save_data.snow_fox_inventory = {
-			"storage": [],
-			"weapon_slot": {}
-		}
-		# 初始化30个空格子
-		for i in range(30):
-			save_mgr.save_data.snow_fox_inventory.storage.append(null)
+	var success = inventory_mgr.add_item_to_snow_fox(item_data.item_id, int(item_data.count), meta)
 	
-	var snow_fox_inv = save_mgr.save_data.snow_fox_inventory
-	var storage = snow_fox_inv.storage
-	
-	# 尝试堆叠到现有物品（有元数据时不堆叠）
-	var inventory_mgr = get_node_or_null("/root/InventoryManager")
-	var item_config = inventory_mgr.get_item_config(item_data.item_id) if inventory_mgr else {}
-	var max_stack = int(item_config.get("max_stack", 99))
-	var remaining = int(item_data.count)
-	
-	# 先尝试堆叠（仅在没有元数据时）
-	if meta.is_empty():
-		for i in range(storage.size()):
-			if storage[i] != null and storage[i].item_id == item_data.item_id:
-				var current_count = int(storage[i].count)
-				var can_add = min(remaining, max_stack - current_count)
-				if can_add > 0:
-					storage[i].count = current_count + can_add
-					remaining -= can_add
-					if remaining <= 0:
-						break
-	
-	# 如果还有剩余，找空格子
-	if remaining > 0:
-		for i in range(storage.size()):
-			if storage[i] == null:
-				var to_add = min(remaining, max_stack)
-				var new_item = {
-					"item_id": item_data.item_id,
-					"count": to_add
-				}
-				# 合并元数据
-				if not meta.is_empty():
-					for key in meta.keys():
-						new_item[key] = meta[key]
-				storage[i] = new_item
-				remaining -= to_add
-				if remaining <= 0:
-					break
-	
-	# 如果还有剩余，说明雪狐背包满了，放回玩家背包
-	if remaining > 0:
-		push_warning("雪狐背包已满，剩余物品放回玩家背包")
-		_return_item_to_player({"item_id": item_data.item_id, "count": remaining}, meta)
-	
-	# 保存游戏
-	save_mgr.save_game(save_mgr.current_slot)
-	print("物品已添加到雪狐背包: %s*%d" % [item_data.item_id, item_data.count - remaining])
+	if not success:
+		push_warning("雪狐背包已满或添加失败，物品放回玩家背包")
+		_return_item_to_player(item_data, meta)
+	else:
+		print("物品已添加到雪狐背包: %s*%d" % [item_data.item_id, item_data.count])
+		# 保存游戏
+		var save_mgr = get_node_or_null("/root/SaveManager")
+		if save_mgr:
+			save_mgr.save_game(save_mgr.current_slot)
 
 func _clear_uploaded_item():
 	"""清除已上传的物品状态"""

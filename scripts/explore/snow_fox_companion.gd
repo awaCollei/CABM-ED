@@ -31,24 +31,16 @@ var shoot_sound_players: Array = []
 var current_weapon_id: String = ""
 var next_sound_player_index: int = 0  # 轮询使用的播放器索引
 
-# 雪狐的背包存储
-const STORAGE_SIZE = 12
-var storage: Dictionary = {}  # 使用字典格式 {storage: Array, weapon_slot: Dictionary}
+# 雪狐的背包存储 - 使用 InventoryManager 的 snow_fox_container
+var _inventory_mgr: Node = null
 
 @onready var navigation_agent: NavigationAgent2D = $NavigationAgent2D
 
 func _ready():
-	# 初始化存储（新格式）
-	var storage_array = []
-	storage_array.resize(STORAGE_SIZE)
-	for i in range(STORAGE_SIZE):
-		storage_array[i] = null
-	storage = {
-		"storage": storage_array,
-		"weapon_slot": {}
-	}
-	if InventoryManager:
-		items_config = InventoryManager.items_config
+	# 获取 InventoryManager 引用
+	_inventory_mgr = get_node_or_null("/root/InventoryManager")
+	if _inventory_mgr:
+		items_config = _inventory_mgr.items_config
 	else:
 		var config_path = "res://config/items.json"
 		if FileAccess.file_exists(config_path):
@@ -202,42 +194,31 @@ func _physics_process(delta):
 
 func get_storage():
 	"""获取雪狐的存储"""
-	return storage
+	if _inventory_mgr and _inventory_mgr.snow_fox_container:
+		return _inventory_mgr.snow_fox_container.get_data()
+	return {}
 
 func set_storage(new_storage):
 	"""设置雪狐的存储"""
-	# 兼容旧格式（Array）和新格式（Dictionary）
-	if new_storage is Array:
-		# 旧格式，转换为新格式
-		storage = {
-			"storage": new_storage.duplicate(),
-			"weapon_slot": {}
-		}
-	elif new_storage is Dictionary:
-		storage = new_storage.duplicate(true)
-	else:
-		# 初始化空存储
-		var storage_array = []
-		storage_array.resize(STORAGE_SIZE)
-		for i in range(STORAGE_SIZE):
-			storage_array[i] = null
-		storage = {
-			"storage": storage_array,
-			"weapon_slot": {}
-		}
+	if _inventory_mgr and _inventory_mgr.snow_fox_container:
+		_inventory_mgr.snow_fox_container.load_data(new_storage)
 
 func get_save_data() -> Dictionary:
 	"""获取保存数据"""
-	return storage.duplicate(true)
+	if _inventory_mgr and _inventory_mgr.snow_fox_container:
+		return _inventory_mgr.snow_fox_container.get_data()
+	return {}
 
 func load_save_data(data: Dictionary):
 	"""加载保存数据"""
 	set_storage(data)
 
 func _get_weapon_config() -> Dictionary:
-	if storage.has("weapon_slot") and storage.weapon_slot is Dictionary and not storage.weapon_slot.is_empty():
-		var wid = storage.weapon_slot.get("item_id", "")
-		return items_config.get(wid, {})
+	if _inventory_mgr and _inventory_mgr.snow_fox_container:
+		var weapon_slot = _inventory_mgr.snow_fox_container.weapon_slot
+		if not weapon_slot.is_empty():
+			var wid = weapon_slot.get("item_id", "")
+			return items_config.get(wid, {})
 	return {}
 
 func _find_ammo_item_id(caliber: String) -> String:
@@ -248,97 +229,29 @@ func _find_ammo_item_id(caliber: String) -> String:
 	return ""
 
 func _count_item_in_storage(item_id: String) -> int:
-	var total := 0
-	if storage.has("storage"):
-		for item in storage.storage:
-			if item != null and item.get("item_id") == item_id:
-				total += int(item.get("count", 0))
-	return total
+	if _inventory_mgr and _inventory_mgr.snow_fox_container:
+		return _inventory_mgr.snow_fox_container.count_item(item_id)
+	return 0
 
 func _remove_item_from_storage(item_id: String, count: int) -> int:
-	var remaining := int(count)
-	if storage.has("storage"):
-		for i in range(storage.storage.size()):
-			var it = storage.storage[i]
-			if it != null and it.get("item_id") == item_id:
-				var cur := int(it.get("count", 0))
-				var take = min(remaining, cur)
-				storage.storage[i].count = cur - take
-				remaining -= take
-				if storage.storage[i].count <= 0:
-					storage.storage[i] = null
-				if remaining <= 0:
-					break
-	return int(count) - remaining
+	if _inventory_mgr and _inventory_mgr.snow_fox_container:
+		return _inventory_mgr.snow_fox_container.remove_item_by_id(item_id, count)
+	return 0
 
 func _add_item_to_storage(item_id: String, count: int, data: Dictionary = {}) -> bool:
-	var cfg = items_config.get(item_id, {})
-	if cfg.is_empty():
-		return false
-	count = int(count)
-	if count <= 0:
-		return false
-	if not storage.has("storage") or not (storage.storage is Array):
-		storage["storage"] = []
-		storage.storage.resize(STORAGE_SIZE)
-		for i in range(storage.storage.size()):
-			storage.storage[i] = null
-	if not storage.has("weapon_slot") or not (storage.weapon_slot is Dictionary):
-		storage["weapon_slot"] = {}
-	var incoming_data = data.duplicate(true)
-	incoming_data.erase("count")
-	incoming_data["item_id"] = item_id
-	if cfg.get("type") == "武器" and cfg.get("subtype") == "远程" and not incoming_data.has("ammo"):
-		incoming_data["ammo"] = 0
-	var max_stack := int(cfg.get("max_stack", 1))
-	var remaining := int(count)
-	if cfg.get("type") == "武器":
-		if storage.has("weapon_slot") and (storage.weapon_slot is Dictionary) and storage.weapon_slot.is_empty():
-			storage.weapon_slot = _build_item_instance(item_id, 1, incoming_data)
-			remaining -= 1
-			if remaining <= 0:
-				return true
-			
-	for i in range(storage.storage.size()):
-		if remaining <= 0:
-			break
-		var it = storage.storage[i]
-		if it != null and _is_same_stack(it, incoming_data):
-			var cur := int(it.get("count", 0))
-			var can_add = min(remaining, max_stack - cur)
-			if can_add > 0:
-				it["count"] = cur + can_add
-				storage.storage[i] = it
-				remaining -= can_add
-	for i in range(storage.storage.size()):
-		if remaining <= 0:
-			break
-		if storage.storage[i] == null:
-			var add_cnt = min(remaining, max_stack)
-			storage.storage[i] = _build_item_instance(item_id, add_cnt, incoming_data)
-			remaining -= add_cnt
-	return remaining <= 0
-
-func _is_same_stack(existing_item: Dictionary, incoming_data: Dictionary) -> bool:
-	if existing_item.get("item_id", "") != incoming_data.get("item_id", ""):
-		return false
-	var a = existing_item.duplicate(true)
-	var b = incoming_data.duplicate(true)
-	a.erase("count")
-	b.erase("count")
-	return a == b
-
-func _build_item_instance(item_id: String, count: int, incoming_data: Dictionary) -> Dictionary:
-	var item = incoming_data.duplicate(true)
-	item["item_id"] = item_id
-	item["count"] = int(count)
-	return item
+	if _inventory_mgr and _inventory_mgr.snow_fox_container:
+		return _inventory_mgr.snow_fox_container.add_item(item_id, count, data)
+	return false
 
 func _auto_reload_weapon(cfg: Dictionary):
 	if cfg.is_empty():
 		return
+	if not _inventory_mgr or not _inventory_mgr.snow_fox_container:
+		return
+	
+	var weapon_slot = _inventory_mgr.snow_fox_container.weapon_slot
 	var mag := int(cfg.get("magazine_size", 30))
-	var cur := int(storage.weapon_slot.get("ammo", 0))
+	var cur := int(weapon_slot.get("ammo", 0))
 	var need := mag - cur
 	if need <= 0:
 		return
@@ -351,7 +264,7 @@ func _auto_reload_weapon(cfg: Dictionary):
 		return
 	var removed := _remove_item_from_storage(ammo_id, take)
 	if removed > 0:
-		storage.weapon_slot["ammo"] = cur + removed
+		weapon_slot["ammo"] = cur + removed
 
 func _line_of_sight_to(pos: Vector2) -> bool:
 	var space_state = get_world_2d().direct_space_state
@@ -435,8 +348,11 @@ func _find_shootable_enemy() -> Node2D:
 	return nearest
 
 func _try_auto_attack():
-	var weapon = storage.get("weapon_slot", {})
-	if weapon is Dictionary and weapon.is_empty():
+	if not _inventory_mgr or not _inventory_mgr.snow_fox_container:
+		return
+	
+	var weapon_slot = _inventory_mgr.snow_fox_container.weapon_slot
+	if weapon_slot.is_empty():
 		return
 		
 	var cfg := _get_weapon_config()
@@ -462,13 +378,13 @@ func _try_auto_attack():
 	if dist_to_enemy > attack_range:
 		return
 		
-	if int(weapon.get("ammo", 0)) <= 0:
+	if int(weapon_slot.get("ammo", 0)) <= 0:
 		_auto_reload_weapon(cfg)
-		if int(storage.weapon_slot.get("ammo", 0)) <= 0:
+		if int(weapon_slot.get("ammo", 0)) <= 0:
 			return
 			
 	var dir := (target_enemy.global_position - global_position).normalized()
-	storage.weapon_slot["ammo"] = int(storage.weapon_slot.get("ammo", 0)) - 1
+	weapon_slot["ammo"] = int(weapon_slot.get("ammo", 0)) - 1
 	
 	# 立即更新朝向到敌人
 	rotation = dir.angle()
@@ -485,9 +401,12 @@ func _try_auto_attack():
 	last_attack_time = now
 
 func _ensure_weapon_sound():
-	if not storage.has("weapon_slot") or storage.weapon_slot.is_empty():
+	if not _inventory_mgr or not _inventory_mgr.snow_fox_container:
 		return
-	var wid := String(storage.weapon_slot.get("item_id", ""))
+	var weapon_slot = _inventory_mgr.snow_fox_container.weapon_slot
+	if weapon_slot.is_empty():
+		return
+	var wid := String(weapon_slot.get("item_id", ""))
 	if wid == "":
 		return
 	if wid != current_weapon_id:

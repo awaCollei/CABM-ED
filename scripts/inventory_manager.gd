@@ -4,12 +4,14 @@ extends Node
 # 管理玩家背包和仓库数据
 
 const INVENTORY_SIZE = 30  # 背包格子数量
-const WAREHOUSE_SIZE=80
+const WAREHOUSE_SIZE = 80
 const COOK_PREP_SIZE = 20  # 烹饪准备栏格子数量
+const SNOW_FOX_STORAGE_SIZE = 12  # 雪狐背包格子数量
 
 var inventory_container: StorageContainer
 var warehouse_container: StorageContainer
 var cook_prep_container: StorageContainer  # 烹饪准备栏
+var snow_fox_container: StorageContainer  # 雪狐背包
 
 var items_config: Dictionary = {}  # 物品配置
 var unique_items: Array = []  # 唯一物品列表
@@ -353,12 +355,14 @@ func _get_persistent_scenes() -> Array:
 
 func _initialize_storage():
 	"""初始化存储空间"""
-	# 玩家背包和雪狐背包有武器栏
+	# 玩家背包有武器栏
 	inventory_container = StorageContainer.new(INVENTORY_SIZE, items_config, true)
 	# 仓库物品
 	warehouse_container = StorageContainer.new(WAREHOUSE_SIZE, items_config, false)
 	# 烹饪准备栏（无武器栏）
 	cook_prep_container = StorageContainer.new(COOK_PREP_SIZE, items_config, false)
+	# 雪狐背包（有武器栏）
+	snow_fox_container = StorageContainer.new(SNOW_FOX_STORAGE_SIZE, items_config, true)
 
 func get_item_config(item_id: String) -> Dictionary:
 	"""获取物品配置"""
@@ -372,12 +376,25 @@ func add_item_to_warehouse(item_id: String, count: int = 1, meta: Dictionary = {
 	"""添加物品到仓库，可选传入元数据"""
 	return warehouse_container.add_item(item_id, count, meta)
 
+func add_item_to_snow_fox(item_id: String, count: int = 1, meta: Dictionary = {}) -> bool:
+	"""添加物品到雪狐背包，可选传入元数据"""
+	return snow_fox_container.add_item(item_id, count, meta)
+
+func get_snow_fox_data() -> Dictionary:
+	"""获取雪狐背包数据用于保存"""
+	return snow_fox_container.get_data()
+
+func load_snow_fox_data(data):
+	"""加载雪狐背包保存数据"""
+	snow_fox_container.load_data(data)
+
 func get_storage_data() -> Dictionary:
 	"""获取存储数据用于保存"""
 	return {
 		"inventory": inventory_container.get_data(),
 		"warehouse": warehouse_container.get_data(),
-		"cook_prep": cook_prep_container.get_data()
+		"cook_prep": cook_prep_container.get_data(),
+		"snow_fox_inventory": snow_fox_container.get_data()
 	}
 
 func load_storage_data(data: Dictionary):
@@ -388,6 +405,8 @@ func load_storage_data(data: Dictionary):
 		warehouse_container.load_data(data.warehouse)
 	if data.has("cook_prep"):
 		cook_prep_container.load_data(data.cook_prep)
+	if data.has("snow_fox_inventory"):
+		snow_fox_container.load_data(data.snow_fox_inventory)
 	
 	# 加载后检查并管理唯一物品
 	_manage_unique_items()

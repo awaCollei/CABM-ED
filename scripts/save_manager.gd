@@ -730,8 +730,8 @@ func _load_inventory_data():
 			"storage": [],
 			"weapon_slot": {}
 		}
-		save_data.snow_fox_inventory.storage.resize(12)
-		for i in range(12):
+		save_data.snow_fox_inventory.storage.resize(InventoryManager.SNOW_FOX_STORAGE_SIZE)
+		for i in range(InventoryManager.SNOW_FOX_STORAGE_SIZE):
 			save_data.snow_fox_inventory.storage[i] = null
 		print("[SaveManager] 初始化雪狐背包")
 	else:
@@ -740,10 +740,10 @@ func _load_inventory_data():
 			save_data.snow_fox_inventory.storage = []
 		
 		var current_size = save_data.snow_fox_inventory.storage.size()
-		if current_size < 12:
+		if current_size < InventoryManager.SNOW_FOX_STORAGE_SIZE:
 			# 只扩展不足的部分
-			save_data.snow_fox_inventory.storage.resize(12)
-			for i in range(current_size, 12):
+			save_data.snow_fox_inventory.storage.resize(InventoryManager.SNOW_FOX_STORAGE_SIZE)
+			for i in range(current_size, InventoryManager.SNOW_FOX_STORAGE_SIZE):
 				save_data.snow_fox_inventory.storage[i] = null
 		
 		# 确保weapon_slot存在

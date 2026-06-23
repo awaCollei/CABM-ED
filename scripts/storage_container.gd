@@ -152,10 +152,11 @@ func add_item(item_id: String, count: int = 1, meta: Dictionary = {}) -> bool:
 			if item_config.get("subtype") == "远程":
 				ammo = 0  # 初始弹药为0
 			weapon_slot = {"item_id": item_id, "count": 1, "ammo": ammo}
-			# 合并元数据
+			# 合并元数据（排除count字段，避免覆盖正确计算的数量）
 			if not meta.is_empty():
 				for key in meta.keys():
-					weapon_slot[key] = meta[key]
+					if key != "count":
+						weapon_slot[key] = meta[key]
 			remaining -= 1
 			if remaining <= 0:
 				storage_changed.emit()
@@ -179,10 +180,11 @@ func add_item(item_id: String, count: int = 1, meta: Dictionary = {}) -> bool:
 		if storage[i] == null:
 			var add_count = int(min(remaining, max_stack))
 			var new_item = {"item_id": item_id, "count": add_count}
-			# 合并元数据
+			# 合并元数据（排除count字段，避免覆盖正确计算的数量）
 			if not meta.is_empty():
 				for key in meta.keys():
-					new_item[key] = meta[key]
+					if key != "count":
+						new_item[key] = meta[key]
 			storage[i] = new_item
 			remaining -= add_count
 			if remaining <= 0:

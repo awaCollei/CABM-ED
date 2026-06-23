@@ -597,8 +597,9 @@ func update_snow_fox_storage(storage_data):
 	"""更新雪狐背包数据（从背包UI回调）"""
 	if snow_fox:
 		snow_fox.set_storage(storage_data)
+		if InventoryManager:
+			InventoryManager.load_snow_fox_data(storage_data)
 		if SaveManager:
-			SaveManager.save_data.snow_fox_inventory = storage_data.duplicate(true)
 			SaveManager.save_game(SaveManager.current_slot)
 
 func _on_inventory_closed():
@@ -1258,15 +1259,15 @@ func _load_explore_inventory_state():
 	scene_state.temp_player_inventory = InventoryManager.inventory_container.get_data()
 	player_inventory.container.load_data(scene_state.temp_player_inventory)
 	
-	# 从存档加载雪狐背包
-	if SaveManager and SaveManager.save_data.has("snow_fox_inventory"):
-		scene_state.temp_snow_fox_inventory = SaveManager.save_data.snow_fox_inventory.duplicate(true)
+	# 从 InventoryManager 加载雪狐背包
+	if InventoryManager and InventoryManager.snow_fox_container:
+		scene_state.temp_snow_fox_inventory = InventoryManager.get_snow_fox_data()
 		if snow_fox:
 			snow_fox.set_storage(scene_state.temp_snow_fox_inventory)
 	else:
 		# 初始化空背包（正确格式）
 		var storage_array = []
-		storage_array.resize(snow_fox.STORAGE_SIZE if snow_fox else 12)
+		storage_array.resize(12)  # SNOW_FOX_STORAGE_SIZE
 		for i in range(storage_array.size()):
 			storage_array[i] = null
 		
@@ -1292,9 +1293,9 @@ func _save_explore_inventory_state():
 	"""保存探索模式的背包状态"""
 	if not SaveManager:
 		return
-	if snow_fox:
+	if snow_fox and InventoryManager:
 		var fox_storage = snow_fox.get_storage()
-		SaveManager.save_data.snow_fox_inventory = fox_storage.duplicate(true) if fox_storage is Dictionary else fox_storage
+		InventoryManager.load_snow_fox_data(fox_storage)
 	if chest_system:
 		SaveManager.save_data.chest_system_data = chest_system.get_save_data()
 	if drop_system:

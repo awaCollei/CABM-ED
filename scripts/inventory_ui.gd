@@ -22,14 +22,12 @@ func _ready():
 func _initialize_snow_fox_container():
 	"""初始化雪狐背包容器（带武器栏）"""
 	const SNOW_FOX_SIZE = 12
-	snow_fox_container = StorageContainer.new(SNOW_FOX_SIZE, InventoryManager.items_config, true)
-	
-	# 从存档加载雪狐背包
-	if SaveManager and SaveManager.save_data.has("snow_fox_inventory"):
-		snow_fox_container.load_data(SaveManager.save_data.snow_fox_inventory)
+	# 使用 InventoryManager 的雪狐背包
+	snow_fox_container = InventoryManager.snow_fox_container
 	
 	# 连接存储变化信号以自动保存
-	snow_fox_container.storage_changed.connect(_on_snow_fox_storage_changed)
+	if snow_fox_container:
+		snow_fox_container.storage_changed.connect(_on_snow_fox_storage_changed)
 
 func _create_switch_button():
 	"""创建切换按钮"""
@@ -69,8 +67,8 @@ func _on_switch_button_pressed():
 
 func _on_snow_fox_storage_changed():
 	"""雪狐背包变化时保存"""
-	if SaveManager:
-		SaveManager.save_data.snow_fox_inventory = snow_fox_container.get_data()
+	if SaveManager and InventoryManager:
+		# 数据已经在 InventoryManager 的 snow_fox_container 中更新
 		SaveManager.save_inventory_data()
 
 func toggle_visibility():
@@ -78,10 +76,6 @@ func toggle_visibility():
 	if visible:
 		close_inventory()
 	else:
-		# 重新加载雪狐背包（以防在探索模式中修改过）
-		if SaveManager and SaveManager.save_data.has("snow_fox_inventory"):
-			snow_fox_container.load_data(SaveManager.save_data.snow_fox_inventory)
-		
 		# 默认显示仓库
 		is_showing_warehouse = true
 		setup_other_container(InventoryManager.warehouse_container, "仓库")
