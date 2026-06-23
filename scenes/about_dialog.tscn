@@ -1,4 +1,4 @@
-[gd_scene load_steps=4 format=3 uid="uid://dc3qgcnpahfmn"]
+[gd_scene format=3 uid="uid://dc3qgcnpahfmn"]
 
 [ext_resource type="Script" uid="uid://c4w5pc0y2foga" path="res://scripts/about_dialog.gd" id="1_about"]
 [ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="2_tmso8"]
@@ -16,7 +16,7 @@ corner_radius_bottom_right = 6
 corner_radius_bottom_left = 6
 shadow_size = 3
 
-[node name="AboutDialog" type="Panel"]
+[node name="AboutDialog" type="Panel" unique_id=1597491917]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -31,7 +31,7 @@ grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_lpi4m")
 script = ExtResource("1_about")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=451676758]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -43,64 +43,64 @@ theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=499437574]
 layout_mode = 2
 theme_override_constants/separation = 15
 
-[node name="GameNameLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="GameNameLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=991416582]
 layout_mode = 2
 theme_override_font_sizes/font_size = 30
 text = "CABM-ED"
 horizontal_alignment = 1
 
-[node name="VersionLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="VersionLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=736328575]
 layout_mode = 2
 mouse_filter = 0
 text = "未知版本"
 horizontal_alignment = 1
 
-[node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+[node name="HSeparator2" type="HSeparator" parent="MarginContainer/VBoxContainer" unique_id=679448684]
 layout_mode = 2
 
-[node name="GitHubLink2" type="LinkButton" parent="MarginContainer/VBoxContainer"]
+[node name="GitHubLink2" type="LinkButton" parent="MarginContainer/VBoxContainer" unique_id=1109133693]
 layout_mode = 2
 text = "CABM官网"
 uri = "https://cabm.shasnow.top/site"
 
-[node name="CustomerServiceLink" type="LinkButton" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-theme_override_colors/font_color = Color(0.875, 0.875, 0.875, 1)
-text = "24小时在线客服"
-uri = "https://cabm.shasnow.top/cabm-ed"
-
-[node name="GitHubLink3" type="LinkButton" parent="MarginContainer/VBoxContainer"]
+[node name="GitHubLink3" type="LinkButton" parent="MarginContainer/VBoxContainer" unique_id=959548766]
 layout_mode = 2
 text = "bug反馈/建议/提问"
 uri = "https://docs.qq.com/sheet/DZHdYdGhIa1Z6VmZk"
 
-[node name="GitHubLink" type="LinkButton" parent="MarginContainer/VBoxContainer"]
+[node name="GitHubLink" type="LinkButton" parent="MarginContainer/VBoxContainer" unique_id=64865600]
 layout_mode = 2
 text = "Github仓库"
 uri = "https://github.com/awaCollei/CABM-ED"
 
-[node name="HSeparator3" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+[node name="CustomerServiceLink" type="LinkButton" parent="MarginContainer/VBoxContainer" unique_id=1302377536]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.875, 0.875, 0.875, 1)
+text = "奇妙的小网站"
+uri = "https://cabm.shasnow.top"
+
+[node name="HSeparator3" type="HSeparator" parent="MarginContainer/VBoxContainer" unique_id=301527882]
 layout_mode = 2
 
-[node name="QQLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="QQLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=754397320]
 layout_mode = 2
 text = "QQ群:"
 
-[node name="QQLink1" type="LinkButton" parent="MarginContainer/VBoxContainer"]
+[node name="QQLink1" type="LinkButton" parent="MarginContainer/VBoxContainer" unique_id=348064622]
 layout_mode = 2
 text = "一群：236025099"
 uri = "https://qm.qq.com/q/BrrfZDi5sA"
 
-[node name="QQLink2" type="LinkButton" parent="MarginContainer/VBoxContainer"]
+[node name="QQLink2" type="LinkButton" parent="MarginContainer/VBoxContainer" unique_id=2025473052]
 layout_mode = 2
 text = "二群：813734786"
 uri = "https://qm.qq.com/q/pqgOnzn8Gs"
 
-[node name="CloseButton" type="Button" parent="MarginContainer/VBoxContainer"]
+[node name="CloseButton" type="Button" parent="MarginContainer/VBoxContainer" unique_id=320163043]
 layout_mode = 2
 theme = ExtResource("2_tmso8")
 text = "关闭"
