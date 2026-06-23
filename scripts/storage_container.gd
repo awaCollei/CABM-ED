@@ -191,10 +191,9 @@ func add_item(item_id: String, count: int = 1, meta: Dictionary = {}) -> bool:
 				storage_changed.emit()
 				return true
 	
-	# 空间不足
+	# 空间不足（不触发保存信号）
 	if remaining > 0:
 		push_warning("存储空间不足，剩余 " + str(remaining) + " 个物品未添加")
-		storage_changed.emit()
 		return false
 	
 	return true
