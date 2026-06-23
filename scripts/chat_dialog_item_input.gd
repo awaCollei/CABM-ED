@@ -179,11 +179,8 @@ func _on_submit_item(inventory_ui: Control, temp_container: StorageContainer):
 	
 	var item = temp_container.storage[0]
 	
-	# 保存选中的物品数据
-	selected_item_data = {
-		"item_id": item.item_id,
-		"count": item.count
-	}
+	# 直接复制物品所有属性，保留自定义字段
+	selected_item_data = item.duplicate()
 	
 	# 从玩家背包中移除该物品（已经通过拖拽转移到临时容器了）
 	# 临时容器的物品不需要保存，关闭UI时会自动丢弃
@@ -212,10 +209,16 @@ func _on_item_picker_closed(inventory_ui: Control, temp_container: StorageContai
 	
 	var item = temp_container.storage[0]
 	
-	# 将物品放回玩家背包
+	# 将物品放回玩家背包（保留所有元数据）
 	var inventory_mgr = get_node("/root/InventoryManager")
 	if inventory_mgr:
-		inventory_mgr.add_item_to_inventory(item.item_id, item.count)
+		# 提取元数据（排除 item_id 和 count）
+		var meta = {}
+		for key in item.keys():
+			if key != "item_id" and key != "count":
+				meta[key] = item[key]
+		
+		inventory_mgr.add_item_to_inventory(item.item_id, item.count, meta)
 		print("物品选择UI关闭，物品已返还: %s*%d" % [item.item_id, item.count])
 	
 	inventory_ui.queue_free()
@@ -231,10 +234,16 @@ func clear_selected_item():
 	if selected_item_data.is_empty():
 		return
 	
-	# 将物品放回玩家背包
+	# 将物品放回玩家背包（保留所有元数据）
 	var inventory_mgr = get_node("/root/InventoryManager")
 	if inventory_mgr:
-		inventory_mgr.add_item_to_inventory(selected_item_data.item_id, selected_item_data.count)
+		# 提取元数据（排除 item_id 和 count）
+		var meta = {}
+		for key in selected_item_data.keys():
+			if key != "item_id" and key != "count":
+				meta[key] = selected_item_data[key]
+		
+		inventory_mgr.add_item_to_inventory(selected_item_data.item_id, selected_item_data.count, meta)
 	
 	selected_item_data.clear()
 	_update_button_icon()

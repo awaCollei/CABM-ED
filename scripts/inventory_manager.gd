@@ -364,13 +364,13 @@ func get_item_config(item_id: String) -> Dictionary:
 	"""获取物品配置"""
 	return items_config.get(item_id, {})
 
-func add_item_to_inventory(item_id: String, count: int = 1) -> bool:
-	"""添加物品到背包"""
-	return inventory_container.add_item(item_id, count)
+func add_item_to_inventory(item_id: String, count: int = 1, meta: Dictionary = {}) -> bool:
+	"""添加物品到背包，可选传入元数据"""
+	return inventory_container.add_item(item_id, count, meta)
 
-func add_item_to_warehouse(item_id: String, count: int = 1) -> bool:
-	"""添加物品到仓库"""
-	return warehouse_container.add_item(item_id, count)
+func add_item_to_warehouse(item_id: String, count: int = 1, meta: Dictionary = {}) -> bool:
+	"""添加物品到仓库，可选传入元数据"""
+	return warehouse_container.add_item(item_id, count, meta)
 
 func get_storage_data() -> Dictionary:
 	"""获取存储数据用于保存"""

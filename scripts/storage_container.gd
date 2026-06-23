@@ -129,8 +129,8 @@ func _is_item_identical_except_count(item_a: Dictionary, item_b: Dictionary) -> 
 			
 	return true
 
-func add_item(item_id: String, count: int = 1) -> bool:
-	"""添加物品"""
+func add_item(item_id: String, count: int = 1, meta: Dictionary = {}) -> bool:
+	"""添加物品，可选传入元数据"""
 	# 确保数量是整数
 	count = int(count)
 	if count <= 0:
@@ -152,28 +152,38 @@ func add_item(item_id: String, count: int = 1) -> bool:
 			if item_config.get("subtype") == "远程":
 				ammo = 0  # 初始弹药为0
 			weapon_slot = {"item_id": item_id, "count": 1, "ammo": ammo}
+			# 合并元数据
+			if not meta.is_empty():
+				for key in meta.keys():
+					weapon_slot[key] = meta[key]
 			remaining -= 1
 			if remaining <= 0:
 				storage_changed.emit()
 				return true
 	
-	# 先尝试堆叠到现有格子
-	for i in range(storage.size()):
-		if storage[i] != null and storage[i].item_id == item_id:
-			var current_count = int(storage[i].count)
-			var can_add = int(min(remaining, max_stack - current_count))
-			if can_add > 0:
-				storage[i].count = int(current_count + can_add)
-				remaining -= can_add
-				if remaining <= 0:
-					storage_changed.emit()
-					return true
+	# 先尝试堆叠到现有格子（有元数据时不堆叠，避免覆盖）
+	if meta.is_empty():
+		for i in range(storage.size()):
+			if storage[i] != null and storage[i].item_id == item_id:
+				var current_count = int(storage[i].count)
+				var can_add = int(min(remaining, max_stack - current_count))
+				if can_add > 0:
+					storage[i].count = int(current_count + can_add)
+					remaining -= can_add
+					if remaining <= 0:
+						storage_changed.emit()
+						return true
 	
 	# 放入空格子
 	for i in range(storage.size()):
 		if storage[i] == null:
 			var add_count = int(min(remaining, max_stack))
-			storage[i] = {"item_id": item_id, "count": add_count}
+			var new_item = {"item_id": item_id, "count": add_count}
+			# 合并元数据
+			if not meta.is_empty():
+				for key in meta.keys():
+					new_item[key] = meta[key]
+			storage[i] = new_item
 			remaining -= add_count
 			if remaining <= 0:
 				storage_changed.emit()

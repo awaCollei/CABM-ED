@@ -273,7 +273,12 @@ func start_chat(user_message: String = "", trigger_mode: String = "passive", ite
 		var inventory_mgr = get_node_or_null("/root/InventoryManager")
 		if inventory_mgr:
 			var item_config = inventory_mgr.get_item_config(item_data.item_id)
-			var item_name = item_config.get("name", "未知物品")
+			# 如果是 cooked_meal 且有自定义属性，优先使用 meal_name
+			var item_name: String
+			if item_data.get("item_id") in ["cooked_meal_veg", "cooked_meal_meat"] and item_data.has("meal_name"):
+				item_name = item_data.meal_name
+			else:
+				item_name = item_config.get("name", "未知物品")
 			user_message = "【递给你：%s*%d】%s" % [item_name, item_data.count, user_message]
 	else:
 		# 清除之前的物品数据
@@ -1233,11 +1238,11 @@ func _handle_item_response(extracted_fields: Dictionary, item_data: Dictionary):
 	
 	Args:
 		extracted_fields: AI返回的字段
-		item_data: 物品数据 {item_id: String, count: int}
+		item_data: 物品数据 {item_id: String, count: int, ...其他元数据}
 	"""
 	if not extracted_fields.has("item"):
 		print("警告: AI未返回item字段，默认拒绝物品")
-		_return_item_to_player(item_data)
+		_return_item_to_player(item_data, _extract_meta(item_data))
 		_clear_uploaded_item()
 		return
 	
@@ -1245,16 +1250,19 @@ func _handle_item_response(extracted_fields: Dictionary, item_data: Dictionary):
 	var inventory_mgr = get_node_or_null("/root/InventoryManager")
 	if not inventory_mgr:
 		push_error("InventoryManager未找到")
-		_return_item_to_player(item_data)
+		_return_item_to_player(item_data, _extract_meta(item_data))
 		_clear_uploaded_item()
 		return
 	
 	var save_mgr = get_node_or_null("/root/SaveManager")
 	if not save_mgr:
 		push_error("SaveManager未找到")
-		_return_item_to_player(item_data)
+		_return_item_to_player(item_data, _extract_meta(item_data))
 		_clear_uploaded_item()
 		return
+	
+	# 提取元数据
+	var meta = _extract_meta(item_data)
 	
 	# 获取物品名称用于显示
 	var item_config = inventory_mgr.get_item_config(item_data.item_id)
@@ -1264,12 +1272,12 @@ func _handle_item_response(extracted_fields: Dictionary, item_data: Dictionary):
 	match item_action:
 		0:  # 拒绝
 			print("雪狐拒绝了物品: ", item_data.item_id)
-			_return_item_to_player(item_data)
+			_return_item_to_player(item_data, meta)
 			_show_item_feedback("%s拒绝了%s" % [character_name, item_name])
 		
 		1:  # 收起来
 			print("雪狐收下了物品: ", item_data.item_id)
-			_add_item_to_snow_fox(item_data)
+			_add_item_to_snow_fox(item_data, meta)
 			_show_item_feedback("%s收下了%s" % [character_name, item_name])
 		
 		2:  # 立即使用（消耗一个）
@@ -1277,7 +1285,7 @@ func _handle_item_response(extracted_fields: Dictionary, item_data: Dictionary):
 			var remaining = int(item_data.count) - 1
 			if remaining > 0:
 				# 剩余的放入雪狐背包
-				_add_item_to_snow_fox({"item_id": item_data.item_id, "count": remaining})
+				_add_item_to_snow_fox({"item_id": item_data.item_id, "count": remaining}, meta)
 			_show_item_feedback("%s使用了%s" % [character_name, item_name])
 			# TODO: 应用物品效果（如果需要）
 		
@@ -1288,7 +1296,7 @@ func _handle_item_response(extracted_fields: Dictionary, item_data: Dictionary):
 		
 		_:  # 异常情况
 			push_warning("未知的item字段值: %d，放回玩家背包" % item_action)
-			_return_item_to_player(item_data)
+			_return_item_to_player(item_data, meta)
 			_show_item_feedback("物品已返还")
 	
 	# 清除PromptBuilder中的物品数据
@@ -1299,19 +1307,27 @@ func _handle_item_response(extracted_fields: Dictionary, item_data: Dictionary):
 	# 清除已上传的物品状态
 	_clear_uploaded_item()
 
-func _return_item_to_player(item_data: Dictionary):
+func _extract_meta(item_data: Dictionary) -> Dictionary:
+	"""从物品数据中提取元数据（排除item_id和count）"""
+	var meta = {}
+	for key in item_data.keys():
+		if key != "item_id" and key != "count":
+			meta[key] = item_data[key]
+	return meta
+
+func _return_item_to_player(item_data: Dictionary, meta: Dictionary = {}):
 	"""将物品放回玩家背包"""
 	var inventory_mgr = get_node_or_null("/root/InventoryManager")
 	if inventory_mgr:
-		inventory_mgr.add_item_to_inventory(item_data.item_id, item_data.count)
+		inventory_mgr.add_item_to_inventory(item_data.item_id, item_data.count, meta)
 		print("物品已放回玩家背包: %s*%d" % [item_data.item_id, item_data.count])
 
-func _add_item_to_snow_fox(item_data: Dictionary):
+func _add_item_to_snow_fox(item_data: Dictionary, meta: Dictionary = {}):
 	"""将物品添加到雪狐背包"""
 	var save_mgr = get_node_or_null("/root/SaveManager")
 	if not save_mgr:
 		push_error("SaveManager未找到，物品放回玩家背包")
-		_return_item_to_player(item_data)
+		_return_item_to_player(item_data, meta)
 		return
 	
 	# 确保雪狐背包数据存在
@@ -1327,32 +1343,38 @@ func _add_item_to_snow_fox(item_data: Dictionary):
 	var snow_fox_inv = save_mgr.save_data.snow_fox_inventory
 	var storage = snow_fox_inv.storage
 	
-	# 尝试堆叠到现有物品
+	# 尝试堆叠到现有物品（有元数据时不堆叠）
 	var inventory_mgr = get_node_or_null("/root/InventoryManager")
 	var item_config = inventory_mgr.get_item_config(item_data.item_id) if inventory_mgr else {}
 	var max_stack = int(item_config.get("max_stack", 99))
 	var remaining = int(item_data.count)
 	
-	# 先尝试堆叠
-	for i in range(storage.size()):
-		if storage[i] != null and storage[i].item_id == item_data.item_id:
-			var current_count = int(storage[i].count)
-			var can_add = min(remaining, max_stack - current_count)
-			if can_add > 0:
-				storage[i].count = current_count + can_add
-				remaining -= can_add
-				if remaining <= 0:
-					break
+	# 先尝试堆叠（仅在没有元数据时）
+	if meta.is_empty():
+		for i in range(storage.size()):
+			if storage[i] != null and storage[i].item_id == item_data.item_id:
+				var current_count = int(storage[i].count)
+				var can_add = min(remaining, max_stack - current_count)
+				if can_add > 0:
+					storage[i].count = current_count + can_add
+					remaining -= can_add
+					if remaining <= 0:
+						break
 	
 	# 如果还有剩余，找空格子
 	if remaining > 0:
 		for i in range(storage.size()):
 			if storage[i] == null:
 				var to_add = min(remaining, max_stack)
-				storage[i] = {
+				var new_item = {
 					"item_id": item_data.item_id,
 					"count": to_add
 				}
+				# 合并元数据
+				if not meta.is_empty():
+					for key in meta.keys():
+						new_item[key] = meta[key]
+				storage[i] = new_item
 				remaining -= to_add
 				if remaining <= 0:
 					break
@@ -1360,7 +1382,7 @@ func _add_item_to_snow_fox(item_data: Dictionary):
 	# 如果还有剩余，说明雪狐背包满了，放回玩家背包
 	if remaining > 0:
 		push_warning("雪狐背包已满，剩余物品放回玩家背包")
-		_return_item_to_player({"item_id": item_data.item_id, "count": remaining})
+		_return_item_to_player({"item_id": item_data.item_id, "count": remaining}, meta)
 	
 	# 保存游戏
 	save_mgr.save_game(save_mgr.current_slot)
