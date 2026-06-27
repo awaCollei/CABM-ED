@@ -82,6 +82,9 @@ func _handle_request_async(prompt: String, story_context: Dictionary):
 	if not prompt.strip_edges().is_empty():
 		messages.append({"role": "user", "content": prompt})
 
+	# 记录请求日志
+	logger.log_api_request("STORY_AI_REQUEST", {"messages": messages}, JSON.stringify({"messages": messages}))
+
 	# 调用AI API（异步），传入 story_context 以便使用故事中的 temperature
 	await _call_ai_api_async(messages, prompt, story_context)
 
@@ -165,6 +168,17 @@ func _call_ai_api_async(messages: Array, user_prompt: String, story_context: Dic
 		request_error_occurred.emit("系统错误：stream_ai 未初始化")
 		return
 
+	# 确保 config_loader 和 chat_model 已配置
+	if not config_loader:
+		push_error("config_loader 未初始化")
+		request_error_occurred.emit("系统错误：config_loader 未初始化")
+		return
+
+	var chat_config = config_loader.get_model_config("chat_model")
+	if chat_config.is_empty() or str(chat_config.get("api_key", "")).strip_edges().is_empty():
+		request_error_occurred.emit("AI配置不完整：chat_model 未配置或缺少 API Key")
+		return
+
 	# 温度：从故事数据读取，钳制在 0～2，默认 1.2
 	var story_data = story_context.get("story_data", {})
 	var temperature = clampf(float(story_data.get("temperature", 1.2)), 0.0, 2.0)
@@ -183,7 +197,6 @@ func _call_ai_api_async(messages: Array, user_prompt: String, story_context: Dic
 	streaming_buffer = ""
 
 	# 启动流式请求
-	var chat_config = config_loader.get_model_config("chat_model")
 	stream_ai.start_stream_chat(
 		"chat_model",
 		messages,
@@ -208,63 +221,152 @@ func _on_stream_chunk_received(chunk_text: String):
 		return
 
 	streaming_buffer += chunk_text
+	_process_streaming_buffer(false)
 
-	# 处理完整的行
-	var lines = streaming_buffer.split("\n", false)
-	var lines_array = Array(lines)  # 转换为Array以便使用Array方法
+func _process_streaming_buffer(force_flush: bool = false):
+	"""处理流式缓冲区。
+	force_flush=false 时只处理完整行，或者能被确认是完整 JSON 的无换行 data 行；
+	force_flush=true 时在 HTTP 完成前把最后一段无换行数据也尝试解析。
+	"""
+	while is_streaming:
+		var newline_index = streaming_buffer.find("\n")
+		if newline_index == -1:
+			var pending_line = streaming_buffer.strip_edges()
+			if pending_line.is_empty():
+				if force_flush:
+					streaming_buffer = ""
+				return
 
-	# 保留不完整的行（最后一行如果没有换行符）
-	if lines_array.size() > 0:
-		var last_line = lines_array.back()
-		if not streaming_buffer.ends_with("\n"):
-			streaming_buffer = last_line
-			lines_array.pop_back()  # 移除不完整的行
-		else:
-			streaming_buffer = ""
-	else:
-		streaming_buffer = ""
+			if force_flush or _line_can_be_processed_without_newline(pending_line):
+				streaming_buffer = ""
+				_process_stream_line(pending_line, force_flush)
+			return
 
-	for line in lines_array:
-		line = line.strip_edges()
+		var line = streaming_buffer.substr(0, newline_index).strip_edges()
+		streaming_buffer = streaming_buffer.substr(newline_index + 1)
 		if line.is_empty():
 			continue
 
-		# 检查是否是数据行
-		if line.begins_with("data: "):
-			var data = line.substr(6)  # 移除"data: "前缀
+		_process_stream_line(line, false)
 
-			# 检查是否是结束标记
-			if data == "[DONE]":
-				print("收到[DONE]标记，流式响应结束")
-				_finalize_streaming_response()
-				return
+func _line_can_be_processed_without_newline(line: String) -> bool:
+	"""判断无换行的缓冲内容是否已经可以处理。
+	支持：
+	1. 完整的 SSE data 行：data: {...}
+	2. 完整的普通 JSON 响应：{...}
+	3. [DONE]
+	"""
+	# 可能只是 "d" / "data:" / "data: " 这样的半截前缀，继续等后续 chunk。
+	if "data: ".begins_with(line) and line.length() < "data: ".length():
+		return false
 
-			# 解析JSON数据
-			var json = JSON.new()
-			if json.parse(data) == OK:
-				var chunk_data = json.data
+	var data = line
+	if line.begins_with("data: "):
+		data = line.substr(6).strip_edges()
 
-				# 提取内容
-				if chunk_data.has("choices") and chunk_data.choices.size() > 0:
-					var choice = chunk_data.choices[0]
+	if data == "[DONE]":
+		return true
 
-					# 检查是否是结束chunk（包含finish_reason）
-					if choice.has("finish_reason") and choice.finish_reason == "stop":
-						print("收到finish_reason=stop，流式响应结束")
-						_finalize_streaming_response()
-						return
+	# 如果看起来是 JSON，就等到 JSON 完整后再处理，避免把半截普通 JSON 丢掉。
+	if data.begins_with("{") or data.begins_with("["):
+		var json = JSON.new()
+		return json.parse(data) == OK
 
-					# 处理正常的内容delta
-					if choice.has("delta") and choice.delta.has("content"):
-						var content = choice.delta.content
-						if not content.is_empty():
-							streaming_full_reply += content
-							# 实时发送文本块信号
-							text_chunk_ready.emit(content)
+	# 非 JSON 的普通行可以直接交给 _process_stream_line 跳过/打印。
+	return true
+
+func _process_stream_line(line: String, force_flush: bool = false):
+	"""处理单行流式数据。
+	既支持 SSE 行：data: {...}，也支持接口忽略 stream 后一次性返回的普通 JSON。
+	"""
+	line = line.strip_edges()
+	if line.is_empty():
+		return
+
+	var data = line
+	if line.begins_with("data: "):
+		data = line.substr(6).strip_edges()
+	elif not (line.begins_with("{") or line.begins_with("[")):
+		if force_flush:
+			print("跳过非data行: " + line)
+		return
+
+	# 检查是否是结束标记
+	if data == "[DONE]":
+		print("收到[DONE]标记，流式响应结束")
+		_finalize_streaming_response()
+		return
+
+	_process_json_payload(data, force_flush)
+
+func _process_json_payload(data: String, force_flush: bool = false):
+	"""解析单个 JSON payload，并尽量提取文本内容。"""
+	var json = JSON.new()
+	if json.parse(data) != OK:
+		if force_flush:
+			print("JSON解析失败: " + data)
+		return
+
+	var response_data = json.data
+	if typeof(response_data) != TYPE_DICTIONARY:
+		return
+
+	var content = _extract_content_from_response(response_data)
+	if not content.is_empty():
+		_append_stream_content(content)
+
+	var finish_reason = _extract_finish_reason(response_data)
+	if finish_reason != null and str(finish_reason) != "":
+		print("收到finish_reason=", str(finish_reason), "，流式响应结束")
+		_finalize_streaming_response()
+		return
+
+func _extract_content_from_response(response_data: Dictionary) -> String:
+	"""兼容多种常见返回格式提取文本。
+	- 流式 OpenAI 格式：choices[0].delta.content
+	- 非流式 OpenAI 格式：choices[0].message.content
+	- text completion 格式：choices[0].text
+	- 一些本地/代理接口：content / response
+	"""
+	if response_data.has("choices") and response_data.choices.size() > 0:
+		var choice = response_data.choices[0]
+		if typeof(choice) == TYPE_DICTIONARY:
+			if choice.has("delta") and typeof(choice.delta) == TYPE_DICTIONARY and choice.delta.has("content"):
+				return str(choice.delta.content)
+			if choice.has("message") and typeof(choice.message) == TYPE_DICTIONARY and choice.message.has("content"):
+				return str(choice.message.content)
+			if choice.has("text"):
+				return str(choice.text)
+
+	if response_data.has("content"):
+		return str(response_data.content)
+	if response_data.has("response"):
+		return str(response_data.response)
+
+	return ""
+
+func _extract_finish_reason(response_data: Dictionary):
+	"""提取 finish_reason。"""
+	if response_data.has("choices") and response_data.choices.size() > 0:
+		var choice = response_data.choices[0]
+		if typeof(choice) == TYPE_DICTIONARY and choice.has("finish_reason"):
+			return choice.finish_reason
+	return null
+
+func _append_stream_content(content: String):
+	"""累积并发出文本块。"""
+	if content.is_empty():
+		return
+
+	streaming_full_reply += content
+	text_chunk_ready.emit(content)
 
 func _on_stream_completed():
 	"""流式响应完成（由HTTP客户端调用）"""
 	print("HTTP客户端报告流式响应完成，调用_finalize_streaming_response")
+	# HTTP 完成时可能还有一段没有以换行结尾的 SSE 数据，先强制尝试解析。
+	if is_streaming and not streaming_buffer.strip_edges().is_empty():
+		_process_streaming_buffer(true)
 	_finalize_streaming_response()
 
 func _on_stream_error(error_message: String):
@@ -300,6 +402,14 @@ func _finalize_streaming_response():
 
 	# 停止流式请求（如果还在运行）
 	stream_ai.stop_streaming()
+
+	# 记录响应日志
+	var messages = current_request.get("messages", [])
+	logger.log_api_call("STORY_AI_RESPONSE", messages, streaming_full_reply)
+
+	if streaming_full_reply.strip_edges().is_empty():
+		request_error_occurred.emit("请求结束但未收到任何内容。请检查 chat_model 配置、接口返回格式，或 ai_http_client 是否把 SSE 数据按 data: 行转发。")
+		return
 
 	# 添加到AI上下文历史
 	var user_prompt = current_request.get("user_prompt", "")
