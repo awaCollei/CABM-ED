@@ -33,22 +33,6 @@ func call_tuple_model(summary_text: String, conversation_text: String, custom_ti
 		return
 
 	var summary_config = owner_service.config_loader.get_model_config("summary_model")
-	var model = summary_config.get("model", "")
-	var base_url = summary_config.get("base_url", "")
-	var api_key = summary_config.get("api_key", "")
-
-	if model.is_empty() or base_url.is_empty():
-		print("Tuple 模型配置不完整，跳过图谱保存")
-		return
-
-	if api_key.is_empty():
-		print("Tuple 模型 API 密钥未配置，跳过图谱保存")
-		return
-
-	var url_suffix = summary_config.get("url_suffix", "/chat/completions")
-	var url = base_url + url_suffix
-	var headers = ["Content-Type: application/json", "Authorization: Bearer " + api_key]
-
 	var tuple_params = summary_config.get("tuple", {})
 	var system_prompt = tuple_params.get("system_prompt", "")
 
@@ -64,74 +48,40 @@ func call_tuple_model(summary_text: String, conversation_text: String, custom_ti
 		{"role": "user", "content": summary_text}
 	]
 
-	var body = {
-		"model": model,
-		"messages": messages,
-		"max_tokens": int(tuple_params.get("max_tokens", 256)),
-		"temperature": float(tuple_params.get("temperature", 0.1)),
-		"top_p": float(tuple_params.get("top_p", 0.7)),
-	}
-	
-	# 检查是否启用JSON模式
-	var enable_json_mode = summary_config.get("enable_json_mode", true)
-	if enable_json_mode:
-		body["response_format"] = {"type": "json_object"}
-
-	var json_body = JSON.stringify(body)
-	if logger:
-		logger.log_api_request("TUPLE_REQUEST", body, json_body)
-
 	# 检查配置：是否应该启用知识遗忘
 	var should_enable_forgetting = _should_enable_knowledge_forgetting()
 	if should_enable_forgetting:
 		_apply_forgetting_to_graph()
 
-	var tuple_request = HTTPRequest.new()
-	add_child(tuple_request)
-	tuple_request.request_completed.connect(self._on_tuple_request_completed)
+	# 使用 easy_ai 发送请求
+	var result = await owner_service.easy_ai.request(
+		"summary_model",  # 使用 summary_model 任务（关系模型复用）
+		messages, 
+		true,  # 使用 JSON 模式
+		{
+			"max_tokens": int(tuple_params.get("max_tokens", 256)),
+			"temperature": float(tuple_params.get("temperature", 0.1)),
+			"top_p": float(tuple_params.get("top_p", 0.7))
+		}
+	)
 
-	tuple_request.set_meta("request_type", "tuple")
-	tuple_request.set_meta("summary", summary_text)
-	tuple_request.set_meta("conversation_text", conversation_text)
-	tuple_request.set_meta("messages", messages)
-	tuple_request.set_meta("timestamp", custom_timestamp)
-
-	var error = tuple_request.request(url, headers, HTTPClient.METHOD_POST, json_body)
-	if error != OK:
-		push_error("Tuple 模型请求失败: " + str(error))
-		tuple_request.queue_free()
-
-func _on_tuple_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray):
-	var tuple_request = null
-	for child in get_children():
-		if child is HTTPRequest and child.has_meta("request_type") and child.get_meta("request_type") == "tuple":
-			tuple_request = child
-			break
-
-	if result != HTTPRequest.RESULT_SUCCESS:
-		push_error("Tuple 请求失败: " + str(result))
-		if tuple_request:
-			tuple_request.queue_free()
+	if not result.success:
+		push_error("Tuple 模型请求失败: " + result.error)
 		return
 
-	if response_code != 200:
-		var error_text = body.get_string_from_utf8()
-		print("Tuple 模型API错误 (%d): %s" % [response_code, error_text])
-		if tuple_request:
-			tuple_request.queue_free()
-		return
+	# 处理响应
+	_process_tuple_response(result.content, messages, summary_text, conversation_text, custom_timestamp)
 
-	var response_text = body.get_string_from_utf8()
-	
+func _process_tuple_response(response_text: String, messages: Array, summary_text: String, conversation_text: String, custom_timestamp):
 	# 处理被代码块标记包裹的响应
 	response_text = _strip_code_blocks(response_text)
-	
+
 	var json = JSON.new()
 	if json.parse(response_text) != OK:
 		push_error("Tuple 响应解析失败，保存原始文本")
-		_save_tuple_to_file(tuple_request.get_meta("timestamp"), tuple_request.get_meta("summary"), response_text)
-		if tuple_request:
-			tuple_request.queue_free()
+		_save_tuple_to_file(custom_timestamp, summary_text, response_text)
+		if logger:
+			logger.log_api_call("TUPLE_RESPONSE", messages, response_text)
 		return
 
 	var data = json.data
@@ -149,13 +99,10 @@ func _on_tuple_request_completed(result: int, response_code: int, _headers: Pack
 	else:
 		tuples = data
 
-	_save_tuple_to_file(tuple_request.get_meta("timestamp"), tuple_request.get_meta("summary"), tuples)
+	_save_tuple_to_file(custom_timestamp, summary_text, tuples)
 
 	if logger:
-		logger.log_api_call("TUPLE_RESPONSE", tuple_request.get_meta("messages", []), response_text)
-
-	if tuple_request:
-		tuple_request.queue_free()
+		logger.log_api_call("TUPLE_RESPONSE", messages, response_text)
 
 # 添加一个新函数用于去除代码块标记
 func _strip_code_blocks(text: String) -> String:

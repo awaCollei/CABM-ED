@@ -15,6 +15,7 @@ signal cancelled
 @onready var url_suffix_input = $MarginContainer/ScrollContainer/VBoxContainer/URLSuffixContainer/URLSuffixInput
 @onready var params_input = $MarginContainer/ScrollContainer/VBoxContainer/ParamsContainer/ParamsInput
 @onready var params_status = $MarginContainer/ScrollContainer/VBoxContainer/ParamsContainer/ParamsStatus
+@onready var json_mode_check = $MarginContainer/ScrollContainer/VBoxContainer/JsonModeContainer/JsonModeCheck
 @onready var status_label = $MarginContainer/ScrollContainer/VBoxContainer/StatusLabel
 @onready var cancel_button = $MarginContainer/ScrollContainer/VBoxContainer/ButtonContainer/CancelButton
 @onready var confirm_button = $MarginContainer/ScrollContainer/VBoxContainer/ButtonContainer/ConfirmButton
@@ -57,6 +58,7 @@ func setup_for_create(providers_data: Dictionary, models: Dictionary):
 	url_suffix_input.text = "/chat/completions"
 	url_suffix_input.visible = false
 	params_input.text = ""
+	json_mode_check.button_pressed = true
 	status_label.text = ""
 	_update_provider_options()
 	_update_url_suffix_options()
@@ -94,6 +96,9 @@ func setup_for_edit(model_name: String, model_data: Dictionary, providers_data: 
 		params_input.text = JSON.stringify(params, "\t")
 	else:
 		params_input.text = ""
+	
+	# 设置 JSON 模式开关
+	json_mode_check.button_pressed = model_data.get("enable_json_mode", true)
 	
 	status_label.text = ""
 	_update_provider_options()
@@ -187,7 +192,8 @@ func _on_confirm_pressed():
 		"provider": provider_name,
 		"identifier": identifier,
 		"url_suffix": url_suffix,
-		"params": params
+		"params": params,
+		"enable_json_mode": json_mode_check.button_pressed
 	}
 	
 	model_saved.emit(model_name, model_data)

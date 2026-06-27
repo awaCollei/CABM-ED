@@ -14,25 +14,6 @@ func call_summary_api_with_data(conversation_text: String, conversation_data: Ar
 		push_error("SummaryManager: owner_service not set")
 		return
 
-	var summary_config = owner_service.config_loader.get_model_config("summary_model")
-	var model = summary_config.get("model", "")
-	var base_url = summary_config.get("base_url", "")
-	var api_key = summary_config.get("api_key", "")
-
-	if model.is_empty() or base_url.is_empty():
-		push_error("总结模型配置不完整 (SummaryManager)")
-		owner_service._handle_summary_failure("总结模型配置不完整")
-		return
-
-	if api_key.is_empty():
-		push_error("总结模型 API 密钥未配置")
-		owner_service._handle_summary_failure("总结模型 API 密钥未配置")
-		return
-
-	var url_suffix = summary_config.get("url_suffix", "/chat/completions")
-	var url = base_url + url_suffix
-	var headers = ["Content-Type: application/json", "Authorization: Bearer " + api_key]
-
 	var save_mgr = owner_service.get_node("/root/SaveManager")
 	var helpers = owner_service.get_node_or_null("/root/EventHelpers")
 	var char_name = helpers.get_character_name() if helpers else ""
@@ -42,6 +23,7 @@ func call_summary_api_with_data(conversation_text: String, conversation_data: Ar
 	var conversation_count = conversation_data.size()
 	var word_limit = _calculate_word_limit(conversation_count)
 
+	var summary_config = owner_service.config_loader.get_model_config("summary_model")
 	var summary_params = summary_config.get("summary", {})
 	var system_prompt = summary_params.get("system_prompt", "请总结以下对话。")
 	system_prompt = system_prompt.replace("{character_name}", char_name)
@@ -54,48 +36,39 @@ func call_summary_api_with_data(conversation_text: String, conversation_data: Ar
 		{"role": "user", "content": conversation_text}
 	]
 
-	var body = {
-		"model": model,
-		"messages": messages,
-		"max_tokens": int(summary_params.get("max_tokens", 500)),
-		"temperature": float(summary_params.get("temperature", 0.5)),
-		"top_p": float(summary_params.get("top_p", 0.95))
-	}
-	# 检查是否启用JSON模式
-	var enable_json_mode = summary_config.get("enable_json_mode", true)
-	if enable_json_mode:
-		body["response_format"] = {"type": "json_object"}
-	var json_body = JSON.stringify(body)
+	# 使用 easy_ai 发送请求
+	var result = await owner_service.easy_ai.request(
+		"summary_model",  # 使用 summary_model 任务
+		messages, 
+		true,  # 使用 JSON 模式
+		{
+			"max_tokens": int(summary_params.get("max_tokens", 500)),
+			"temperature": float(summary_params.get("temperature", 0.5)),
+			"top_p": float(summary_params.get("top_p", 0.95))
+		}
+	)
 
-	if logger:
-		logger.log_api_request("SUMMARY_REQUEST", body, json_body)
-
-	# If owner's http_request busy, cancel it first (same behavior as before)
-	if owner_service.http_request.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
-		owner_service.http_request.cancel_request()
-		await owner_service.get_tree().process_frame
-
-	owner_service.http_request.set_meta("request_type", "summary")
-	owner_service.http_request.set_meta("request_body", body)
-	owner_service.http_request.set_meta("messages", messages)
-	owner_service.http_request.set_meta("conversation_text", conversation_text)
-	owner_service.http_request.set_meta("conversation_data", conversation_data)
-	owner_service.http_request.set_meta("auto_save", auto_save)
-
-	var error = owner_service.http_request.request(url, headers, HTTPClient.METHOD_POST, json_body)
-	if error != OK:
-		push_error("Summary 请求失败: " + str(error))
-
-func handle_summary_response(response: Dictionary):
-	if not response.has("choices") or response.choices.is_empty():
-		push_error("Summary response format error")
-		owner_service._handle_summary_failure("总结响应格式错误")
+	if not result.success:
+		push_error("Summary 请求失败: " + result.error)
+		owner_service._handle_summary_failure("Summary 请求失败")
 		return
 
-	var message = response.choices[0].message
-	var content = message.content
+	# 处理响应
+	await _process_summary_response(
+		result.content, 
+		messages, 
+		conversation_text, 
+		conversation_data, 
+		auto_save
+	)
 
-	var messages = owner_service.http_request.get_meta("messages", [])
+func _process_summary_response(
+	content: String, 
+	messages: Array, 
+	conversation_text: String, 
+	conversation_data: Array, 
+	auto_save: bool
+):
 	if logger:
 		logger.log_api_call("SUMMARY_RESPONSE", messages, content)
 
@@ -125,9 +98,6 @@ func handle_summary_response(response: Dictionary):
 	var summary = data.summary
 	var new_address = data.get("address", "")
 
-	var conversation_text = owner_service.http_request.get_meta("conversation_text", "")
-	var conversation_data = owner_service.http_request.get_meta("conversation_data", [])
-
 	var timestamp = null
 	if not conversation_data.is_empty():
 		for i in range(conversation_data.size() - 1, -1, -1):
@@ -136,9 +106,7 @@ func handle_summary_response(response: Dictionary):
 				break
 
 	# 如果是自动保存或任意保存，记录最后被总结的消息时间戳，便于上层避免重复总结
-	var is_auto = false
-	if owner_service.http_request.has_meta("auto_save"):
-		is_auto = bool(owner_service.http_request.get_meta("auto_save", false))
+	var is_auto = auto_save
 
 	if timestamp != null:
 		# 记录为 owner_service 的 last_summarized_timestamp，无论是否为自动保存

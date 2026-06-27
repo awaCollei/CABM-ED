@@ -8,13 +8,6 @@ signal options_error(error_message: String)
 
 var owner_service: Node  # AIService
 var logger: Node
-var http_request: HTTPRequest
-
-func _ready():
-	# 创建 HTTP 请求节点
-	http_request = HTTPRequest.new()
-	add_child(http_request)
-	http_request.request_completed.connect(_on_request_completed)
 
 func generate_options(conversation_history: Array):
 	"""根据对话历史生成三个选项"""
@@ -28,29 +21,6 @@ func generate_options(conversation_history: Array):
 		print("生成选项功能未启用")
 		return
 	
-	var summary_config = owner_service.config_loader.get_model_config("summary_model")
-	var model = summary_config.get("model", "")
-	var base_url = summary_config.get("base_url", "")
-	var api_key = summary_config.get("api_key", "")
-	
-	if model.is_empty() or base_url.is_empty():
-		push_error("总结模型配置不完整")
-		options_error.emit("总结模型配置不完整")
-		return
-	
-	if api_key.is_empty():
-		push_error("总结模型 API 密钥未配置")
-		options_error.emit("总结模型 API 密钥未配置")
-		return
-	
-	var url_suffix = summary_config.get("url_suffix", "/chat/completions")
-	var url = base_url + url_suffix
-	
-	var headers = [
-		"Content-Type: application/json",
-		"Authorization: Bearer " + api_key
-	]
-	
 	# 构建对话历史文本
 	var conversation_text = _build_conversation_text(conversation_history)
 	
@@ -62,26 +32,26 @@ func generate_options(conversation_history: Array):
 		{"role": "user", "content": conversation_text}
 	]
 	
-	var body = {
-		"model": model,
-		"messages": messages,
-		"max_tokens": 300,
-		"temperature": 0.8,
-		"top_p": 0.9
-	}
-	
-	var json_body = JSON.stringify(body)
-	
-	if logger:
-		logger.log_api_request("OPTIONS_GENERATION", body, json_body)
-	
-	http_request.set_meta("request_body", body)
-	
-	var error = http_request.request(url, headers, HTTPClient.METHOD_POST, json_body)
-	if error != OK:
-		MessageDisplay.show_failure_message("选项生成失败: " + str(error))
-		push_error("选项生成请求失败: " + str(error))
+	# 使用 easy_ai 发送请求
+	var result = await owner_service.easy_ai.request(
+		"summary_model",  # 使用 summary_model 任务
+		messages, 
+		false,  # 不使用 JSON 模式
+		{
+			"max_tokens": 300,
+			"temperature": 0.8,
+			"top_p": 0.9
+		}
+	)
+
+	if not result.success:
+		MessageDisplay.show_failure_message("选项生成失败: " + result.error)
+		push_error("选项生成请求失败: " + result.error)
 		options_error.emit("请求失败")
+		return
+	
+	# 处理响应
+	_process_options_response(result.content, messages)
 
 func _build_conversation_text(conversation_history: Array) -> String:
 	"""构建对话历史文本"""
@@ -150,53 +120,15 @@ func _build_system_prompt() -> String:
 你最近在忙什么？
 我们去散散步吧""" % [user_name, char_name, char_name, user_name]
 
-func _on_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray):
-	"""HTTP 请求完成回调"""
-	if result != HTTPRequest.RESULT_SUCCESS:
-		var error_msg = "请求失败: " + str(result)
-		print(error_msg)
-		options_error.emit(error_msg)
-		return
-	
-	if response_code != 200:
-		var error_text = body.get_string_from_utf8()
-		var error_msg = "API 错误 (%d): %s" % [response_code, error_text]
-		print(error_msg)
-		
-		if logger:
-			var request_body = http_request.get_meta("request_body", {})
-			logger.log_api_error(response_code, error_text, request_body)
-		
-		options_error.emit(error_msg)
-		return
-	
-	var response_text = body.get_string_from_utf8()
-	var json = JSON.new()
-	if json.parse(response_text) != OK:
-		var error_msg = "响应解析失败"
-		push_error(error_msg)
-		options_error.emit(error_msg)
-		return
-	
-	_handle_options_response(json.data)
-
-func _handle_options_response(response: Dictionary):
+func _process_options_response(content: String, messages: Array):
 	"""处理选项生成响应"""
-	if not response.has("choices") or response.choices.is_empty():
-		push_error("响应中没有choices字段")
-		options_error.emit("响应格式错误")
-		return
+	if logger:
+		logger.log_api_call("OPTIONS_RESPONSE", messages, content)
 	
-	var choice = response.choices[0]
-	if not choice.has("message") or not choice.message.has("content"):
-		push_error("响应格式错误")
-		options_error.emit("响应格式错误")
-		return
-	
-	var content = choice.message.content.strip_edges()
+	var cleaned_content = content.strip_edges()
 	
 	# 解析选项（按行分割）
-	var lines = content.split("\n")
+	var lines = cleaned_content.split("\n")
 	var options = []
 	
 	for line in lines:

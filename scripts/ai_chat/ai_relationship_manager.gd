@@ -10,23 +10,6 @@ func call_relationship_api():
 		push_error("RelationshipManager: owner_service not set")
 		return
 
-	var summary_config = owner_service.config_loader.get_model_config("summary_model")
-	var model = summary_config.get("model", "")
-	var base_url = summary_config.get("base_url", "")
-	var api_key = summary_config.get("api_key", "")
-
-	if model.is_empty() or base_url.is_empty():
-		push_error("关系模型配置不完整")
-		return
-
-	if api_key.is_empty():
-		push_error("关系模型 API 密钥未配置")
-		return
-
-	var url_suffix = summary_config.get("url_suffix", "/chat/completions")
-	var url = base_url + url_suffix
-	var headers = ["Content-Type: application/json", "Authorization: Bearer " + api_key]
-
 	var prompt_builder = owner_service.get_node("/root/PromptBuilder")
 	var current_relationship = prompt_builder.get_relationship_context()
 	var memory_context = prompt_builder.get_memory_context()
@@ -40,6 +23,7 @@ func call_relationship_api():
 	var character_name = save_mgr.get_character_name()
 	var user_name = save_mgr.get_user_name()
 
+	var summary_config = owner_service.config_loader.get_model_config("summary_model")
 	var relationship_params = summary_config.get("relationship", {})
 	var system_prompt = relationship_params.get("system_prompt", "").replace("{character_name}", character_name).replace("{user_name}", user_name)
 
@@ -50,41 +34,26 @@ func call_relationship_api():
 		{"role": "user", "content": user_content}
 	]
 
-	var body = {
-		"model": model,
-		"messages": messages,
-		"max_tokens": int(relationship_params.get("max_tokens", 500)),
-		"temperature": float(relationship_params.get("temperature", 0.5)),
-		"top_p": float(relationship_params.get("top_p", 0.95))
-	}
+	# 使用 easy_ai 发送请求
+	var result = await owner_service.easy_ai.request(
+		"summary_model",  # 使用 summary_model 任务（关系模型复用）
+		messages, 
+		false,  # 不使用 JSON 模式
+		{
+			"max_tokens": int(relationship_params.get("max_tokens", 500)),
+			"temperature": float(relationship_params.get("temperature", 0.5)),
+			"top_p": float(relationship_params.get("top_p", 0.95))
+		}
+	)
 
-	var json_body = JSON.stringify(body)
-	if logger:
-		logger.log_api_request("RELATIONSHIP_REQUEST", body, json_body)
-
-	if owner_service.http_request.get_http_client_status() != HTTPClient.STATUS_DISCONNECTED:
-		owner_service.http_request.cancel_request()
-		await owner_service.get_tree().process_frame
-
-	owner_service.http_request.set_meta("request_type", "relationship")
-	owner_service.http_request.set_meta("request_body", body)
-	owner_service.http_request.set_meta("messages", messages)
-
-	var error = owner_service.http_request.request(url, headers, HTTPClient.METHOD_POST, json_body)
-	if error != OK:
-		push_error("关系模型请求失败: " + str(error))
-	else:
-		print("RelationshipManager: relationship request sent (error==OK)")
-
-func handle_relationship_response(response: Dictionary):
-	if not response.has("choices") or response.choices.is_empty():
-		push_error("关系模型响应格式错误")
+	if not result.success:
+		push_error("关系模型请求失败: " + result.error)
 		return
 
-	var message = response.choices[0].message
-	var relationship_summary = message.content
+	# 处理响应
+	_process_relationship_response(result.content, messages)
 
-	var messages = owner_service.http_request.get_meta("messages", [])
+func _process_relationship_response(relationship_summary: String, messages: Array):
 	if logger:
 		logger.log_api_call("RELATIONSHIP_RESPONSE", messages, relationship_summary)
 

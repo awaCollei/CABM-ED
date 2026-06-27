@@ -326,7 +326,7 @@ func _generate_character_diary(offline_minutes: float, event_count: int):
 	_call_diary_generation_api(system_prompt, start_datetime, end_datetime)
 
 func _call_diary_generation_api(system_prompt: String, start_datetime: Dictionary, end_datetime: Dictionary):
-	"""调用AI API生成日记"""
+	"""调用AI API生成日记（使用 easy_ai）"""
 	if not has_node("/root/AIService"):
 		print("错误: AIService 未加载")
 		return
@@ -338,82 +338,25 @@ func _call_diary_generation_api(system_prompt: String, start_datetime: Dictionar
 		print("错误: API密钥未配置，跳过日记生成")
 		return
 	
-	var chat_config = ai_service.config_loader.get_model_config("chat_model")
-	var url = chat_config.base_url + "/chat/completions"
-		
-	var headers = [
-		"Content-Type: application/json",
-		"Authorization: Bearer " + chat_config.api_key
-	]
-	
 	var messages = [
 		{"role": "system", "content": system_prompt},
 		{"role": "user", "content": "请生成日记"}
 	]
 	
-	var body = {
-		"model": chat_config.get("model", ""),
-		"messages": messages,
-		"max_tokens": int(chat_config.get("max_tokens", 4096)),
-		"temperature": float(chat_config.get("temperature", 1.0)),
-		"top_p": float(chat_config.get("top_p", 0.9))
-	}
-	# 检查是否启用JSON模式
-	var enable_json_mode = chat_config.get("enable_json_mode", true)
-	if enable_json_mode:
-		body["response_format"] = {"type": "json_object"}
-	var json_body = JSON.stringify(body)
+	# 使用 easy_ai 发送请求
+	var result = await ai_service.easy_ai.request(
+		"chat_model",  # 使用 chat_model 任务
+		messages, 
+		true,  # 使用 JSON 模式
+		{}  # 无额外参数
+	)
 	
-	# 创建临时HTTP请求
-	var http = HTTPRequest.new()
-	add_child(http)
-	
-	# 存储上下文信息
-	http.set_meta("start_datetime", start_datetime)
-	http.set_meta("end_datetime", end_datetime)
-	
-	http.request_completed.connect(_on_diary_generation_completed.bind(http))
-	
-	var error = http.request(url, headers, HTTPClient.METHOD_POST, json_body)
-	if error != OK:
-		print("日记生成请求失败: ", error)
-		http.queue_free()
-
-func _on_diary_generation_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, http: HTTPRequest):
-	"""日记生成完成回调"""
-	# 获取上下文
-	var start_datetime = http.get_meta("start_datetime")
-	var end_datetime = http.get_meta("end_datetime")
-	
-	# 清理HTTP请求节点
-	http.queue_free()
-	
-	if result != HTTPRequest.RESULT_SUCCESS:
-		print("日记生成请求失败: ", result)
+	if not result.success:
+		print("日记生成失败: " + result.error)
 		return
 	
-	if response_code != 200:
-		print("日记生成API错误: ", response_code)
-		print("响应: ", body.get_string_from_utf8())
-		return
-	
-	var response_text = body.get_string_from_utf8()
-	
-	var json = JSON.new()
-	if json.parse(response_text) != OK:
-		print("日记响应解析失败")
-		return
-	
-	var response = json.data
-	if not response.has("choices") or response.choices.is_empty():
-		print("日记响应格式错误")
-		return
-	
-	var content = response.choices[0].message.content
-	print("收到日记内容: ", content)
-	
-	# 解析日记内容
-	_parse_and_save_diary(content, start_datetime, end_datetime)
+	# 解析并保存日记
+	_parse_and_save_diary(result.content, start_datetime, end_datetime)
 
 func _clean_json_content(content: String) -> String:
 	"""清理JSON内容，移除markdown包裹"""

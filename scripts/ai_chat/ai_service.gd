@@ -28,6 +28,7 @@ var summary_manager: Node
 var tuple_manager: Node
 var relationship_manager: Node
 var options_generator: Node
+var easy_ai: Node
 
 # HTTP 请求节点
 var http_request: HTTPRequest
@@ -107,7 +108,12 @@ func _ready():
 	options_generator.logger = logger
 	options_generator.options_generated.connect(_on_options_generated)
 	options_generator.options_error.connect(_on_options_error)
-
+	
+	# 通用 AI 请求组件
+	easy_ai = preload("res://scripts/ai_chat/easy_ai.gd").new()
+	add_child(easy_ai)
+	easy_ai.initialize(config_loader, logger)
+	
 	# 创建 HTTP 请求节点（用于非流式请求）
 	http_request = HTTPRequest.new()
 	add_child(http_request)
@@ -787,36 +793,14 @@ func _save_memory_and_diary(summary: String, conversation_text: String, custom_t
 
 func _call_address_api(conversation_text: String):
 	"""调用称呼模型 API"""
-	var summary_config = config_loader.config.summary_model
-	# 严格使用用户配置，不进行任何回退
-	var model = summary_config.model
-	var base_url = summary_config.base_url
-	var api_key = summary_config.get("api_key", "")
-
-	if model.is_empty() or base_url.is_empty():
-		push_error("称呼模型配置不完整: model='%s', base_url='%s'" % [model, base_url])
-		return
-
-	if api_key.is_empty():
-		push_error("称呼模型 API 密钥未配置")
-		return
-
-	var url_suffix = summary_config.get("url_suffix", "/chat/completions")
-	var url = base_url + url_suffix
-
-	var headers = [
-		"Content-Type: application/json",
-		"Authorization: Bearer " + api_key
-	]
-
+	var summary_config = config_loader.get_model_config("summary_model")
+	var address_params = summary_config.get("address", {})
 	var save_mgr = get_node("/root/SaveManager")
 	var char_name = save_mgr.get_character_name()
 	var user_name = save_mgr.get_user_name()
 	var current_address = save_mgr.get_user_address()
 
-	# 使用新的配置结构
-	var address_params = summary_config.address
-	var system_prompt = address_params.system_prompt
+	var system_prompt = address_params.get("system_prompt", "")
 	system_prompt = system_prompt.replace("{character_name}", char_name)
 	system_prompt = system_prompt.replace("{user_name}", user_name)
 	system_prompt = system_prompt.replace("{current_address}", current_address)
@@ -826,34 +810,51 @@ func _call_address_api(conversation_text: String):
 		{"role": "user", "content": conversation_text}
 	]
 
-	var body = {
-		"model": model,  # 严格使用用户配置的模型
-		"messages": messages,
-		"max_tokens": int(address_params.max_tokens),
-		"temperature": float(address_params.temperature),
-		"top_p": float(address_params.top_p)
-	}
+	# 使用 easy_ai 发送请求
+	var result = await easy_ai.request(
+		"summary_model",  # 使用 summary_model 任务
+		messages, 
+		true,  # 使用 JSON 模式
+		{
+			"max_tokens": int(address_params.get("max_tokens", 100)),
+			"temperature": float(address_params.get("temperature", 0.5)),
+			"top_p": float(address_params.get("top_p", 0.95))
+		}
+	)
 
-	var json_body = JSON.stringify(body)
+	if not result.success:
+		push_error("称呼模型请求失败: " + result.error)
+		return
 
-	logger.log_api_request("ADDRESS_REQUEST", body, json_body)
+	# 处理响应
+	await _process_address_response(result.content, messages, conversation_text)
 
-	var address_request = HTTPRequest.new()
-	add_child(address_request)
-	# route completion to summary_manager for handling
+func _process_address_response(content: String, messages: Array, conversation_text: String):
+	"""处理称呼模型响应"""
+	if logger:
+		logger.log_api_call("ADDRESS_RESPONSE", messages, content)
+
+	# 移除可能的 ```json``` 或 ``` 标记
+	var cleaned_content = content.strip_edges()
+	if cleaned_content.begins_with("```json"):
+		cleaned_content = cleaned_content.substr(7)
+	elif cleaned_content.begins_with("```"):
+		cleaned_content = cleaned_content.substr(3)
+	if cleaned_content.ends_with("```"):
+		cleaned_content = cleaned_content.substr(0, cleaned_content.length() - 3)
+	cleaned_content = cleaned_content.strip_edges()
+
+	# 解析 JSON
+	var json = JSON.new()
+	if json.parse(cleaned_content) != OK:
+		print("称呼响应解析失败")
+		return
+
+	var data = json.data
+	var new_address = data.get("address", "")
+
 	if summary_manager:
-		address_request.request_completed.connect(summary_manager.on_address_request_completed)
-	else:
-		address_request.request_completed.connect(_on_address_request_completed)
-
-	address_request.set_meta("request_type", "address")
-	address_request.set_meta("request_body", body)
-	address_request.set_meta("messages", messages)
-
-	var error = address_request.request(url, headers, HTTPClient.METHOD_POST, json_body)
-	if error != OK:
-		push_error("称呼模型请求失败: " + str(error))
-		address_request.queue_free()
+		summary_manager._handle_address_update(new_address, conversation_text)
 
 func _call_tuple_model(summary_text: String, conversation_text: String, custom_timestamp = null):
 	# delegate to tuple_manager

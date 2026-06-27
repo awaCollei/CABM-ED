@@ -23,29 +23,34 @@ const PRESET_MODELS = {
 	"Qwen3-8B": {
 		"provider": "硅基流动",
 		"identifier": "Qwen/Qwen3-8B",
-		"params": {},
+		"enable_json_mode": true,
+		"params": {"enable_thinking": false},
 		"url_suffix": "/chat/completions"
 	},
 	"DeepSeek-V3.2": {
 		"provider": "硅基流动",
+		"enable_json_mode": true,
 		"identifier": "deepseek-ai/DeepSeek-V3.2",
-		"params": {},
+		"params": {"enable_thinking": false},
 		"url_suffix": "/chat/completions"
 	},
 	"DeepSeek-V3": {
 		"provider": "硅基流动",
 		"identifier": "deepseek-ai/DeepSeek-V3",
-		"params": {},
+		"enable_json_mode": true,
+		"params": {"enable_thinking": false},
 		"url_suffix": "/chat/completions"
 	},
 	"Qwen3-30B-A3B": {
 		"provider": "硅基流动",
+		"enable_json_mode": true,
 		"identifier": "Qwen/Qwen3-30B-A3B-Instruct-2507",
 		"params": {},
 		"url_suffix": "/chat/completions"
 	},
 	"CosyVoice2": {
 		"provider": "硅基流动",
+		"enable_json_mode": false,
 		"identifier": "FunAudioLLM/CosyVoice2-0.5B",
 		"params": {},
 		"url_suffix": "/audio/speech"
@@ -53,11 +58,13 @@ const PRESET_MODELS = {
 	"bge-m3": {
 		"provider": "硅基流动",
 		"identifier": "BAAI/bge-m3",
+		"enable_json_mode": false,
 		"params": {},
 		"url_suffix": "/embeddings"
 	},
-	"GLM-4.1V": {
+	"GLM-4.1V-9B": {
 		"provider": "硅基流动",
+		"enable_json_mode": true,
 		"identifier": "THUDM/GLM-4.1V-9B-Thinking",
 		"params": {},
 		"url_suffix": "/chat/completions"
@@ -65,11 +72,13 @@ const PRESET_MODELS = {
 	"Qwen3-Omni": {
 		"provider": "硅基流动",
 		"identifier": "Qwen/Qwen3-Omni-30B-A3B-Captioner",
+		"enable_json_mode": true,
 		"params": {},
 		"url_suffix": "/chat/completions"
 	},
 	"SenseVoice": {
 		"provider": "硅基流动",
+		"enable_json_mode": false,
 		"identifier": "FunAudioLLM/SenseVoiceSmall",
 		"params": {},
 		"url_suffix": "/audio/transcriptions"
@@ -77,6 +86,7 @@ const PRESET_MODELS = {
 	"bge-reranker": {
 		"provider": "硅基流动",
 		"identifier": "BAAI/bge-reranker-v2-m3",
+		"enable_json_mode": false,
 		"params": {},
 		"url_suffix": "/embeddings"
 	}

@@ -130,13 +130,25 @@ size_flags_horizontal = 3
 mouse_filter = 1
 placeholder_text = "输入自定义URL后缀"
 
+[node name="JsonModeContainer" type="HBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer" unique_id=789012345]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="JsonModeLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/JsonModeContainer" unique_id=789012346]
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "是否支持JSON模式："
+
+[node name="JsonModeCheck" type="CheckButton" parent="MarginContainer/ScrollContainer/VBoxContainer/JsonModeContainer" unique_id=2030896478]
+layout_mode = 2
+
 [node name="ParamsContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer" unique_id=1610857768]
 layout_mode = 2
 theme_override_constants/separation = 5
 
 [node name="ParamsLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/ParamsContainer" unique_id=930014395]
 layout_mode = 2
-text = "参数 (JSON)："
+text = "额外参数："
 
 [node name="ParamsInput" type="TextEdit" parent="MarginContainer/ScrollContainer/VBoxContainer/ParamsContainer" unique_id=1256853844]
 custom_minimum_size = Vector2(0, 160)

@@ -120,6 +120,7 @@ func _load_from_model_tasks(user_config: Dictionary):
 		var identifier = model_data.get("identifier", "")
 		var url_suffix = model_data.get("url_suffix", "")
 		var params = model_data.get("params", {})
+		var enable_json_mode = model_data.get("enable_json_mode", true)
 		
 		# 查找厂商
 		if not providers.has(provider_name):
@@ -138,6 +139,7 @@ func _load_from_model_tasks(user_config: Dictionary):
 		config[task_id]["base_url"] = base_url
 		config[task_id]["api_key"] = api_key_val
 		config[task_id]["url_suffix"] = url_suffix
+		config[task_id]["enable_json_mode"] = enable_json_mode
 		
 		# 合并模型参数
 		for param_key in params.keys():
