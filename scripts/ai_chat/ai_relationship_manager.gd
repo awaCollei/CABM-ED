@@ -23,7 +23,8 @@ func call_relationship_api():
 		push_error("关系模型 API 密钥未配置")
 		return
 
-	var url = base_url + "/chat/completions"
+	var url_suffix = summary_config.get("url_suffix", "/chat/completions")
+	var url = base_url + url_suffix
 	var headers = ["Content-Type: application/json", "Authorization: Bearer " + api_key]
 
 	var prompt_builder = owner_service.get_node("/root/PromptBuilder")

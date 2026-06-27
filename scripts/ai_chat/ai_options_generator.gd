@@ -43,7 +43,8 @@ func generate_options(conversation_history: Array):
 		options_error.emit("总结模型 API 密钥未配置")
 		return
 	
-	var url = base_url + "/chat/completions"
+	var url_suffix = summary_config.get("url_suffix", "/chat/completions")
+	var url = base_url + url_suffix
 	
 	var headers = [
 		"Content-Type: application/json",

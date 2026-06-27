@@ -29,7 +29,8 @@ func call_summary_api_with_data(conversation_text: String, conversation_data: Ar
 		owner_service._handle_summary_failure("总结模型 API 密钥未配置")
 		return
 
-	var url = base_url + "/chat/completions"
+	var url_suffix = summary_config.get("url_suffix", "/chat/completions")
+	var url = base_url + url_suffix
 	var headers = ["Content-Type: application/json", "Authorization: Bearer " + api_key]
 
 	var save_mgr = owner_service.get_node("/root/SaveManager")

@@ -150,7 +150,8 @@ func transcribe_audio(audio_bytes: PackedByteArray, filename: String = "recordin
 
 	if base_url.ends_with("/"):
 		base_url = base_url.substr(0, base_url.length() - 1)
-	var url = base_url + "/audio/transcriptions"
+	var url_suffix = stt_cfg.get("url_suffix", "/audio/transcriptions")
+	var url = base_url + url_suffix
 	var boundary = "----GodotFormBoundary" + str(Time.get_ticks_msec())
 	var headers = [
 		"Authorization: Bearer " + api_key,
@@ -394,7 +395,8 @@ func _call_chat_api(messages: Array, _user_message: String, item_data: Dictionar
 			print("警告: 修复了第%d条消息的空content" % i)
 
 	var chat_config = config_loader.get_model_config("chat_model")
-	var url = chat_config.base_url + "/chat/completions"
+	var url_suffix = chat_config.get("url_suffix", "/chat/completions")
+	var url = chat_config.base_url + url_suffix
 	var api_key = chat_config.get("api_key", "")
 	
 	if api_key.is_empty():
@@ -799,7 +801,8 @@ func _call_address_api(conversation_text: String):
 		push_error("称呼模型 API 密钥未配置")
 		return
 
-	var url = base_url + "/chat/completions"
+	var url_suffix = summary_config.get("url_suffix", "/chat/completions")
+	var url = base_url + url_suffix
 
 	var headers = [
 		"Content-Type: application/json",

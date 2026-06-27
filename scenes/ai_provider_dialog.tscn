@@ -52,7 +52,7 @@ theme_override_constants/separation = 10
 [node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer/NameContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(80, 0)
-text = "厂商名:"
+text = "厂商名："
 
 [node name="NameInput" type="LineEdit" parent="MarginContainer/VBoxContainer/NameContainer"]
 layout_mode = 2
@@ -66,21 +66,12 @@ theme_override_constants/separation = 10
 [node name="URLLabel" type="Label" parent="MarginContainer/VBoxContainer/URLContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(80, 0)
-text = "URL:"
+text = "URL："
 
 [node name="URLInput" type="LineEdit" parent="MarginContainer/VBoxContainer/URLContainer"]
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "https://api.example.com/v1"
-
-[node name="URLOptions" type="OptionButton" parent="MarginContainer/VBoxContainer/URLContainer"]
-layout_mode = 2
-custom_minimum_size = Vector2(150, 0)
-item_count = 4
-popup/item_0/text = "/chat/completions"
-popup/item_1/text = "/audio/speech"
-popup/item_2/text = "/embeddings"
-popup/item_3/text = ""
 
 [node name="KeyContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
@@ -89,7 +80,7 @@ theme_override_constants/separation = 10
 [node name="KeyLabel" type="Label" parent="MarginContainer/VBoxContainer/KeyContainer"]
 layout_mode = 2
 custom_minimum_size = Vector2(80, 0)
-text = "API密钥:"
+text = "API密钥："
 
 [node name="KeyInput" type="LineEdit" parent="MarginContainer/VBoxContainer/KeyContainer"]
 layout_mode = 2

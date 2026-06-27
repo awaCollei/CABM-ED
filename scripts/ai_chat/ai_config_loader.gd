@@ -118,6 +118,7 @@ func _load_from_model_tasks(user_config: Dictionary):
 		var model_data = models[model_name]
 		var provider_name = model_data.get("provider", "")
 		var identifier = model_data.get("identifier", "")
+		var url_suffix = model_data.get("url_suffix", "")
 		var params = model_data.get("params", {})
 		
 		# 查找厂商
@@ -136,6 +137,7 @@ func _load_from_model_tasks(user_config: Dictionary):
 		config[task_id]["model"] = identifier
 		config[task_id]["base_url"] = base_url
 		config[task_id]["api_key"] = api_key_val
+		config[task_id]["url_suffix"] = url_suffix
 		
 		# 合并模型参数
 		for param_key in params.keys():

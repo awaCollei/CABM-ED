@@ -45,7 +45,8 @@ func call_tuple_model(summary_text: String, conversation_text: String, custom_ti
 		print("Tuple 模型 API 密钥未配置，跳过图谱保存")
 		return
 
-	var url = base_url + "/chat/completions"
+	var url_suffix = summary_config.get("url_suffix", "/chat/completions")
+	var url = base_url + url_suffix
 	var headers = ["Content-Type: application/json", "Authorization: Bearer " + api_key]
 
 	var tuple_params = summary_config.get("tuple", {})

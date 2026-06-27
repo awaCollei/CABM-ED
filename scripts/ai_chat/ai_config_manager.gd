@@ -23,52 +23,62 @@ const PRESET_MODELS = {
 	"Qwen3-8B": {
 		"provider": "硅基流动",
 		"identifier": "Qwen/Qwen3-8B",
-		"params": {}
+		"params": {},
+		"url_suffix": "/chat/completions"
 	},
 	"DeepSeek-V3.2": {
 		"provider": "硅基流动",
 		"identifier": "deepseek-ai/DeepSeek-V3.2",
-		"params": {}
+		"params": {},
+		"url_suffix": "/chat/completions"
 	},
 	"DeepSeek-V3": {
 		"provider": "硅基流动",
 		"identifier": "deepseek-ai/DeepSeek-V3",
-		"params": {}
+		"params": {},
+		"url_suffix": "/chat/completions"
 	},
 	"Qwen3-30B-A3B": {
 		"provider": "硅基流动",
 		"identifier": "Qwen/Qwen3-30B-A3B-Instruct-2507",
-		"params": {}
+		"params": {},
+		"url_suffix": "/chat/completions"
 	},
 	"CosyVoice2": {
 		"provider": "硅基流动",
 		"identifier": "FunAudioLLM/CosyVoice2-0.5B",
-		"params": {}
+		"params": {},
+		"url_suffix": "/audio/speech"
 	},
 	"bge-m3": {
 		"provider": "硅基流动",
 		"identifier": "BAAI/bge-m3",
-		"params": {}
+		"params": {},
+		"url_suffix": "/embeddings"
 	},
 	"GLM-4.1V": {
 		"provider": "硅基流动",
 		"identifier": "THUDM/GLM-4.1V-9B-Thinking",
-		"params": {}
+		"params": {},
+		"url_suffix": "/chat/completions"
 	},
 	"Qwen3-Omni": {
 		"provider": "硅基流动",
 		"identifier": "Qwen/Qwen3-Omni-30B-A3B-Captioner",
-		"params": {}
+		"params": {},
+		"url_suffix": "/chat/completions"
 	},
 	"SenseVoice": {
 		"provider": "硅基流动",
 		"identifier": "FunAudioLLM/SenseVoiceSmall",
-		"params": {}
+		"params": {},
+		"url_suffix": "/audio/transcriptions"
 	},
 	"bge-reranker": {
 		"provider": "硅基流动",
 		"identifier": "BAAI/bge-reranker-v2-m3",
-		"params": {}
+		"params": {},
+		"url_suffix": "/embeddings"
 	}
 }
 
@@ -505,7 +515,8 @@ func get_model_full_config(model_name: String) -> Dictionary:
 		"model": model.get("identifier", ""),
 		"base_url": provider.get("base_url", ""),
 		"api_key": provider.get("api_key", ""),
-		"params": model.get("params", {})
+		"params": model.get("params", {}),
+		"url_suffix": model.get("url_suffix", "")
 	}
 
 ## 根据任务ID获取模型配置

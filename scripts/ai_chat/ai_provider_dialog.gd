@@ -9,7 +9,6 @@ signal cancelled
 @onready var title_label = $MarginContainer/VBoxContainer/TitleLabel
 @onready var name_input = $MarginContainer/VBoxContainer/NameContainer/NameInput
 @onready var url_input = $MarginContainer/VBoxContainer/URLContainer/URLInput
-@onready var url_options = $MarginContainer/VBoxContainer/URLContainer/URLOptions
 @onready var key_input = $MarginContainer/VBoxContainer/KeyContainer/KeyInput
 @onready var status_label = $MarginContainer/VBoxContainer/StatusLabel
 @onready var cancel_button = $MarginContainer/VBoxContainer/ButtonContainer/CancelButton
@@ -22,7 +21,6 @@ var existing_providers: Dictionary = {}
 func _ready():
 	cancel_button.pressed.connect(_on_cancel_pressed)
 	confirm_button.pressed.connect(_on_confirm_pressed)
-	url_options.item_selected.connect(_on_url_option_selected)
 
 func setup_for_create(providers: Dictionary):
 	"""设置为新建模式"""
@@ -83,23 +81,6 @@ func _on_confirm_pressed():
 	
 	provider_saved.emit(provider_name, provider_data)
 	queue_free()
-
-func _on_url_option_selected(index: int):
-	var suffix = url_options.get_item_text(index)
-	var base_url = url_input.text.strip_edges()
-	
-	# 如果URL已经有路径，先移除
-	var existing_suffixes = ["/chat/completions", "/audio/speech", "/embeddings"]
-	for existing_suffix in existing_suffixes:
-		if base_url.ends_with(existing_suffix):
-			base_url = base_url.substr(0, base_url.length() - existing_suffix.length())
-			break
-	
-	# 添加新后缀
-	if not suffix.is_empty():
-		base_url += suffix
-	
-	url_input.text = base_url
 
 func _show_status(message: String, success: bool):
 	status_label.text = message
