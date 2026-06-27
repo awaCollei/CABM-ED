@@ -161,6 +161,7 @@ func _call_story_generation_api(keywords: String):
 	stream_ai.start_stream_chat(
 		"summary_model",
 		messages,
+		false,
 		{
 			"temperature": 0.8
 		}

@@ -26,6 +26,7 @@ func _setup_http_client():
 func start_stream_chat(
 	task_id: String,
 	messages: Array,
+	use_json: bool = false,
 	extra_params: Dictionary = {},
 	timeout: float = 30.0
 ):
@@ -68,6 +69,10 @@ func start_stream_chat(
 		"top_p": float(model_config.get("top_p", 0.9)),
 		"stream": true
 	}
+
+	# 检查是否启用JSON模式（需要参数请求且模型配置支持）
+	if use_json and model_config.get("enable_json_mode", false):
+		body["response_format"] = {"type": "json_object"}
 
 	# 先写入额外参数
 	for key in extra_params.keys():

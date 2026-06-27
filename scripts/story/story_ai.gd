@@ -190,6 +190,7 @@ func _call_ai_api_async(messages: Array, user_prompt: String, story_context: Dic
 	stream_ai.start_stream_chat(
 		"chat_model",
 		messages,
+		false,
 		{
 			"max_tokens": int(chat_config.get("max_tokens", 4096)),
 			"temperature": temperature

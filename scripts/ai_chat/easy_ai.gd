@@ -69,6 +69,10 @@ func request(
 		"model": model_name,
 		"messages": messages
 	}
+
+	# 检查是否启用JSON模式（需要参数请求且模型配置支持）
+	if use_json and model_config.get("enable_json_mode", false):
+		body["response_format"] = {"type": "json_object"}
 	
 	# 先写入额外参数
 	for key in extra_params.keys():

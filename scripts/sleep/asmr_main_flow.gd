@@ -335,6 +335,7 @@ func _send_ai_request(user_message: String):
 	stream_ai.start_stream_chat(
 		"chat_model",
 		messages,
+		false,
 		{
 			"max_tokens": int(tools_config.get("max_tokens", 1024)),
 			"temperature": 0.8,

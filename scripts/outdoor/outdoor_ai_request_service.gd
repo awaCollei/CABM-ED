@@ -69,6 +69,7 @@ func start_stream_chat(system_prompt: String, user_message: String) -> bool:
 	stream_ai.start_stream_chat(
 		"chat_model",
 		messages,
+		false,
 		{
 			"max_tokens": int(chat_config.get("max_tokens", 1024)),
 			"temperature": float(chat_config.get("temperature", 0.7)),
