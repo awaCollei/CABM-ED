@@ -44,7 +44,7 @@ func _load_project_config():
 		push_error("AI 项目配置解析失败")
 
 func _load_user_config():
-	"""加载用户配置文件中的 API 密钥和模型配置"""
+	"""加载用户配置文件中的 API 密钥和模型配置（新版本：通过厂商-模型-任务系统）"""
 	var user_config_path = "user://ai_keys.json"
 	if not FileAccess.file_exists(user_config_path):
 		push_error("AI 用户配置文件不存在: " + user_config_path)
@@ -65,6 +65,84 @@ func _load_user_config():
 
 	var user_config = json.data
 	
+	# 新版本：通过 model_tasks 系统加载配置
+	if user_config.has("model_tasks") and user_config.has("providers") and user_config.has("models"):
+		_load_from_model_tasks(user_config)
+	else:
+		# 兼容旧版本：直接加载模型配置
+		_load_from_legacy_config(user_config)
+	
+	# 根级 api_key 仅供界面展示，不参与请求（见 user://ai_keys.json 约定）
+	# 注入有效密钥到所有模型配置（含内置密钥覆盖各槽位）
+	_inject_effective_keys()
+	
+	print("AI 用户配置加载成功")
+
+func _load_from_model_tasks(user_config: Dictionary):
+	"""从新的厂商-模型-任务系统加载配置"""
+	var providers = {}
+	var models = {}
+	var tasks = {}
+	
+	# 合并预设和用户自定义
+	var config_mgr_script = load("res://scripts/ai_chat/ai_config_manager.gd")
+	
+	# 加载预设厂商
+	providers = config_mgr_script.PRESET_PROVIDERS.duplicate(true)
+	if user_config.has("providers"):
+		for p_name in user_config.providers.keys():
+			providers[p_name] = user_config.providers[p_name]
+	
+	# 加载预设模型
+	models = config_mgr_script.PRESET_MODELS.duplicate(true)
+	if user_config.has("models"):
+		for m_name in user_config.models.keys():
+			models[m_name] = user_config.models[m_name]
+	
+	# 加载任务配置
+	if user_config.has("model_tasks"):
+		tasks = user_config.model_tasks
+	
+	# 为每个任务解析模型配置
+	for task_id in tasks.keys():
+		var task = tasks[task_id]
+		var model_name = task.get("model", "")
+		if model_name.is_empty():
+			continue
+		
+		# 查找模型
+		if not models.has(model_name):
+			push_error("模型不存在: " + model_name)
+			continue
+		
+		var model_data = models[model_name]
+		var provider_name = model_data.get("provider", "")
+		var identifier = model_data.get("identifier", "")
+		var params = model_data.get("params", {})
+		
+		# 查找厂商
+		if not providers.has(provider_name):
+			push_error("厂商不存在: " + provider_name)
+			continue
+		
+		var provider_data = providers[provider_name]
+		var base_url = provider_data.get("base_url", "")
+		var api_key_val = provider_data.get("api_key", "")
+		
+		# 构建配置
+		if not config.has(task_id):
+			config[task_id] = {}
+		
+		config[task_id]["model"] = identifier
+		config[task_id]["base_url"] = base_url
+		config[task_id]["api_key"] = api_key_val
+		
+		# 合并模型参数
+		for param_key in params.keys():
+			config[task_id][param_key] = params[param_key]
+
+func _load_from_legacy_config(user_config: Dictionary):
+	"""兼容旧版本的配置加载方式"""
 	# 处理每个模型的配置：只更新 api_key, base_url, model
 	_update_model_config("chat_model", user_config)
 	_update_model_config("summary_model", user_config)
@@ -74,12 +152,6 @@ func _load_user_config():
 	_update_model_config("view_model", user_config)
 	_update_model_config("stt_model", user_config)
 	_update_model_config("rerank_model", user_config)
-	
-	# 根级 api_key 仅供界面展示，不参与请求（见 user://ai_keys.json 约定）
-	# 注入有效密钥到所有模型配置（含内置密钥覆盖各槽位）
-	_inject_effective_keys()
-	
-	print("AI 用户配置加载成功")
 
 func _update_model_config(model_name: String, user_config: Dictionary):
 	"""更新指定模型的配置（仅更新 api_key, base_url, model, enable_json_mode）"""

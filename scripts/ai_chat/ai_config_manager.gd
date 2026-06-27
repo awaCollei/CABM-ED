@@ -5,102 +5,144 @@ extends Node
 
 const CONFIG_PATH = "user://ai_keys.json"
 
-# 配置模板定义
+# 新的数据结构：厂商、模型、模型任务
+# 厂商数据结构: { "厂商名": { "base_url": "...", "api_key": "..." } }
+# 模型数据结构: { "模型名": { "provider": "厂商名", "identifier": "模型标识符", "params": {...} } }
+# 模型任务数据结构: { "任务名": { "description": "描述", "model": "模型名" } }
+
+# 预设厂商
+const PRESET_PROVIDERS = {
+	"硅基流动": {
+		"base_url": "https://api.siliconflow.cn/v1",
+		"api_key": ""
+	}
+}
+
+# 预设模型
+const PRESET_MODELS = {
+	"Qwen3-8B": {
+		"provider": "硅基流动",
+		"identifier": "Qwen/Qwen3-8B",
+		"params": {}
+	},
+	"DeepSeek-V3.2": {
+		"provider": "硅基流动",
+		"identifier": "deepseek-ai/DeepSeek-V3.2",
+		"params": {}
+	},
+	"DeepSeek-V3": {
+		"provider": "硅基流动",
+		"identifier": "deepseek-ai/DeepSeek-V3",
+		"params": {}
+	},
+	"Qwen3-30B-A3B": {
+		"provider": "硅基流动",
+		"identifier": "Qwen/Qwen3-30B-A3B-Instruct-2507",
+		"params": {}
+	},
+	"CosyVoice2": {
+		"provider": "硅基流动",
+		"identifier": "FunAudioLLM/CosyVoice2-0.5B",
+		"params": {}
+	},
+	"bge-m3": {
+		"provider": "硅基流动",
+		"identifier": "BAAI/bge-m3",
+		"params": {}
+	},
+	"GLM-4.1V": {
+		"provider": "硅基流动",
+		"identifier": "THUDM/GLM-4.1V-9B-Thinking",
+		"params": {}
+	},
+	"Qwen3-Omni": {
+		"provider": "硅基流动",
+		"identifier": "Qwen/Qwen3-Omni-30B-A3B-Captioner",
+		"params": {}
+	},
+	"SenseVoice": {
+		"provider": "硅基流动",
+		"identifier": "FunAudioLLM/SenseVoiceSmall",
+		"params": {}
+	},
+	"bge-reranker": {
+		"provider": "硅基流动",
+		"identifier": "BAAI/bge-reranker-v2-m3",
+		"params": {}
+	}
+}
+
+# 模型任务定义
+const MODEL_TASKS = {
+	"chat_model": {
+		"name": "对话模型",
+		"description": "用于角色的对话和行为"
+	},
+	"summary_model": {
+		"name": "总结模型",
+		"description": "用于信息的整合和提取"
+	},
+	"tts_model": {
+		"name": "语音模型",
+		"description": "用于语音合成"
+	},
+	"embedding_model": {
+		"name": "嵌入模型",
+		"description": "用于文本向量化"
+	},
+	"view_model": {
+		"name": "视觉模型",
+		"description": "用于图像识别"
+	},
+	"stt_model": {
+		"name": "语音输入",
+		"description": "用于语音识别"
+	},
+	"rerank_model": {
+		"name": "重排模型",
+		"description": "用于搜索结果重排"
+	}
+}
+
+# 配置模板定义（快速配置用，引用预设模型名）
 const CONFIG_TEMPLATES = {
 	"free": {
 		"name": "免费",
 		"description": "没有语音，而且不太聪明，但是免费",
-		"chat_model": {
-			"model": "Qwen/Qwen3-8B",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"summary_model": {
-			"model": "Qwen/Qwen3-8B",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"tts_model": {
-			"model": "【DISABLED】",
-			"base_url": "【DISABLED】",
-		},
-		"embedding_model": {
-			"model": "BAAI/bge-m3",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"view_model": {
-			"model": "THUDM/GLM-4.1V-9B-Thinking",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"stt_model": {
-			"model": "FunAudioLLM/SenseVoiceSmall",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"rerank_model": {
-			"model": "BAAI/bge-reranker-v2-m3",
-			"base_url": "https://api.siliconflow.cn/v1"
+		"models": {
+			"chat_model": "Qwen3-8B",
+			"summary_model": "Qwen3-8B",
+			"tts_model": "",
+			"embedding_model": "bge-m3",
+			"view_model": "GLM-4.1V",
+			"stt_model": "SenseVoice",
+			"rerank_model": "bge-reranker"
 		}
 	},
 	"standard": {
 		"name": "标准",
 		"description": "以高性价比获得更佳的体验",
-		"chat_model": {
-			"model": "deepseek-ai/DeepSeek-V3.2",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"summary_model": {
-			"model": "Qwen/Qwen3-30B-A3B-Instruct-2507",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"tts_model": {
-			"model": "FunAudioLLM/CosyVoice2-0.5B",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"embedding_model": {
-			"model": "BAAI/bge-m3",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"view_model": {
-			"model": "Qwen/Qwen3-Omni-30B-A3B-Captioner",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"stt_model": {
-			"model": "FunAudioLLM/SenseVoiceSmall",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"rerank_model": {
-			"model": "BAAI/bge-reranker-v2-m3",
-			"base_url": "https://api.siliconflow.cn/v1"
+		"models": {
+			"chat_model": "DeepSeek-V3.2",
+			"summary_model": "Qwen3-30B-A3B",
+			"tts_model": "CosyVoice2",
+			"embedding_model": "bge-m3",
+			"view_model": "Qwen3-Omni",
+			"stt_model": "SenseVoice",
+			"rerank_model": "bge-reranker"
 		}
 	},
 	"alternate": {
 		"name": "备用",
 		"description": "比标准稍微差点，可以作为备选",
-		"chat_model": {
-			"model": "deepseek-ai/DeepSeek-V3",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"summary_model": {
-			"model": "Qwen/Qwen3-30B-A3B-Instruct-2507",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"tts_model": {
-			"model": "FunAudioLLM/CosyVoice2-0.5B",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"embedding_model": {
-			"model": "BAAI/bge-m3",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"view_model": {
-			"model": "Qwen/Qwen3-Omni-30B-A3B-Captioner",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"stt_model": {
-			"model": "FunAudioLLM/SenseVoiceSmall",
-			"base_url": "https://api.siliconflow.cn/v1"
-		},
-		"rerank_model": {
-			"model": "BAAI/bge-reranker-v2-m3",
-			"base_url": "https://api.siliconflow.cn/v1"
+		"models": {
+			"chat_model": "DeepSeek-V3",
+			"summary_model": "Qwen3-30B-A3B",
+			"tts_model": "CosyVoice2",
+			"embedding_model": "bge-m3",
+			"view_model": "Qwen3-Omni",
+			"stt_model": "SenseVoice",
+			"rerank_model": "bge-reranker"
 		}
 	}
 }
@@ -361,3 +403,119 @@ func mask_key(key: String) -> String:
 	if key.length() <= 10:
 		return "***"
 	return key.substr(0, 7) + "..." + key.substr(key.length() - 4)
+
+# ========== 新的数据结构管理方法 ==========
+
+## 获取所有厂商（合并预设和用户自定义）
+func get_all_providers() -> Dictionary:
+	var config = load_config()
+	var providers = PRESET_PROVIDERS.duplicate(true)
+	
+	# 合并用户自定义厂商
+	if config.has("providers"):
+		for provider_name in config.providers.keys():
+			providers[provider_name] = config.providers[provider_name]
+	
+	return providers
+
+## 保存厂商
+func save_provider(provider_name: String, provider_data: Dictionary) -> bool:
+	var config = load_config()
+	if not config.has("providers"):
+		config["providers"] = {}
+	config["providers"][provider_name] = provider_data
+	return save_config(config)
+
+## 删除厂商
+func delete_provider(provider_name: String) -> bool:
+	var config = load_config()
+	if config.has("providers") and config.providers.has(provider_name):
+		config.providers.erase(provider_name)
+		return save_config(config)
+	return false
+
+## 获取所有模型（合并预设和用户自定义）
+func get_all_models() -> Dictionary:
+	var config = load_config()
+	var models = PRESET_MODELS.duplicate(true)
+	
+	# 合并用户自定义模型
+	if config.has("models"):
+		for model_name in config.models.keys():
+			models[model_name] = config.models[model_name]
+	
+	return models
+
+## 保存模型
+func save_model(model_name: String, model_data: Dictionary) -> bool:
+	var config = load_config()
+	if not config.has("models"):
+		config["models"] = {}
+	config["models"][model_name] = model_data
+	return save_config(config)
+
+## 删除模型
+func delete_model(model_name: String) -> bool:
+	var config = load_config()
+	if config.has("models") and config.models.has(model_name):
+		config.models.erase(model_name)
+		return save_config(config)
+	return false
+
+## 获取所有模型任务配置
+func get_model_tasks() -> Dictionary:
+	var config = load_config()
+	var tasks = {}
+	
+	# 初始化默认任务
+	for task_id in MODEL_TASKS.keys():
+		tasks[task_id] = {
+			"name": MODEL_TASKS[task_id].name,
+			"description": MODEL_TASKS[task_id].description,
+			"model": ""
+		}
+	
+	# 合并用户配置
+	if config.has("model_tasks"):
+		for task_id in config.model_tasks.keys():
+			if tasks.has(task_id):
+				tasks[task_id]["model"] = config.model_tasks[task_id].get("model", "")
+	
+	return tasks
+
+## 保存模型任务配置
+func save_model_tasks(tasks: Dictionary) -> bool:
+	var config = load_config()
+	config["model_tasks"] = tasks
+	return save_config(config)
+
+## 根据模型名获取完整配置（包含厂商信息）
+func get_model_full_config(model_name: String) -> Dictionary:
+	var models = get_all_models()
+	var providers = get_all_providers()
+	
+	if not models.has(model_name):
+		return {}
+	
+	var model = models[model_name]
+	var provider_name = model.get("provider", "")
+	var provider = providers.get(provider_name, {})
+	
+	return {
+		"model": model.get("identifier", ""),
+		"base_url": provider.get("base_url", ""),
+		"api_key": provider.get("api_key", ""),
+		"params": model.get("params", {})
+	}
+
+## 根据任务ID获取模型配置
+func get_task_model_config(task_id: String) -> Dictionary:
+	var tasks = get_model_tasks()
+	if not tasks.has(task_id):
+		return {}
+	
+	var model_name = tasks[task_id].get("model", "")
+	if model_name.is_empty():
+		return {}
+	
+	return get_model_full_config(model_name)

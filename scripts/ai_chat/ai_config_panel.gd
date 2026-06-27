@@ -16,31 +16,9 @@ extends Panel
 @onready var quick_apply_button = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/ApplyButton
 @onready var quick_status_label = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/StatusLabel
 # 详细配置引用（二级选项卡）
-@onready var chat_model_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/对话模型/ScrollContainer/VBoxContainer/ChatModelInput
-@onready var chat_base_url_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/对话模型/ScrollContainer/VBoxContainer/ChatBaseURLInput
-@onready var chat_key_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/对话模型/ScrollContainer/VBoxContainer/ChatKeyInput
-@onready var chat_json_mode_toggle = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/对话模型/ScrollContainer/VBoxContainer/ChatJsonModeContainer/ChatJsonModeToggle
-@onready var summary_model_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/总结模型/ScrollContainer/VBoxContainer/SummaryModelInput
-@onready var summary_base_url_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/总结模型/ScrollContainer/VBoxContainer/SummaryBaseURLInput
-@onready var summary_key_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/总结模型/ScrollContainer/VBoxContainer/SummaryKeyInput
-@onready var summary_json_mode_toggle = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/总结模型/ScrollContainer/VBoxContainer/SummaryJsonModeContainer/SummaryJsonModeToggle
-@onready var tts_model_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音模型/ScrollContainer/VBoxContainer/TTSModelInput
-@onready var tts_base_url_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音模型/ScrollContainer/VBoxContainer/TTSBaseURLInput
-@onready var tts_key_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音模型/ScrollContainer/VBoxContainer/TTSKeyInput
-@onready var embedding_model_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/嵌入模型/ScrollContainer/VBoxContainer/EmbeddingModelInput
-@onready var embedding_base_url_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/嵌入模型/ScrollContainer/VBoxContainer/EmbeddingBaseURLInput
-@onready var embedding_key_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/嵌入模型/ScrollContainer/VBoxContainer/EmbeddingKeyInput
-@onready var view_model_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/视觉模型/ScrollContainer/VBoxContainer/ViewModelInput
-@onready var view_base_url_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/视觉模型/ScrollContainer/VBoxContainer/ViewBaseURLInput
-@onready var view_key_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/视觉模型/ScrollContainer/VBoxContainer/ViewKeyInput
-@onready var stt_model_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音输入/ScrollContainer/VBoxContainer/STTModelInput
-@onready var stt_base_url_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音输入/ScrollContainer/VBoxContainer/STTBaseURLInput
-@onready var stt_key_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/语音输入/ScrollContainer/VBoxContainer/STTKeyInput
-@onready var rerank_model_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/重排模型/ScrollContainer/VBoxContainer/RerankModelInput
-@onready var rerank_base_url_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/重排模型/ScrollContainer/VBoxContainer/RerankBaseURLInput
-@onready var rerank_key_input = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/重排模型/ScrollContainer/VBoxContainer/RerankKeyInput
-@onready var detail_save_button = $MarginContainer/VBoxContainer/TabContainer/详细配置/SaveArea/DetailSaveButton
-@onready var detail_status_label = $MarginContainer/VBoxContainer/TabContainer/详细配置/SaveArea/DetailStatusLabel
+@onready var providers_panel = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/模型厂商
+@onready var models_panel = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/模型列表
+@onready var model_tasks_panel = $MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs/模型任务
 # 日志导出引用
 @onready var log_export_button = $MarginContainer/VBoxContainer/TabContainer/日志导出/VBoxContainer/ExportButton
 @onready var log_status_label = $MarginContainer/VBoxContainer/TabContainer/日志导出/VBoxContainer/StatusLabel
@@ -60,7 +38,6 @@ var template_handler: Node
 var voice_settings: Node
 var log_exporter: Node
 var memory_repair: Node
-var _last_saved_detail: Dictionary = {}
 
 func _ready():
 	# 初始化配置管理器
@@ -103,6 +80,15 @@ func _ready():
 	# 初始化记忆系统配置
 	memory_config.initialize(config_manager)
 	
+	# 初始化新的配置面板
+	providers_panel.initialize(config_manager)
+	models_panel.initialize(config_manager)
+	model_tasks_panel.initialize(config_manager)
+	
+	# 级联刷新：厂商变更 -> 刷新模型列表，模型变更 -> 刷新任务列表
+	providers_panel.providers_changed.connect(models_panel.refresh)
+	models_panel.models_changed.connect(model_tasks_panel._build_task_list)
+	
 	# 连接信号
 	close_button.pressed.connect(_on_close_pressed)
 	quick_template_free.pressed.connect(_on_template_selected.bind("free"))
@@ -110,30 +96,6 @@ func _ready():
 	quick_template_alternate.pressed.connect(_on_template_selected.bind("alternate"))
 	use_builtin_key_checkbox.toggled.connect(_on_use_builtin_key_toggled)
 	quick_apply_button.pressed.connect(_on_quick_apply_pressed)
-	detail_save_button.pressed.connect(_on_detail_save_pressed)
-	chat_model_input.text_changed.connect(_on_detail_field_changed)
-	chat_base_url_input.text_changed.connect(_on_detail_field_changed)
-	chat_key_input.text_changed.connect(_on_detail_field_changed)
-	chat_json_mode_toggle.toggled.connect(_on_json_mode_toggled.bind(chat_json_mode_toggle))
-	summary_model_input.text_changed.connect(_on_detail_field_changed)
-	summary_base_url_input.text_changed.connect(_on_detail_field_changed)
-	summary_key_input.text_changed.connect(_on_detail_field_changed)
-	summary_json_mode_toggle.toggled.connect(_on_json_mode_toggled.bind(summary_json_mode_toggle))
-	tts_model_input.text_changed.connect(_on_detail_field_changed)
-	tts_base_url_input.text_changed.connect(_on_detail_field_changed)
-	tts_key_input.text_changed.connect(_on_detail_field_changed)
-	embedding_model_input.text_changed.connect(_on_detail_field_changed)
-	embedding_base_url_input.text_changed.connect(_on_detail_field_changed)
-	embedding_key_input.text_changed.connect(_on_detail_field_changed)
-	view_model_input.text_changed.connect(_on_detail_field_changed)
-	view_base_url_input.text_changed.connect(_on_detail_field_changed)
-	view_key_input.text_changed.connect(_on_detail_field_changed)
-	stt_model_input.text_changed.connect(_on_detail_field_changed)
-	stt_base_url_input.text_changed.connect(_on_detail_field_changed)
-	stt_key_input.text_changed.connect(_on_detail_field_changed)
-	rerank_model_input.text_changed.connect(_on_detail_field_changed)
-	rerank_base_url_input.text_changed.connect(_on_detail_field_changed)
-	rerank_key_input.text_changed.connect(_on_detail_field_changed)
 	log_export_button.pressed.connect(log_exporter.on_log_export_pressed)
 	repair_check_button.pressed.connect(memory_repair.on_repair_check_pressed)
 	repair_button.pressed.connect(memory_repair.on_repair_start_pressed)
@@ -148,8 +110,6 @@ func _ready():
 	voice_panel._load_settings()
 	response_settings.load_response_settings()
 	_apply_android_input_workaround()
-	_last_saved_detail = _collect_detail_inputs()
-	_update_detail_saved_label()
 
 func _on_close_pressed():
 	"""关闭面板"""
@@ -160,28 +120,7 @@ func _apply_android_input_workaround():
 		var pm = get_node("/root/PlatformManager")
 		if pm.is_android():
 			var inputs: Array = [
-				quick_key_input,
-				chat_model_input,
-				chat_base_url_input,
-				chat_key_input,
-				summary_model_input,
-				summary_base_url_input,
-				summary_key_input,
-				tts_model_input,
-				tts_base_url_input,
-				tts_key_input,
-				embedding_model_input,
-				embedding_base_url_input,
-				embedding_key_input,
-				view_model_input,
-				view_base_url_input,
-				view_key_input,
-				stt_model_input,
-				stt_base_url_input,
-				stt_key_input,
-				rerank_model_input,
-				rerank_base_url_input,
-				rerank_key_input
+				quick_key_input
 			]
 			for le in inputs:
 				if le and le is LineEdit:
@@ -213,112 +152,13 @@ func _on_quick_apply_pressed():
 		config_manager.save_use_builtin_key(use_builtin_key)
 		
 		_update_quick_status(true, result.message)
-		# 同步更新详细配置页面
-		_sync_to_detail_config(result.config)
 		_reload_ai_service()
 		_reload_tts_service()
 		voice_panel._load_settings()
-		# 注意：不重新加载 response_settings，避免重置用户的回复风格、表情差分、生成选项等设置
-		_last_saved_detail = _collect_detail_inputs()
-		_update_detail_saved_label()
+		# 刷新模型任务面板
+		model_tasks_panel._build_task_list()
 	else:
 		_update_quick_status(false, result.message)
-
-func _on_detail_save_pressed():
-	"""保存详细配置"""
-	var chat_model = chat_model_input.text.strip_edges()
-	var chat_base_url = chat_base_url_input.text.strip_edges()
-	var chat_key = chat_key_input.text.strip_edges()
-	var summary_model = summary_model_input.text.strip_edges()
-	var summary_base_url = summary_base_url_input.text.strip_edges()
-	var summary_key = summary_key_input.text.strip_edges()
-	var tts_model = tts_model_input.text.strip_edges()
-	var tts_base_url = tts_base_url_input.text.strip_edges()
-	var tts_key = tts_key_input.text.strip_edges()
-	var embedding_model = embedding_model_input.text.strip_edges()
-	var embedding_base_url = embedding_base_url_input.text.strip_edges()
-	var embedding_key = embedding_key_input.text.strip_edges()
-	var view_model = view_model_input.text.strip_edges()
-	var view_base_url = view_base_url_input.text.strip_edges()
-	var view_key = view_key_input.text.strip_edges()
-	var stt_model = stt_model_input.text.strip_edges()
-	var stt_base_url = stt_base_url_input.text.strip_edges()
-	var stt_key = stt_key_input.text.strip_edges()
-	var rerank_model = rerank_model_input.text.strip_edges()
-	var rerank_base_url = rerank_base_url_input.text.strip_edges()
-	var rerank_key = rerank_key_input.text.strip_edges()
-
-	# 验证必填字段
-	if chat_model.is_empty() or chat_base_url.is_empty() or chat_key.is_empty():
-		_update_detail_status(false, "对话模型配置不完整")
-		return
-	
-	if summary_model.is_empty() or summary_base_url.is_empty() or summary_key.is_empty():
-		_update_detail_status(false, "总结模型配置不完整")
-		return
-	
-	# 保存当前的内置密钥启用状态
-	var use_builtin_key = use_builtin_key_checkbox.button_pressed
-	
-	var config = {
-		"template": "custom",
-		"api_key": chat_key,
-		"chat_model": {
-			"model": chat_model,
-			"base_url": chat_base_url,
-			"api_key": chat_key,
-			"enable_json_mode": chat_json_mode_toggle.button_pressed
-		},
-		"summary_model": {
-			"model": summary_model,
-			"base_url": summary_base_url,
-			"api_key": summary_key,
-			"enable_json_mode": summary_json_mode_toggle.button_pressed
-		},
-		"tts_model": {
-			"model": tts_model,
-			"base_url": tts_base_url,
-			"api_key": tts_key
-		},
-		"embedding_model": {
-			"model": embedding_model,
-			"base_url": embedding_base_url,
-			"api_key": embedding_key
-		},
-		"view_model": {
-			"model": view_model,
-			"base_url": view_base_url,
-			"api_key": view_key
-		},
-		"stt_model": {
-			"model": stt_model,
-			"base_url": stt_base_url,
-			"api_key": stt_key
-		},
-		"rerank_model": {
-			"model": rerank_model,
-			"base_url": rerank_base_url,
-			"api_key": rerank_key
-		}
-	}
-	
-	if config_manager.save_config(config):
-		# 恢复内置密钥设置（防止被覆盖）
-		config_manager.save_use_builtin_key(use_builtin_key)
-		
-		_update_detail_status(true, "配置已保存")
-		template_handler.selected_template = "custom"
-		template_handler.update_template_selection()
-		quick_key_input.text = chat_key
-		_update_quick_status(true, "当前密钥: " + config_manager.mask_key(chat_key))
-		_reload_ai_service()
-		_reload_tts_service()
-		voice_panel._load_settings()
-		# 注意：不重新加载 response_settings，避免重置用户的回复风格、表情差分、生成选项等设置
-		_last_saved_detail = _collect_detail_inputs()
-		_update_detail_saved_label()
-	else:
-		_update_detail_status(false, "保存失败")
 
 func _load_existing_config():
 	"""加载现有的AI配置"""
@@ -332,109 +172,8 @@ func _load_existing_config():
 		quick_key_input.text = config.api_key
 		_update_quick_status(true, "当前密钥: " + config_manager.mask_key(config.api_key))
 	
-	# 加载到详细配置
-	if config.has("chat_model"):
-		var chat = config.chat_model
-		chat_model_input.text = chat.get("model", "")
-		chat_base_url_input.text = chat.get("base_url", "")
-		chat_key_input.text = chat.get("api_key", "")
-		var chat_json_enabled = chat.get("enable_json_mode", true)
-		chat_json_mode_toggle.button_pressed = chat_json_enabled
-	
-	if config.has("summary_model"):
-		var summary = config.summary_model
-		summary_model_input.text = summary.get("model", "")
-		summary_base_url_input.text = summary.get("base_url", "")
-		summary_key_input.text = summary.get("api_key", "")
-		var summary_json_enabled = summary.get("enable_json_mode", true)
-		summary_json_mode_toggle.button_pressed = summary_json_enabled
-	
-	if config.has("tts_model"):
-		var tts = config.tts_model
-		tts_model_input.text = tts.get("model", "")
-		tts_base_url_input.text = tts.get("base_url", "")
-		tts_key_input.text = tts.get("api_key", "")
-	
-	if config.has("embedding_model"):
-		var embedding = config.embedding_model
-		embedding_model_input.text = embedding.get("model", "")
-		embedding_base_url_input.text = embedding.get("base_url", "")
-		embedding_key_input.text = embedding.get("api_key", "")
-
-	if config.has("view_model"):
-		var viewc = config.view_model
-		view_model_input.text = viewc.get("model", "")
-		view_base_url_input.text = viewc.get("base_url", "")
-		view_key_input.text = viewc.get("api_key", "")
-
-	if config.has("stt_model"):
-		var sttc = config.stt_model
-		stt_model_input.text = sttc.get("model", "")
-		stt_base_url_input.text = sttc.get("base_url", "")
-		stt_key_input.text = sttc.get("api_key", "")
-
-	if config.has("rerank_model"):
-		var rerankc = config.rerank_model
-		rerank_model_input.text = rerankc.get("model", "")
-		rerank_base_url_input.text = rerankc.get("base_url", "")
-		rerank_key_input.text = rerankc.get("api_key", "")
-
 	# 重新加载内置密钥设置，确保状态同步
 	_load_builtin_key_setting()
-	
-	_last_saved_detail = _collect_detail_inputs()
-	_update_detail_saved_label()
-
-func _sync_to_detail_config(config: Dictionary):
-	"""将配置同步到详细配置页面"""
-	if config.has("chat_model"):
-		var chat = config.chat_model
-		chat_model_input.text = chat.model
-		chat_base_url_input.text = chat.base_url
-		chat_key_input.text = chat.api_key
-		var chat_json_enabled = chat.get("enable_json_mode", true)
-		chat_json_mode_toggle.button_pressed = chat_json_enabled
-	
-	if config.has("summary_model"):
-		var summary = config.summary_model
-		summary_model_input.text = summary.model
-		summary_base_url_input.text = summary.base_url
-		summary_key_input.text = summary.api_key
-		var summary_json_enabled = summary.get("enable_json_mode", true)
-		summary_json_mode_toggle.button_pressed = summary_json_enabled
-	
-	if config.has("tts_model"):
-		var tts = config.tts_model
-		tts_model_input.text = tts.model
-		tts_base_url_input.text = tts.base_url
-		tts_key_input.text = tts.api_key
-	
-	if config.has("embedding_model"):
-		var embedding = config.embedding_model
-		embedding_model_input.text = embedding.model
-		embedding_base_url_input.text = embedding.base_url
-		embedding_key_input.text = embedding.api_key
-
-	if config.has("view_model"):
-		var viewc = config.view_model
-		view_model_input.text = viewc.model
-		view_base_url_input.text = viewc.base_url
-		view_key_input.text = viewc.api_key
-
-	if config.has("stt_model"):
-		var sttc = config.stt_model
-		stt_model_input.text = sttc.model
-		stt_base_url_input.text = sttc.base_url
-		stt_key_input.text = sttc.api_key
-
-	if config.has("rerank_model"):
-		var rerankc = config.rerank_model
-		rerank_model_input.text = rerankc.model
-		rerank_base_url_input.text = rerankc.base_url
-		rerank_key_input.text = rerankc.api_key
-
-	_last_saved_detail = _collect_detail_inputs()
-	_update_detail_saved_label()
 
 func _reload_ai_service():
 	"""重新加载AI服务"""
@@ -456,46 +195,6 @@ func _update_quick_status(success: bool, message: String):
 	quick_status_label.add_theme_color_override("font_color",
 		Color(0.3, 1.0, 0.3) if success else Color(1.0, 0.3, 0.3))
 
-func _update_detail_status(success: bool, message: String):
-	"""更新详细配置状态"""
-	detail_status_label.text = ("✓ " if success else "✗ ") + message
-	detail_status_label.add_theme_color_override("font_color",
-		Color(0.3, 1.0, 0.3) if success else Color(1.0, 0.3, 0.3))
-
-func _collect_detail_inputs() -> Dictionary:
-	return {
-		"chat_model": {"model": chat_model_input.text, "base_url": chat_base_url_input.text, "api_key": chat_key_input.text, "enable_json_mode": chat_json_mode_toggle.button_pressed},
-		"summary_model": {"model": summary_model_input.text, "base_url": summary_base_url_input.text, "api_key": summary_key_input.text, "enable_json_mode": summary_json_mode_toggle.button_pressed},
-		"tts_model": {"model": tts_model_input.text, "base_url": tts_base_url_input.text, "api_key": tts_key_input.text},
-		"embedding_model": {"model": embedding_model_input.text, "base_url": embedding_base_url_input.text, "api_key": embedding_key_input.text},
-		"view_model": {"model": view_model_input.text, "base_url": view_base_url_input.text, "api_key": view_key_input.text},
-		"stt_model": {"model": stt_model_input.text, "base_url": stt_base_url_input.text, "api_key": stt_key_input.text},
-		"rerank_model": {"model": rerank_model_input.text, "base_url": rerank_base_url_input.text, "api_key": rerank_key_input.text}
-	}
-
-func _is_detail_dirty() -> bool:
-	var cur = _collect_detail_inputs()
-	var s1 = JSON.stringify(cur)
-	var s2 = JSON.stringify(_last_saved_detail)
-	return s1 != s2
-
-func _on_detail_field_changed(_new_text: String) -> void:
-	_update_detail_dirty_state()
-
-func _on_json_mode_toggled(_toggled: bool, _button: Button) -> void:
-	_update_detail_dirty_state()
-
-func _update_detail_dirty_state() -> void:
-	if _is_detail_dirty():
-		detail_status_label.text = "·未保存"
-		detail_status_label.add_theme_color_override("font_color", Color(1.0, 0.3, 0.3))
-	else:
-		_update_detail_saved_label()
-
-func _update_detail_saved_label() -> void:
-	detail_status_label.text = "·已保存"
-	detail_status_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.3))
-
 # 别折腾了，给我交点PR随便你用
 func _load_builtin_key_setting():
 	"""加载使用内置密钥的设置"""
@@ -510,10 +209,6 @@ func _on_use_builtin_key_toggled(toggled: bool):
 		config_manager.save_use_builtin_key(toggled)
 	_update_key_input_state(toggled)
 	_reload_ai_service()
-	# if toggled:
-	# 	_update_quick_status(true, "已启用内置免费密钥（功能受限）")
-	# else:
-	# 	_update_quick_status(true, "已禁用内置密钥，请输入自己的密钥")
 
 func _update_key_input_state(use_builtin: bool):
 	"""更新密钥输入框的启用/禁用状态"""

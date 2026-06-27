@@ -68,53 +68,29 @@ func apply_quick_config(api_key: String) -> Dictionary:
 	if template.is_empty():
 		return {"success": false, "message": "模板不存在"}
 	
-	# 构建配置
-	var config = {
-		"template": selected_template,
-		"api_key": api_key,
-		"chat_model": {
-			"model": template.chat_model.model,
-			"base_url": template.chat_model.base_url,
-			"api_key": api_key,
-			"enable_json_mode": true
-		},
-		"summary_model": {
-			"model": template.summary_model.model,
-			"base_url": template.summary_model.base_url,
-			"api_key": api_key,
-			"enable_json_mode": true
-		},
-		"tts_model": {
-			"model": template.tts_model.model,
-			"base_url": template.tts_model.base_url,
-			"api_key": api_key
-		},
-		"embedding_model": {
-			"model": template.embedding_model.model,
-			"base_url": template.embedding_model.base_url,
-			"api_key": api_key
-		},
-		"view_model": {
-			"model": template.view_model.model,
-			"base_url": template.view_model.base_url,
-			"api_key": api_key
-		},
-		"stt_model": {
-			"model": template.stt_model.model,
-			"base_url": template.stt_model.base_url,
-			"api_key": api_key
-		},
-		"rerank_model": {
-			"model": template.rerank_model.model,
-			"base_url": template.rerank_model.base_url,
-			"api_key": api_key
-		}
-	}
+	# 保存厂商API密钥到"硅基流动"厂商
+	var providers = config_manager.get_all_providers()
+	if providers.has("硅基流动"):
+		var siliconflow = providers["硅基流动"].duplicate()
+		siliconflow["api_key"] = api_key
+		config_manager.save_provider("硅基流动", siliconflow)
 	
-	if config_manager.save_config(config):
-		return {"success": true, "message": "已应用「%s」配置" % template.name, "config": config}
-	else:
-		return {"success": false, "message": "保存失败"}
+	# 保存模型任务配置（引用预设模型名）
+	var tasks = {}
+	var task_model_map = template.models
+	for task_id in task_model_map.keys():
+		tasks[task_id] = {
+			"model": task_model_map[task_id]
+		}
+	config_manager.save_model_tasks(tasks)
+	
+	# 保存模板标记
+	var config = config_manager.load_config()
+	config["template"] = selected_template
+	config["api_key"] = api_key
+	config_manager.save_config(config)
+	
+	return {"success": true, "message": "已应用「%s」配置" % template.name}
 
 ## 样式化模板按钮
 func style_template_buttons() -> void:
