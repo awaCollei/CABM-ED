@@ -69,8 +69,6 @@ func _process_summary_response(
 	conversation_data: Array, 
 	auto_save: bool
 ):
-	if logger:
-		logger.log_api_call("SUMMARY_RESPONSE", messages, content)
 
 	# 移除可能的 ```json``` 或 ``` 标记
 	var cleaned_content = content.strip_edges()

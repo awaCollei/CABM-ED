@@ -61,7 +61,7 @@ func request(
 		return result
 	
 	# 构建 URL
-	var url_suffix = model_config.get("url_suffix", "/chat/completions")
+	var url_suffix = model_config.get("url_suffix")
 	var url = base_url + url_suffix
 	
 	# 构建请求体

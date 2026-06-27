@@ -28,7 +28,7 @@ var summary_manager: Node
 var tuple_manager: Node
 var relationship_manager: Node
 var options_generator: Node
-var easy_ai: Node
+var easy_ai: Node = EasyAi
 var stream_ai: Node
 
 # HTTP 请求节点
@@ -111,8 +111,6 @@ func _ready():
 	options_generator.options_error.connect(_on_options_error)
 	
 	# 通用 AI 请求组件
-	easy_ai = preload("res://scripts/ai_chat/easy_ai.gd").new()
-	add_child(easy_ai)
 	easy_ai.initialize(config_loader, logger)
 	
 	# 通用流式 AI 请求组件
@@ -820,9 +818,6 @@ func _call_address_api(conversation_text: String):
 
 func _process_address_response(content: String, messages: Array, conversation_text: String):
 	"""处理称呼模型响应"""
-	if logger:
-		logger.log_api_call("ADDRESS_RESPONSE", messages, content)
-
 	# 移除可能的 ```json``` 或 ``` 标记
 	var cleaned_content = content.strip_edges()
 	if cleaned_content.begins_with("```json"):

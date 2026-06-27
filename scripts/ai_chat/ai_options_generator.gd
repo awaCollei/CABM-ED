@@ -122,9 +122,6 @@ func _build_system_prompt() -> String:
 
 func _process_options_response(content: String, messages: Array):
 	"""处理选项生成响应"""
-	if logger:
-		logger.log_api_call("OPTIONS_RESPONSE", messages, content)
-	
 	var cleaned_content = content.strip_edges()
 	
 	# 解析选项（按行分割）

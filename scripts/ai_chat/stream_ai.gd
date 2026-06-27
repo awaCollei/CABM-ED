@@ -47,7 +47,7 @@ func build_request_params(
 	if base_url.is_empty() or model.is_empty():
 		return {"error": "模型配置不完整"}
 
-	var url_suffix = model_config.get("url_suffix", "/chat/completions")
+	var url_suffix = model_config.get("url_suffix")
 	var url = base_url + url_suffix
 
 	var body = {
@@ -101,9 +101,6 @@ func start_stream_chat(
 	if params.has("error"):
 		stream_error.emit(params.error)
 		return
-
-	if logger:
-		logger.log_api_request("STREAM_AI_REQUEST_" + task_id, params.raw_body, params.body)
 
 	ai_http_client.start_stream_request(
 		params.url,

@@ -10,8 +10,8 @@ var current_node_messages: Array = []  # 当前节点的对话记录
 # 依赖的节点引用
 var story_dialog_panel: Control = null
 
-# 总结API相关
-var http_request: HTTPRequest
+# easy_ai 组件引用
+var easy_ai: Node = EasyAi
 
 # 唯一ID生成器
 var node_id_counter: int = 0
@@ -25,15 +25,7 @@ var back_button_timer: Timer = null  # 恢复按钮状态的定时器
 
 func _ready():
 	"""初始化管理器"""
-	_initialize_summary_api()
 	_initialize_back_button_timer()
-
-func _initialize_summary_api():
-	"""初始化总结API"""
-	# 创建HTTP请求节点
-	http_request = HTTPRequest.new()
-	add_child(http_request)
-	http_request.request_completed.connect(_on_request_completed)
 
 func _initialize_back_button_timer():
 	"""初始化返回按钮定时器"""
@@ -312,33 +304,15 @@ func _call_story_summary_api(user_name: String, character_name: String) -> Strin
 	Returns:
 		总结文本，如果失败则返回空字符串
 	"""
-	var ai_service = get_node_or_null("/root/AIService")
-	if not ai_service or not ai_service.config_loader:
-		push_error("助眠总结管理器: AIService 未初始化")
-		return ""
-
-	var summary_config = ai_service.config_loader.get_model_config("summary_model")
-	if summary_config.is_empty():
-		push_error("助眠总结管理器: 配置不完整")
-		return ""
-	
-	var model = summary_config.get("model", "")
-	var base_url = summary_config.get("base_url", "")
-
-	if model.is_empty() or base_url.is_empty():
-		push_error("故事总结模型配置不完整")
-		return ""
-
-	var api_key = summary_config.get("api_key", "")
-	if api_key.is_empty():
-		push_error("故事总结模型 API 密钥未配置")
+	if not easy_ai:
+		push_error("故事总结管理器: easy_ai 未初始化")
 		return ""
 
 	# 构建故事上下文
 	var story_context = _build_story_summary_context(user_name, character_name)
 
 	# 构建系统提示词
-	var system_prompt = _build_story_summary_system_prompt(story_context,user_name, character_name)
+	var system_prompt = _build_story_summary_system_prompt(story_context, user_name, character_name)
 
 	# 构建用户提示词（对话消息）
 	var user_prompt = _build_story_summary_user_prompt(user_name, character_name)
@@ -348,55 +322,23 @@ func _call_story_summary_api(user_name: String, character_name: String) -> Strin
 		{"role": "user", "content": user_prompt}
 	]
 
-	var url = base_url + "/chat/completions"
-	var headers = ["Content-Type: application/json", "Authorization: Bearer " + api_key]
+	# 使用 easy_ai 发送请求
+	var result = await easy_ai.request(
+		"summary_model",
+		messages,
+		false,  # 不使用 JSON 模式
+		{
+			"max_tokens": 1024,
+			"temperature": 0.5,
+			"top_p": 0.7
+		}
+	)
 
-	var body = {
-		"model": model,
-		"messages": messages,
-		"max_tokens": 1024,
-		"temperature": 0.5,
-		"top_p": 0.7,
-		"enable_thinking": false,
-		"stream": false
-	}
-
-	var json_body = JSON.stringify(body)
-
-	var error = http_request.request(url, headers, HTTPClient.METHOD_POST, json_body)
-	if error != OK:
-		push_error("故事总结请求失败: " + str(error))
+	if not result.success:
+		push_error("故事总结请求失败: " + result.error)
 		return ""
 
-	# 等待响应
-	var result = await http_request.request_completed
-	if result[0] != HTTPRequest.RESULT_SUCCESS:
-		push_error("故事总结请求失败: " + str(result[0]))
-		return ""
-
-	var response_code = result[1]
-	var response_body = result[3]
-
-	if response_code != 200:
-		var error_text = response_body.get_string_from_utf8()
-		push_error("故事总结API错误 (%d): %s" % [response_code, error_text])
-		return ""
-
-	var response_text = response_body.get_string_from_utf8()
-	var json = JSON.new()
-	if json.parse(response_text) != OK:
-		push_error("故事总结响应解析失败: " + response_text)
-		return ""
-
-	var response_data = json.data
-	var summary = ""
-
-	if response_data.has("choices") and response_data.choices.size() > 0:
-		var choice = response_data.choices[0]
-		if choice.has("message") and choice.message.has("content"):
-			summary = choice.message.content.strip_edges()
-
-	return summary
+	return result.content.strip_edges()
 
 func _build_story_summary_context(user_name: String, character_name: String) -> Dictionary:
 	"""构建故事总结上下文"""
@@ -509,8 +451,3 @@ func is_back_confirm_mode() -> bool:
 func should_show_checkpoint_pulse() -> bool:
 	"""检查是否应该显示存档点按钮的脉冲效果"""
 	return current_node_messages.size() >= 12
-
-func _on_request_completed(_result: int, _response_code: int, _headers: PackedStringArray, _body: PackedByteArray):
-	"""处理请求完成信号"""
-	# 这个方法主要用于异步请求，但我们使用await所以这里不需要处理
-	pass

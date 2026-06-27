@@ -80,8 +80,6 @@ func _process_tuple_response(response_text: String, messages: Array, summary_tex
 	if json.parse(response_text) != OK:
 		push_error("Tuple 响应解析失败，保存原始文本")
 		_save_tuple_to_file(custom_timestamp, summary_text, response_text)
-		if logger:
-			logger.log_api_call("TUPLE_RESPONSE", messages, response_text)
 		return
 
 	var data = json.data
@@ -100,9 +98,6 @@ func _process_tuple_response(response_text: String, messages: Array, summary_tex
 		tuples = data
 
 	_save_tuple_to_file(custom_timestamp, summary_text, tuples)
-
-	if logger:
-		logger.log_api_call("TUPLE_RESPONSE", messages, response_text)
 
 # 添加一个新函数用于去除代码块标记
 func _strip_code_blocks(text: String) -> String:

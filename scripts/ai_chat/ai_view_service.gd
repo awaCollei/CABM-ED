@@ -33,7 +33,7 @@ func describe_image(path: String) -> String:
 		return ""
 	if base_url.ends_with("/"):
 		base_url = base_url.substr(0, base_url.length() - 1)
-	var url_suffix = cfg.get("url_suffix", "/chat/completions")
+	var url_suffix = cfg.get("url_suffix")
 	var url = base_url + url_suffix
 	var headers = [
 		"Content-Type: application/json",

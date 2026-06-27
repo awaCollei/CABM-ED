@@ -16,9 +16,6 @@ func call_relationship_api():
 
 	# Debug logging to ensure we actually call the relationship model
 	print("RelationshipManager: calling relationship model. current_relationship length=%d, memory_context length=%d" % [str(current_relationship.length()).to_int(), str(memory_context.length()).to_int()])
-	if logger:
-		logger.log_api_request("RELATIONSHIP_PREPARE", {"current_relationship": current_relationship, "memory_context_len": memory_context.length()}, "")
-
 	var save_mgr = owner_service.get_node("/root/SaveManager")
 	var character_name = save_mgr.get_character_name()
 	var user_name = save_mgr.get_user_name()
@@ -54,9 +51,6 @@ func call_relationship_api():
 	_process_relationship_response(result.content, messages)
 
 func _process_relationship_response(relationship_summary: String, messages: Array):
-	if logger:
-		logger.log_api_call("RELATIONSHIP_RESPONSE", messages, relationship_summary)
-
 	# If model returned the same as current relationship, warn — maybe the model was not properly invoked
 	var prompt_builder = owner_service.get_node("/root/PromptBuilder")
 	var current_relationship = prompt_builder.get_relationship_context()

@@ -202,13 +202,8 @@ func _apply_config():
 	print("召回前推理配置: model='%s', base_url='%s'" % [retrieval_optimization_model, retrieval_optimization_base_url])
 
 	# 初始化检索优化器
-	var api_key = ""
-	if config.has("summary_model") and config.summary_model.has("api_key"):
-		api_key = config.summary_model.get("api_key", "")
 	retrieval_optimizer.initialize(
-		retrieval_optimization_model,
-		retrieval_optimization_base_url,
-		api_key,
+		"summary_model",
 		retrieval_optimization_timeout,
 		retrieval_optimization_max_tokens,
 		retrieval_optimization_temperature,

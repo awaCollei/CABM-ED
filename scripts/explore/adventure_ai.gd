@@ -6,8 +6,8 @@ signal sentence_ready(sentence: String)  # 单句就绪（用于逐句显示）
 signal all_sentences_completed()  # 所有句子显示完成
 signal error_occurred(error_message: String)
 
-# HTTP请求节点
-var http_request: HTTPRequest
+# easy_ai 组件引用
+var easy_ai: Node = EasyAi
 
 # 日志记录器
 var logger: Node
@@ -39,11 +39,6 @@ func _ready():
 	# 初始化日志记录器
 	logger = preload("res://scripts/ai_chat/ai_logger.gd").new()
 	add_child(logger)
-	
-	# 创建HTTP请求节点
-	http_request = HTTPRequest.new()
-	add_child(http_request)
-	http_request.request_completed.connect(_on_request_completed)
 
 func request_reply(prompt: String, scene_name: String = "") -> void:
 	"""请求AI回复（异步）
@@ -85,10 +80,7 @@ func _handle_request_async(prompt: String, scene_name: String):
 	
 	# 添加当前用户消息
 	messages.append({"role": "user", "content": prompt})
-	
-	# 记录请求日志
-	logger.log_api_request("ADVENTURE_AI_REQUEST", {"messages": messages}, JSON.stringify({"messages": messages}))
-	
+
 	# 调用AI API（异步）
 	await _call_ai_api_async(messages, prompt)
 
@@ -248,120 +240,32 @@ func _get_limited_history() -> Array:
 
 func _call_ai_api_async(messages: Array, user_prompt: String):
 	"""异步调用AI API（非流式，非JSON）"""
-	var ai_service = get_node_or_null("/root/AIService")
-	if not ai_service or not ai_service.config_loader:
-		error_occurred.emit("系统错误：AIService 未就绪")
+	if not easy_ai:
+		error_occurred.emit("系统错误：easy_ai 未就绪")
 		return
 
-	var chat_config = ai_service.config_loader.get_model_config("chat_model")
-	var base_url = chat_config.get("base_url", "")
-	var url = base_url + "/chat/completions"
-	var api_key = chat_config.get("api_key", "")
-	
-	if api_key.is_empty():
-		error_occurred.emit("对话模型 API 密钥未配置")
-		return
-	
-	var headers = [
-		"Content-Type: application/json",
-		"Authorization: Bearer " + api_key
-	]
-	
-	var body = {
-		"model": chat_config.get("model", ""),
-		"messages": messages,
-		"max_tokens": int(chat_config.get("max_tokens", 1024)),
-		"temperature": float(chat_config.get("temperature", 0.7)),
-		"top_p": float(chat_config.get("top_p", 0.9)),
-		"stream": false,  # 非流式响应
-		"enable_thinking":false
-	}
-	
-	var json_body = JSON.stringify(body)
-	
-	# 存储用户消息和请求信息，用于后续处理
-	http_request.set_meta("user_prompt", user_prompt)
-	http_request.set_meta("messages", messages)
-	http_request.set_meta("request_body", body)
-	
-	# 设置请求超时
-	http_request.timeout = 30.0  # 30秒超时
-	
-	var error = http_request.request(url, headers, HTTPClient.METHOD_POST, json_body)
-	if error != OK:
-		error_occurred.emit("请求失败: " + str(error))
-		return
-	
-	# 创建超时计时器
-	var timeout_timer = Timer.new()
-	add_child(timeout_timer)
-	timeout_timer.one_shot = true
-	timeout_timer.timeout.connect(_on_request_timeout.bind(timeout_timer))
-	timeout_timer.start(30.0)  # 30秒超时
-	
-	# 等待请求完成（异步）
-	await http_request.request_completed
-	
-	# 如果请求完成，停止超时计时器
-	if timeout_timer.time_left > 0:
-		timeout_timer.stop()
-	timeout_timer.queue_free()
+	# 使用 easy_ai 发送请求
+	var result = await easy_ai.request(
+		"chat_model",
+		messages,
+		false,  # 不使用 JSON 模式
+		{},     # 使用模型默认参数
+		30.0    # 超时时间
+	)
 
-func _on_request_timeout(timer: Timer):
-	"""请求超时处理"""
-	# 取消HTTP请求
-	http_request.cancel_request()
-	
-	# 记录超时日志
-	logger.log_error("ADVENTURE_AI_TIMEOUT", "API请求超时", "")
-	
-	# 发出错误信号
-	error_occurred.emit("请求超时，请检查网络连接或稍后重试")
-	
-	# 清理计时器
-	if timer:
-		timer.queue_free()
+	if not result.success:
+		logger.log_error("ADVENTURE_AI_ERROR", result.error, "")
+		error_occurred.emit(result.error)
+		return
 
-func _on_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray):
-	"""处理API响应"""
-	if result != HTTPRequest.RESULT_SUCCESS:
-		error_occurred.emit("请求失败: " + str(result))
-		return
-	
-	if response_code != 200:
-		var error_text = body.get_string_from_utf8()
-		var request_body = http_request.get_meta("request_body", {})
-		logger.log_api_error(response_code, error_text, request_body)
-		error_occurred.emit("API错误 (%d): %s" % [response_code, error_text])
-		return
-	
-	var response_text = body.get_string_from_utf8()
-	var json = JSON.new()
-	if json.parse(response_text) != OK:
-		error_occurred.emit("响应解析失败")
-		return
-	
-	var response_data = json.data
-	
-	# 提取回复内容（非JSON格式，直接获取文本）
-	var reply_text = ""
-	if response_data.has("choices") and response_data.choices.size() > 0:
-		var choice = response_data.choices[0]
-		if choice.has("message") and choice.message.has("content"):
-			reply_text = choice.message.content.strip_edges()
-	
+	var reply_text = result.content.strip_edges()
+
 	if reply_text.is_empty():
 		error_occurred.emit("未获取到有效回复")
 		return
-	
-	# 记录响应日志
-	var messages = http_request.get_meta("messages", [])
-	logger.log_api_call("ADVENTURE_AI_RESPONSE", messages, reply_text)
-	
+
 	# 添加到AI上下文历史（完整的对话）
-	var user_prompt = http_request.get_meta("user_prompt", "")
-	if not user_prompt.is_empty():
-		conversation_history.append({"role": "user", "content": user_prompt})
+	conversation_history.append({"role": "user", "content": user_prompt})
 	conversation_history.append({"role": "assistant", "content": reply_text})
 
 	# 限制AI上下文历史记录总数（超出部分直接删除）
@@ -369,12 +273,14 @@ func _on_request_completed(result: int, response_code: int, _headers: PackedStri
 		# 只保留最近的部分
 		var keep_count = max_history_count
 		conversation_history = conversation_history.slice(-keep_count)
-	
+
 	# 发送完整回复（用于后台保存）
 	reply_ready.emit(reply_text)
-	
+
 	# 分割句子并开始逐句显示
 	_split_and_display_sentences(reply_text)
+
+
 
 func _split_and_display_sentences(text: String):
 	"""分割文本为句子并逐句显示"""

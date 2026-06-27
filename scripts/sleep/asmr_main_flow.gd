@@ -458,7 +458,6 @@ func _finalize_stream():
 		"content": streaming_full_reply,
 		"tool_calls": pending_tool_calls if not pending_tool_calls.is_empty() else null
 	}
-	logger.log_api_call("ASMR_AI_RESPONSE", [], JSON.stringify(log_data))
 
 func _on_stream_completed():
 	"""流式响应完成"""

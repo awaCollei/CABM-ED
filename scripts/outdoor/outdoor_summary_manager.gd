@@ -2,26 +2,19 @@ extends Node
 
 ## 户外场景总结管理器
 ## 职责：调用总结 API，解析响应，并通过 outdoor_memory_manager 保存记忆。
-## 设计上与主系统的 ai_summary_manager.gd 保持逻辑一致，但独立运行，
-## 使用自己的 HTTPRequest，不依赖 AIService 的 http_request。
 
 signal summary_completed(summary: String)
 signal summary_failed(error: String)
 
 var config_loader: Node = null
+var easy_ai: Node = EasyAi  # easy_ai 组件引用
 var memory_manager: Node = null  # outdoor_memory_manager 引用
 var logger: Node = null
 
-var _http_request: HTTPRequest = null
 var _pending_conversation_text: String = ""
 var _pending_conversation_data: Array = []
 var _pending_timestamp = null
 var _is_auto_save: bool = false
-
-func _ready() -> void:
-	_http_request = HTTPRequest.new()
-	add_child(_http_request)
-	_http_request.request_completed.connect(_on_request_completed)
 
 ## 发起总结 API 请求
 ## @param conversation_text: 扁平化的对话文本
@@ -33,17 +26,12 @@ func call_summary_api(conversation_text: String, conversation_data: Array, is_au
 		summary_failed.emit("config_loader 未设置")
 		return
 
-	var summary_config = config_loader.get_model_config("summary_model")
-	var model = summary_config.get("model", "")
-	var base_url = summary_config.get("base_url", "")
-	var api_key = summary_config.get("api_key", "")
-
-	if model.is_empty() or base_url.is_empty() or api_key.is_empty():
-		push_error("OutdoorSummaryManager: 总结模型配置不完整")
-		summary_failed.emit("总结模型配置不完整")
+	if not easy_ai:
+		push_error("OutdoorSummaryManager: easy_ai 未设置")
+		summary_failed.emit("easy_ai 未设置")
 		return
 
-	# 保存待处理数据，供响应回调使用
+	# 保存待处理数据
 	_pending_conversation_text = conversation_text
 	_pending_conversation_data = conversation_data
 	_is_auto_save = is_auto_save
@@ -65,6 +53,7 @@ func call_summary_api(conversation_text: String, conversation_data: Array, is_au
 	var conversation_count = conversation_data.size()
 	var word_limit = _calculate_word_limit(conversation_count)
 
+	var summary_config = config_loader.get_model_config("summary_model")
 	var summary_params = summary_config.get("summary", {})
 	var system_prompt = summary_params.get("system_prompt", "请总结以下对话。")
 	system_prompt = system_prompt.replace("{character_name}", char_name)
@@ -77,58 +66,27 @@ func call_summary_api(conversation_text: String, conversation_data: Array, is_au
 		{"role": "user", "content": conversation_text}
 	]
 
-	var body = {
-		"model": model,
-		"messages": messages,
-		"max_tokens": int(summary_params.get("max_tokens", 500)),
-		"temperature": float(summary_params.get("temperature", 0.5)),
-		"top_p": float(summary_params.get("top_p", 0.95))
-	}
-	var enable_json_mode = summary_config.get("enable_json_mode", true)
-	if enable_json_mode:
-		body["response_format"] = {"type": "json_object"}
+	# 使用 easy_ai 发送请求
+	var result = await easy_ai.request(
+		"summary_model",
+		messages,
+		true,  # 使用 JSON 模式
+		{
+			"max_tokens": int(summary_params.get("max_tokens", 500)),
+			"temperature": float(summary_params.get("temperature", 0.5)),
+			"top_p": float(summary_params.get("top_p", 0.95))
+		}
+	)
 
-	var json_body = JSON.stringify(body)
-	if logger:
-		logger.log_api_request("OUTDOOR_SUMMARY_REQUEST", body, json_body)
-
-	if base_url.ends_with("/"):
-		base_url = base_url.substr(0, base_url.length() - 1)
-	var url = base_url + "/chat/completions"
-	var headers = [
-		"Content-Type: application/json",
-		"Authorization: Bearer " + api_key
-	]
-
-	var error = _http_request.request(url, headers, HTTPClient.METHOD_POST, json_body)
-	if error != OK:
-		push_error("OutdoorSummaryManager: 请求发送失败 %d" % error)
-		summary_failed.emit("请求发送失败")
-
-func _on_request_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray) -> void:
-	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-		var err_msg = "HTTP错误 result=%d code=%d" % [result, response_code]
-		push_error("OutdoorSummaryManager: " + err_msg)
-		summary_failed.emit(err_msg)
+	if not result.success:
+		push_error("OutdoorSummaryManager: 请求失败 " + result.error)
+		summary_failed.emit(result.error)
 		return
 
-	var json = JSON.new()
-	var body_text = body.get_string_from_utf8()
-	if json.parse(body_text) != OK:
-		push_error("OutdoorSummaryManager: 响应解析失败")
-		summary_failed.emit("响应解析失败")
-		return
+	# 处理响应
+	_handle_summary_response_text(result.content)
 
-	await _handle_summary_response(json.data)
-
-func _handle_summary_response(response: Dictionary) -> void:
-	if not response.has("choices") or response.choices.is_empty():
-		push_error("OutdoorSummaryManager: 响应格式错误，缺少 choices")
-		summary_failed.emit("响应格式错误")
-		return
-
-	var content = response.choices[0].message.content
-
+func _handle_summary_response_text(content: String) -> void:
 	# 清理 markdown 代码块标记
 	var cleaned = content.strip_edges()
 	if cleaned.begins_with("```json"):
@@ -152,9 +110,6 @@ func _handle_summary_response(response: Dictionary) -> void:
 		return
 
 	var summary: String = data.summary
-
-	if logger:
-		logger.log_api_call("OUTDOOR_SUMMARY_RESPONSE", [], summary)
 
 	# 持久化保存记忆（存档 + 日记 + 向量库）
 	if memory_manager:

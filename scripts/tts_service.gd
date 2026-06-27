@@ -55,9 +55,8 @@ func _get_tts_config() -> Dictionary:
 
 # TTS请求管理（句子为单位）
 var tts_requests: Dictionary = {} # {sentence_hash: HTTPRequest}
-var translate_requests: Dictionary = {}
-var translate_callbacks: Dictionary = {}
-var next_translate_id: int = 0
+# easy_ai 组件引用
+var easy_ai: Node = EasyAi
 
 # 声线上传管理器
 var voice_upload_manager: Node
@@ -664,92 +663,46 @@ func _on_translation_ready(sentence_hash: String, text: String, lang: String):
 
 func translate_text(target_lang: String, text: String, callback: Callable) -> void:
 	"""使用 summary_model.translation 配置将 text 翻译到 target_lang，回调呼回传入翻译后的文本"""
-	var ai_service = get_node_or_null("/root/AIService")
-	var summary_conf = {}
-	if ai_service and ai_service.config.has("summary_model"):
-		summary_conf = ai_service.config.summary_model
-	else:
-		push_error("未配置 summary_model，无法进行翻译")
+	if not easy_ai:
+		push_error("TTS: easy_ai 未配置，无法进行翻译")
 		callback.call("")
 		return
 
-	var model = summary_conf.get("model", "")
-	var base_url = summary_conf.get("base_url", "")
-	var trans_params = summary_conf.get("translation", {})
+	var ai_service = get_node_or_null("/root/AIService")
+	if not ai_service or not ai_service.config_loader:
+		push_error("TTS: AIService 未配置，无法进行翻译")
+		callback.call("")
+		return
+
+	var summary_config = ai_service.config_loader.get_model_config("summary_model")
+	var trans_params = summary_config.get("translation", {})
 
 	var system_prompt = trans_params.get("system_prompt", "")
 	system_prompt = system_prompt.replace("{language}", target_lang)
 
 	var messages = [
-		{"role":"system","content": system_prompt},
-		{"role":"user","content": text}
+		{"role": "system", "content": system_prompt},
+		{"role": "user", "content": text}
 	]
 
-	var body = {
-		"model": model,
-		"messages": messages,
-		"max_tokens": int(trans_params.get("max_tokens", 256)),
-		"temperature": float(trans_params.get("temperature", 0.2)),
-		"top_p": float(trans_params.get("top_p", 0.7))
-	}
+	# 使用 easy_ai 发送请求
+	var result = await easy_ai.request(
+		"summary_model",
+		messages,
+		false,  # 不使用 JSON 模式
+		{
+			"max_tokens": int(trans_params.get("max_tokens", 256)),
+			"temperature": float(trans_params.get("temperature", 0.2)),
+			"top_p": float(trans_params.get("top_p", 0.7))
+		}
+	)
 
-	var tid = next_translate_id
-	next_translate_id += 1
-
-	var http_request = HTTPRequest.new()
-	add_child(http_request)
-	translate_requests[tid] = http_request
-	translate_callbacks[tid] = callback
-	http_request.request_completed.connect(_on_translate_completed.bind(tid, http_request))
-
-	var url = base_url + "/chat/completions"
-	var translate_config = ai_service.config_loader.get_model_config("summary_model")
-	var auth_key = translate_config.api_key
-	var headers = ["Content-Type: application/json", "Authorization: Bearer " + auth_key]
-	var json_body = JSON.stringify(body)
-	var err = http_request.request(url, headers, HTTPClient.METHOD_POST, json_body)
-	if err != OK:
-		push_error("翻译请求发送失败: %s" % str(err))
-		translate_requests.erase(tid)
-		var cb = translate_callbacks.get(tid, null)
-		translate_callbacks.erase(tid)
-		if cb:
-			cb.call("")
-
-func _on_translate_completed(result: int, response_code: int, _headers: PackedStringArray, body: PackedByteArray, tid: int, http_request: HTTPRequest):
-	print("翻译请求完成: tid=%d, result=%d, code=%d" % [tid, result, response_code])
-	var cb = translate_callbacks.get(tid, null)
-	translate_requests.erase(tid)
-	translate_callbacks.erase(tid)
-	if http_request:
-		http_request.queue_free()
-
-	if result != HTTPRequest.RESULT_SUCCESS or response_code != 200:
-		if cb:
-			cb.call("")
+	if not result.success:
+		push_error("翻译请求失败: " + result.error)
+		callback.call("")
 		return
 
-	var response_text = body.get_string_from_utf8()
-	var json = JSON.new()
-	if json.parse(response_text) != OK:
-		if cb:
-			cb.call("")
-		return
-
-	var response = json.data
-	# 修复这里：将 empty() 改为 is_empty()
-	if not response.has("choices") or response.choices.is_empty():
-		if cb:
-			cb.call("")
-		return
-
-	var message = response.choices[0].get("message", null)
-	var translated = ""
-	if message and message.has("content"):
-		translated = message.content
-
-	if cb:
-		cb.call(translated)
+	callback.call(result.content)
 
 func _synthesize_with_voice(sentence_hash: String, text: String, lang: String):
 	"""发送TTS请求

@@ -82,9 +82,6 @@ func _handle_request_async(prompt: String, story_context: Dictionary):
 	if not prompt.strip_edges().is_empty():
 		messages.append({"role": "user", "content": prompt})
 
-	# 记录请求日志
-	logger.log_api_request("STORY_AI_REQUEST", {"messages": messages}, JSON.stringify({"messages": messages}))
-
 	# 调用AI API（异步），传入 story_context 以便使用故事中的 temperature
 	await _call_ai_api_async(messages, prompt, story_context)
 
@@ -303,10 +300,6 @@ func _finalize_streaming_response():
 
 	# 停止流式请求（如果还在运行）
 	stream_ai.stop_streaming()
-
-	# 记录响应日志
-	var messages = current_request.get("messages", [])
-	logger.log_api_call("STORY_AI_RESPONSE", messages, streaming_full_reply)
 
 	# 添加到AI上下文历史
 	var user_prompt = current_request.get("user_prompt", "")
