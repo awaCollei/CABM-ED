@@ -48,7 +48,7 @@ func build_request_params(
 		return {"error": "模型配置不完整"}
 
 	var url_suffix = model_config.get("url_suffix")
-	var url = base_url + url_suffix
+	var url = base_url.rstrip("/") + "/" + url_suffix.lstrip("/")
 
 	var body = {
 		"model": model,
@@ -102,6 +102,9 @@ func start_stream_chat(
 		stream_error.emit(params.error)
 		return
 
+	# 记录请求日志
+	logger.log_api_request("STREAM_AI_REQUEST_" + task_id, params.raw_body, params.body)
+		
 	ai_http_client.start_stream_request(
 		params.url,
 		params.headers,

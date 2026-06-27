@@ -62,7 +62,7 @@ func request(
 	
 	# 构建 URL
 	var url_suffix = model_config.get("url_suffix")
-	var url = base_url + url_suffix
+	var url = base_url.rstrip("/") + "/" + url_suffix.lstrip("/")
 	
 	# 构建请求体
 	var body = {
