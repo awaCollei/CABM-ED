@@ -86,6 +86,8 @@ func _create_task_item(task_id: String, task: Dictionary, model_names: Array) ->
 	option.selected = selected_index
 	option.item_selected.connect(_on_task_option_changed.bind(task_id))
 	hbox.add_child(option)
+	var popup = option.get_popup()
+	popup.max_size = Vector2(300, 200)
 	
 	task_option_buttons[task_id] = option
 	

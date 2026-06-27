@@ -1,6 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene format=3 uid="uid://b6butepxvlnfi"]
 
-[ext_resource type="Script" path="res://scripts/ai_chat/ai_model_dialog.gd" id="1"]
+[ext_resource type="Script" uid="uid://cv58neopfgxxg" path="res://scripts/ai_chat/ai_model_dialog.gd" id="1"]
+[ext_resource type="Theme" uid="uid://c6gyciuad8n1j" path="res://theme/red_button.tres" id="2_qojst"]
+[ext_resource type="Theme" uid="uid://dxscbhbyg47rp" path="res://theme/green_button.tres" id="3_utuwv"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_dialog"]
 bg_color = Color(0.15, 0.15, 0.2, 0.95)
@@ -8,13 +10,13 @@ border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.4, 0.6, 1.0, 0.8)
+border_color = Color(0.4, 0.6, 1, 0.8)
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[node name="ModelDialog" type="PanelContainer"]
+[node name="ModelDialog" type="PanelContainer" unique_id=827527709]
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
@@ -29,112 +31,127 @@ grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_dialog")
 script = ExtResource("1")
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=2101567173]
 layout_mode = 2
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 20
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 20
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer" unique_id=1702616182]
 layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer" unique_id=918107415]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 15
 
-[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="TitleLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer" unique_id=1882638594]
 layout_mode = 2
 text = "新建模型"
 horizontal_alignment = 1
 
-[node name="NameContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer" unique_id=644348195]
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 2
+
+[node name="CancelButton" type="Button" parent="MarginContainer/ScrollContainer/VBoxContainer/ButtonContainer" unique_id=78717633]
+layout_mode = 2
+theme = ExtResource("2_qojst")
+text = "取消"
+
+[node name="ConfirmButton" type="Button" parent="MarginContainer/ScrollContainer/VBoxContainer/ButtonContainer" unique_id=1444376080]
+layout_mode = 2
+theme = ExtResource("3_utuwv")
+text = "创建"
+
+[node name="NameContainer" type="HBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer" unique_id=1509952968]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer/NameContainer"]
-layout_mode = 2
+[node name="NameLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/NameContainer" unique_id=305588263]
 custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
 text = "模型名："
 
-[node name="NameInput" type="LineEdit" parent="MarginContainer/VBoxContainer/NameContainer"]
+[node name="NameInput" type="LineEdit" parent="MarginContainer/ScrollContainer/VBoxContainer/NameContainer" unique_id=1553460371]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 1
 placeholder_text = "输入模型名称（唯一）"
 
-[node name="ProviderContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="ProviderContainer" type="HBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer" unique_id=1360285347]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="ProviderLabel" type="Label" parent="MarginContainer/VBoxContainer/ProviderContainer"]
-layout_mode = 2
+[node name="ProviderLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/ProviderContainer" unique_id=422651445]
 custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
 text = "提供商："
 
-[node name="ProviderOption" type="OptionButton" parent="MarginContainer/VBoxContainer/ProviderContainer"]
+[node name="ProviderOption" type="OptionButton" parent="MarginContainer/ScrollContainer/VBoxContainer/ProviderContainer" unique_id=1393582476]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "选择厂商"
+mouse_filter = 1
 
-[node name="IdentifierContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="IdentifierContainer" type="HBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer" unique_id=925866198]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="IdentifierLabel" type="Label" parent="MarginContainer/VBoxContainer/IdentifierContainer"]
-layout_mode = 2
+[node name="IdentifierLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/IdentifierContainer" unique_id=1195839240]
 custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
 text = "标识符："
 
-[node name="IdentifierInput" type="LineEdit" parent="MarginContainer/VBoxContainer/IdentifierContainer"]
+[node name="IdentifierInput" type="LineEdit" parent="MarginContainer/ScrollContainer/VBoxContainer/IdentifierContainer" unique_id=1416751848]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 1
 placeholder_text = "例如：deepseek-ai/DeepSeek-V3.2"
 
-[node name="URLSuffixContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="URLSuffixContainer" type="HBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer" unique_id=643977012]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="URLSuffixLabel" type="Label" parent="MarginContainer/VBoxContainer/URLSuffixContainer"]
-layout_mode = 2
+[node name="URLSuffixLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/URLSuffixContainer" unique_id=47127312]
 custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
 text = "URL后缀："
 
-[node name="URLSuffixOption" type="OptionButton" parent="MarginContainer/VBoxContainer/URLSuffixContainer"]
+[node name="URLSuffixOption" type="OptionButton" parent="MarginContainer/ScrollContainer/VBoxContainer/URLSuffixContainer" unique_id=61697373]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 1
 
-[node name="URLSuffixInput" type="LineEdit" parent="MarginContainer/VBoxContainer/URLSuffixContainer"]
+[node name="URLSuffixInput" type="LineEdit" parent="MarginContainer/ScrollContainer/VBoxContainer/URLSuffixContainer" unique_id=1788988637]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 1
 placeholder_text = "输入自定义URL后缀"
 
-[node name="ParamsContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="ParamsContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer/VBoxContainer" unique_id=1610857768]
 layout_mode = 2
 theme_override_constants/separation = 5
 
-[node name="ParamsLabel" type="Label" parent="MarginContainer/VBoxContainer/ParamsContainer"]
+[node name="ParamsLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/ParamsContainer" unique_id=930014395]
 layout_mode = 2
 text = "参数 (JSON)："
 
-[node name="ParamsInput" type="TextEdit" parent="MarginContainer/VBoxContainer/ParamsContainer"]
+[node name="ParamsInput" type="TextEdit" parent="MarginContainer/ScrollContainer/VBoxContainer/ParamsContainer" unique_id=1256853844]
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
-custom_minimum_size = Vector2(0, 80)
-placeholder_text = "{\"temperature\": 0.8, \"max_tokens\": 4096}"
+mouse_filter = 1
+placeholder_text = "{
+\"temperature\": 0.8,
+\"max_tokens\": 4096
+}"
+minimap_draw = true
 
-[node name="ParamsStatus" type="Label" parent="MarginContainer/VBoxContainer/ParamsContainer"]
+[node name="ParamsStatus" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/ParamsContainer" unique_id=1537968805]
 layout_mode = 2
 horizontal_alignment = 1
 
-[node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="StatusLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer" unique_id=1941122109]
 layout_mode = 2
 horizontal_alignment = 1
-
-[node name="ButtonContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
-layout_mode = 2
-alignment = 2
-theme_override_constants/separation = 10
-
-[node name="CancelButton" type="Button" parent="MarginContainer/VBoxContainer/ButtonContainer"]
-layout_mode = 2
-text = "取消"
-
-[node name="ConfirmButton" type="Button" parent="MarginContainer/VBoxContainer/ButtonContainer"]
-layout_mode = 2
-text = "创建"

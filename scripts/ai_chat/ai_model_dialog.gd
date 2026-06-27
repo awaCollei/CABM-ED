@@ -6,18 +6,18 @@ extends PanelContainer
 signal model_saved(model_name: String, model_data: Dictionary)
 signal cancelled
 
-@onready var title_label = $MarginContainer/VBoxContainer/TitleLabel
-@onready var name_input = $MarginContainer/VBoxContainer/NameContainer/NameInput
-@onready var provider_option = $MarginContainer/VBoxContainer/ProviderContainer/ProviderOption
-@onready var identifier_input = $MarginContainer/VBoxContainer/IdentifierContainer/IdentifierInput
-@onready var url_suffix_container = $MarginContainer/VBoxContainer/URLSuffixContainer
-@onready var url_suffix_option = $MarginContainer/VBoxContainer/URLSuffixContainer/URLSuffixOption
-@onready var url_suffix_input = $MarginContainer/VBoxContainer/URLSuffixContainer/URLSuffixInput
-@onready var params_input = $MarginContainer/VBoxContainer/ParamsContainer/ParamsInput
-@onready var params_status = $MarginContainer/VBoxContainer/ParamsContainer/ParamsStatus
-@onready var status_label = $MarginContainer/VBoxContainer/StatusLabel
-@onready var cancel_button = $MarginContainer/VBoxContainer/ButtonContainer/CancelButton
-@onready var confirm_button = $MarginContainer/VBoxContainer/ButtonContainer/ConfirmButton
+@onready var title_label = $MarginContainer/ScrollContainer/VBoxContainer/TitleLabel
+@onready var name_input = $MarginContainer/ScrollContainer/VBoxContainer/NameContainer/NameInput
+@onready var provider_option = $MarginContainer/ScrollContainer/VBoxContainer/ProviderContainer/ProviderOption
+@onready var identifier_input = $MarginContainer/ScrollContainer/VBoxContainer/IdentifierContainer/IdentifierInput
+@onready var url_suffix_container = $MarginContainer/ScrollContainer/VBoxContainer/URLSuffixContainer
+@onready var url_suffix_option = $MarginContainer/ScrollContainer/VBoxContainer/URLSuffixContainer/URLSuffixOption
+@onready var url_suffix_input = $MarginContainer/ScrollContainer/VBoxContainer/URLSuffixContainer/URLSuffixInput
+@onready var params_input = $MarginContainer/ScrollContainer/VBoxContainer/ParamsContainer/ParamsInput
+@onready var params_status = $MarginContainer/ScrollContainer/VBoxContainer/ParamsContainer/ParamsStatus
+@onready var status_label = $MarginContainer/ScrollContainer/VBoxContainer/StatusLabel
+@onready var cancel_button = $MarginContainer/ScrollContainer/VBoxContainer/ButtonContainer/CancelButton
+@onready var confirm_button = $MarginContainer/ScrollContainer/VBoxContainer/ButtonContainer/ConfirmButton
 
 var edit_mode: bool = false
 var original_name: String = ""
@@ -27,9 +27,10 @@ var providers: Dictionary = {}
 # 预设的 URL 后缀选项
 const PRESET_SUFFIXES = [
 	"/chat/completions",
+	"/embeddings",
+	"/rererank",
 	"/audio/speech",
 	"/audio/transcriptions",
-	"/embeddings",
 	"自定义..."
 ]
 
@@ -38,7 +39,8 @@ func _ready():
 	confirm_button.pressed.connect(_on_confirm_pressed)
 	params_input.text_changed.connect(_on_params_changed)
 	url_suffix_option.item_selected.connect(_on_url_suffix_option_selected)
-	
+	var popup = provider_option.get_popup()
+	popup.max_size = Vector2(300, 200)
 	# 初始化 URL 后缀选项
 	_update_url_suffix_options()
 
