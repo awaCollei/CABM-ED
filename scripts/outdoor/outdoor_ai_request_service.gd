@@ -7,7 +7,7 @@ signal auto_save_started(message: String)
 signal auto_save_completed(summary: String)
 
 var config_loader: Node = null
-var http_client_module: Node = null
+var stream_ai: Node = null
 var logger: Node
 var conversation_history: Array = []
 var is_chatting: bool = false
@@ -39,62 +39,48 @@ func _setup_config_loader() -> void:
 	add_child(config_loader)
 	config_loader.load_all()
 
-func _setup_http_client() -> void:
-	http_client_module = preload("res://scripts/ai_chat/ai_http_client.gd").new()
-	add_child(http_client_module)
-	http_client_module.stream_chunk_received.connect(_on_stream_chunk_received)
-	http_client_module.stream_error.connect(_on_stream_error)
+func _setup_http_client():
+	var ai_service = get_node_or_null("/root/AIService")
+	if ai_service and ai_service.stream_ai:
+		stream_ai = ai_service.stream_ai
+		stream_ai.stream_chunk_received.connect(_on_stream_chunk_received)
+		stream_ai.stream_completed.connect(_on_stream_completed)
+		stream_ai.stream_error.connect(_on_stream_error)
+	else:
+		push_error("AIService 或 stream_ai 未初始化")
 
 func start_stream_chat(system_prompt: String, user_message: String) -> bool:
 	if is_chatting:
 		stream_error.emit("正在回复中，请稍后再试")
 		return false
-	if config_loader == null:
-		stream_error.emit("AI 配置加载器不可用")
-		return false
-
-	var chat_config = config_loader.get_model_config("chat_model")
-	var api_key = str(chat_config.get("api_key", ""))
-	var base_url = str(chat_config.get("base_url", ""))
-	var model = str(chat_config.get("model", ""))
-	if api_key.is_empty():
-		stream_error.emit("API 密钥未配置")
-		return false
-	if base_url.is_empty() or model.is_empty():
-		stream_error.emit("聊天模型配置不完整")
+	if not stream_ai:
+		stream_error.emit("stream_ai 不可用")
 		return false
 
 	# 保存当前用户消息，用于成功时保存到历史记录
 	_current_user_message = user_message
 
 	var messages = _build_request_messages(system_prompt, user_message)
-	var body = {
-		"model": model,
-		"messages": messages,
-		"max_tokens": int(chat_config.get("max_tokens", 1024)),
-		"temperature": float(chat_config.get("temperature", 0.7)),
-		"top_p": float(chat_config.get("top_p", 0.9)),
-		"stream": true
-	}
-	var json_body = JSON.stringify(body)
-	logger.log_api_request("CHAT_REQUEST", body, json_body)
 	_reset_stream_state()
 	is_chatting = true
 
-	var headers = [
-		"Content-Type: application/json",
-		"Authorization: Bearer " + api_key
-	]
-	if base_url.ends_with("/"):
-		base_url = base_url.substr(0, base_url.length() - 1)
-	var url = base_url + "/chat/completions"
+	var chat_config = config_loader.get_model_config("chat_model")
 	var timeout = float(chat_config.get("timeout", 30.0))
-	http_client_module.start_stream_request(url, headers, JSON.stringify(body), timeout)
+	stream_ai.start_stream_chat(
+		"chat_model",
+		messages,
+		{
+			"max_tokens": int(chat_config.get("max_tokens", 1024)),
+			"temperature": float(chat_config.get("temperature", 0.7)),
+			"top_p": float(chat_config.get("top_p", 0.9))
+		},
+		timeout
+	)
 	return true
 
 func stop_stream() -> void:
-	if http_client_module:
-		http_client_module.stop_streaming()
+	if stream_ai:
+		stream_ai.stop_streaming()
 	is_chatting = false
 
 func clear_history() -> void:

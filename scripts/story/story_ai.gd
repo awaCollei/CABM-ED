@@ -19,8 +19,8 @@ var max_history_count: int = 12  # 故事模式携带12条上下文
 var display_history: Array = []
 const MAX_DISPLAY_HISTORY_SIZE: int = 1000  # 最大显示历史条数
 
-# AI HTTP客户端（用于真正的流式输出）
-var ai_http_client: Node
+# stream_ai 组件（用于流式输出）
+var stream_ai: Node
 
 # 日志记录器
 var logger: Node
@@ -28,17 +28,29 @@ var logger: Node
 # 流式状态管理
 var is_streaming: bool = false
 
+# 当前请求数据（用于处理响应）
+var current_request: Dictionary = {}
+
 func _ready():
 	# 初始化日志记录器
 	logger = preload("res://scripts/ai_chat/ai_logger.gd").new()
 	add_child(logger)
 
-	# 创建AI HTTP客户端（用于真正的流式输出）
-	ai_http_client = preload("res://scripts/ai_chat/ai_http_client.gd").new()
-	add_child(ai_http_client)
-	ai_http_client.stream_chunk_received.connect(_on_stream_chunk_received)
-	ai_http_client.stream_completed.connect(_on_stream_completed)
-	ai_http_client.stream_error.connect(_on_stream_error)
+	# 初始化 config_loader
+	var ai_service = get_node_or_null("/root/AIService")
+	if ai_service and ai_service.config_loader:
+		config_loader = ai_service.config_loader
+	else:
+		push_error("AIService 或 config_loader 未初始化")
+
+	# 初始化 stream_ai
+	if ai_service and ai_service.stream_ai:
+		stream_ai = ai_service.stream_ai
+		stream_ai.stream_chunk_received.connect(_on_stream_chunk_received)
+		stream_ai.stream_completed.connect(_on_stream_completed)
+		stream_ai.stream_error.connect(_on_stream_error)
+	else:
+		push_error("AIService 或 stream_ai 未初始化")
 
 func request_reply(prompt: String, story_context: Dictionary = {}):
 	"""请求AI回复（异步）
@@ -148,65 +160,21 @@ func _get_limited_history() -> Array:
 
 func _call_ai_api_async(messages: Array, user_prompt: String, story_context: Dictionary = {}):
 	"""异步调用AI API（真正的流式输出）。temperature 从故事数据读取，默认 1.2。"""
-	# 确保ai_http_client已初始化
-	if ai_http_client == null:
-		ai_http_client = preload("res://scripts/ai_chat/ai_http_client.gd").new()
-		add_child(ai_http_client)
-		ai_http_client.stream_chunk_received.connect(_on_stream_chunk_received)
-		ai_http_client.stream_completed.connect(_on_stream_completed)
-		ai_http_client.stream_error.connect(_on_stream_error)
-
-	# 获取配置
-	var ai_service = get_node_or_null("/root/AIService")
-	if not ai_service or not ai_service.config_loader:
-		push_error("AIService 未初始化")
-		request_error_occurred.emit("系统错误：配置服务未就绪")
-		return
-
-	var chat_config = ai_service.config_loader.get_model_config("chat_model")
-	var base_url = chat_config.get("base_url", "")
-	var model = chat_config.get("model", "")
-	var api_key = chat_config.get("api_key", "")
-
-	if base_url.is_empty() or model.is_empty():
-		push_error("对话模型配置不完整")
-		request_error_occurred.emit("配置错误：模型配置不完整")
-		return
-
-	var url = base_url + "/chat/completions"
-	
-	if api_key.is_empty():
-		push_error("对话模型 API 密钥未配置")
-		request_error_occurred.emit("对话模型 API 密钥未配置")
+	# 确保 stream_ai 已初始化
+	if not stream_ai:
+		push_error("stream_ai 未初始化")
+		request_error_occurred.emit("系统错误：stream_ai 未初始化")
 		return
 
 	# 温度：从故事数据读取，钳制在 0～2，默认 1.2
 	var story_data = story_context.get("story_data", {})
 	var temperature = clampf(float(story_data.get("temperature", 1.2)), 0.0, 2.0)
 
-	# 构建请求体
-	var body = {
-		"model": model,
-		"messages": messages,
-		"max_tokens": int(chat_config.get("max_tokens", 4096)),
-		"temperature": temperature,
-		"top_p": float(chat_config.get("top_p", 0.9)),
-		"stream": true,  # 流式响应
-		"enable_thinking": false
-	}
-
-	var json_body = JSON.stringify(body)
-
-	# 构建请求头
-	var headers = [
-		"Content-Type: application/json",
-		"Authorization: Bearer " + api_key
-	]
-
 	# 存储请求信息用于后续处理
-	ai_http_client.set_meta("user_prompt", user_prompt)
-	ai_http_client.set_meta("messages", messages)
-	ai_http_client.set_meta("request_body", body)
+	current_request = {
+		"user_prompt": user_prompt,
+		"messages": messages
+	}
 
 	# 设置流式状态
 	is_streaming = true
@@ -216,10 +184,21 @@ func _call_ai_api_async(messages: Array, user_prompt: String, story_context: Dic
 	streaming_buffer = ""
 
 	# 启动流式请求
-	ai_http_client.start_stream_request(url, headers, json_body, 30.0)
+	var chat_config = config_loader.get_model_config("chat_model")
+	stream_ai.start_stream_chat(
+		"chat_model",
+		messages,
+		{
+			"max_tokens": int(chat_config.get("max_tokens", 4096)),
+			"temperature": temperature,
+			"top_p": float(chat_config.get("top_p", 0.9)),
+			"enable_thinking": false
+		},
+		30.0
+	)
 
 	# 等待流式响应完成
-	await ai_http_client.stream_completed
+	await stream_ai.stream_completed
 
 var streaming_buffer: String = ""  # 流式响应缓冲区
 var streaming_full_reply: String = ""  # 完整的回复内容
@@ -317,41 +296,19 @@ func _finalize_streaming_response():
 	# 标记为已完成
 	is_streaming = false
 
-	if ai_http_client == null:
-		request_error_occurred.emit("AI HTTP客户端未初始化")
+	if stream_ai == null:
+		request_error_occurred.emit("stream_ai 未初始化")
 		return
 
-	# 停止HTTP客户端（如果还在运行）
-	ai_http_client.stop_streaming()
-
-	# 处理缓冲区中剩余的数据
-	if not streaming_buffer.is_empty():
-		var lines = streaming_buffer.split("\n", false)
-		var lines_array = Array(lines)
-		for line in lines_array:
-			line = line.strip_edges()
-			if line.begins_with("data: "):
-				var data = line.substr(6)
-				if data == "[DONE]":
-					break
-
-				var json = JSON.new()
-				if json.parse(data) == OK:
-					var chunk_data = json.data
-					if chunk_data.has("choices") and chunk_data.choices.size() > 0:
-						var choice = chunk_data.choices[0]
-						if choice.has("delta") and choice.delta.has("content"):
-							var content = choice.delta.content
-							if not content.is_empty():
-								streaming_full_reply += content
-								text_chunk_ready.emit(content)
+	# 停止流式请求（如果还在运行）
+	stream_ai.stop_streaming()
 
 	# 记录响应日志
-	var messages = ai_http_client.get_meta("messages", [])
+	var messages = current_request.get("messages", [])
 	logger.log_api_call("STORY_AI_RESPONSE", messages, streaming_full_reply)
 
 	# 添加到AI上下文历史
-	var user_prompt = ai_http_client.get_meta("user_prompt", "")
+	var user_prompt = current_request.get("user_prompt", "")
 	if not user_prompt.is_empty():
 		conversation_history.append({"role": "user", "content": user_prompt})
 	

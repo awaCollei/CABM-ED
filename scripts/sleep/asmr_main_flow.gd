@@ -16,7 +16,7 @@ var tts_manager: Node = null
 var tool_manager: Node = null
 
 # AI相关
-var ai_http_client: Node
+var stream_ai: Node
 var logger: Node
 
 # 对话历史
@@ -42,12 +42,15 @@ func _ready():
 	logger = preload("res://scripts/ai_chat/ai_logger.gd").new()
 	add_child(logger)
 	
-	# 初始化AI HTTP客户端
-	ai_http_client = preload("res://scripts/ai_chat/ai_http_client.gd").new()
-	add_child(ai_http_client)
-	ai_http_client.stream_chunk_received.connect(_on_stream_chunk_received)
-	ai_http_client.stream_completed.connect(_on_stream_completed)
-	ai_http_client.stream_error.connect(_on_stream_error)
+	# 初始化 stream_ai
+	var ai_service = get_node_or_null("/root/AIService")
+	if ai_service and ai_service.stream_ai:
+		stream_ai = ai_service.stream_ai
+		stream_ai.stream_chunk_received.connect(_on_stream_chunk_received)
+		stream_ai.stream_completed.connect(_on_stream_completed)
+		stream_ai.stream_error.connect(_on_stream_error)
+	else:
+		push_error("AIService 或 stream_ai 未初始化")
 
 func initialize(tts: Node, tool: Node):
 	"""初始化子组件"""
@@ -260,8 +263,8 @@ func _cleanup_current_flow():
 	is_running = false
 	
 	# 停止流式请求
-	if ai_http_client:
-		ai_http_client.stop_streaming()
+	if stream_ai:
+		stream_ai.stop_streaming()
 	
 	# 清理TTS
 	if tts_manager:
@@ -299,7 +302,11 @@ func _on_status_display_updated():
 	status_display_updated = true
 
 func _send_ai_request(user_message: String):
-	"""发送AI请求"""
+	"""发送AI请求 - 使用 stream_ai"""
+	if not stream_ai:
+		push_error("stream_ai 未初始化")
+		return
+
 	# 构建系统提示词
 	var system_prompt = _build_system_prompt()
 	
@@ -319,46 +326,23 @@ func _send_ai_request(user_message: String):
 	# 加载工具配置
 	var tools_config = _load_tools_config()
 	
-	# 调用AI API
-	var ai_service = get_node_or_null("/root/AIService")
-	if not ai_service or not ai_service.config_loader:
-		push_error("AIService 未初始化")
-		return
-
-	var chat_config = ai_service.config_loader.get_model_config("chat_model")
-	var base_url = chat_config.get("base_url", "")
-	var url = base_url + "/chat/completions"
-	var api_key = chat_config.get("api_key", "")
-	
-	if api_key.is_empty():
-		push_error("对话模型 API 密钥未配置")
-		return
-	
-	var body = {
-		"model": chat_config.get("model", ""),
-		"messages": messages,
-		"max_tokens": int(chat_config.get("max_tokens", 1024)),
-		"temperature": 0.8,
-		"top_p": float(chat_config.get("top_p", 0.9)),
-		"stream": true,
-		"tools": tools_config.tools
-	}
-	
-	var json_body = JSON.stringify(body)
-	logger.log_api_request("ASMR_AI_REQUEST", body, json_body)
-	
-	var headers = [
-		"Content-Type: application/json",
-		"Authorization: Bearer " + api_key
-	]
-	
 	# 重置流式状态
 	is_streaming = true
 	streaming_full_reply = ""
 	streaming_buffer = ""
 	
 	# 启动流式请求
-	ai_http_client.start_stream_request(url, headers, json_body, 30.0)
+	stream_ai.start_stream_chat(
+		"chat_model",
+		messages,
+		{
+			"max_tokens": int(tools_config.get("max_tokens", 1024)),
+			"temperature": 0.8,
+			"top_p": float(tools_config.get("top_p", 0.9)),
+			"tools": tools_config.tools
+		},
+		30.0
+	)
 
 func _on_stream_chunk_received(chunk_text: String):
 	"""处理流式数据块"""
@@ -452,7 +436,7 @@ func _finalize_stream():
 		return
 	
 	is_streaming = false
-	ai_http_client.stop_streaming()
+	stream_ai.stop_streaming()
 	
 	# 通知TTS流式完成
 	if tts_manager:
@@ -616,8 +600,8 @@ func cleanup():
 	"""清理资源"""
 	is_running = false
 	
-	if ai_http_client:
-		ai_http_client.stop_streaming()
+	if stream_ai:
+		stream_ai.stop_streaming()
 	
 	if tts_manager:
 		tts_manager.clear_all()

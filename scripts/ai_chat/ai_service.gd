@@ -29,6 +29,7 @@ var tuple_manager: Node
 var relationship_manager: Node
 var options_generator: Node
 var easy_ai: Node
+var stream_ai: Node
 
 # HTTP 请求节点
 var http_request: HTTPRequest
@@ -113,6 +114,11 @@ func _ready():
 	easy_ai = preload("res://scripts/ai_chat/easy_ai.gd").new()
 	add_child(easy_ai)
 	easy_ai.initialize(config_loader, logger)
+	
+	# 通用流式 AI 请求组件
+	stream_ai = preload("res://scripts/ai_chat/stream_ai.gd").new()
+	add_child(stream_ai)
+	stream_ai.initialize(config_loader, logger)
 	
 	# 创建 HTTP 请求节点（用于非流式请求）
 	http_request = HTTPRequest.new()

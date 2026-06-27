@@ -10,7 +10,7 @@ signal generation_error(error_message: String)
 
 # 依赖节点引用
 var story_creation_panel: Control = null
-var ai_http_client: Node = null
+var stream_ai: Node = null
 
 # AI配置相关
 var config_loader: Node
@@ -41,14 +41,16 @@ func _initialize_ai_config():
 		push_error("AIService 未初始化，无法获取 config_loader")
 
 func _initialize_http_client():
-	"""初始化HTTP客户端"""
-	ai_http_client = preload("res://scripts/ai_chat/ai_http_client.gd").new()
-	add_child(ai_http_client)
-
-	# 连接流式响应信号
-	ai_http_client.stream_chunk_received.connect(_on_stream_chunk_received)
-	ai_http_client.stream_completed.connect(_on_stream_completed)
-	ai_http_client.stream_error.connect(_on_stream_error)
+	"""初始化HTTP客户端 - 使用 stream_ai"""
+	var ai_service = get_node_or_null("/root/AIService")
+	if ai_service and ai_service.stream_ai:
+		stream_ai = ai_service.stream_ai
+		# 连接流式响应信号
+		stream_ai.stream_chunk_received.connect(_on_stream_chunk_received)
+		stream_ai.stream_completed.connect(_on_stream_completed)
+		stream_ai.stream_error.connect(_on_stream_error)
+	else:
+		push_error("AIService 或 stream_ai 未初始化")
 
 func _initialize_confirm_timer():
 	"""初始化确认计时器"""
@@ -139,20 +141,11 @@ func _update_generate_button_state(disabled: bool, text: String = ""):
 		print("警告：story_creation_panel 或 generate_button 为 null")
 
 func _call_story_generation_api(keywords: String):
-	"""调用故事生成API"""
-	var story_config = config_loader.get_model_config("summary_model")
-	var model = story_config.get("model", "")
-	var base_url = story_config.get("base_url", "")
+	"""调用故事生成API - 使用 stream_ai"""
+	if not stream_ai:
+		_handle_generation_error("stream_ai 未初始化")
+		return
 
-	if model.is_empty() or base_url.is_empty():
-		var error_msg = "故事生成模型配置不完整"
-		_handle_generation_error(error_msg)
-		return
-	var api_key = story_config.get("api_key", "")
-	if api_key.is_empty():
-		var error_msg = "故事生成模型 API 密钥未配置"
-		_handle_generation_error(error_msg)
-		return
 	# 构建系统提示词
 	var system_prompt = _build_story_generation_system_prompt()
 
@@ -164,23 +157,14 @@ func _call_story_generation_api(keywords: String):
 		{"role": "user", "content": user_prompt}
 	]
 
-	var url = base_url + "/chat/completions"
-	var headers = ["Content-Type: application/json", "Authorization: Bearer " + api_key]
-
-	var body = {
-		"model": model,
-		"messages": messages,
-		"max_tokens": 512,
-		"temperature": 0.8,
-		"top_p": 0.9,
-		"enable_thinking": false,
-		"stream": true  # 启用流式响应
-	}
-
-	var json_body = JSON.stringify(body)
-
 	# 启动流式请求
-	ai_http_client.start_stream_request(url, headers, json_body)
+	stream_ai.start_stream_chat(
+		"summary_model",
+		messages,
+		{
+			"temperature": 0.8
+		}
+	)
 
 func _build_story_generation_system_prompt() -> String:
 	"""构建故事生成系统提示词"""
@@ -389,8 +373,8 @@ func _finalize_generation():
 	print("设置is_generating = false")
 
 	# 停止流式传输（如果还在进行中）
-	if ai_http_client:
-		ai_http_client.stop_streaming()
+	if stream_ai:
+		stream_ai.stop_streaming()
 
 	# 调试：打印完整响应
 	print("=== AI生成完成 ===")
@@ -438,7 +422,8 @@ func stop_generation():
 	if is_generating:
 		is_generating = false
 		full_response_content = ""  # 清空响应内容
-		ai_http_client.stop_streaming()
+		if stream_ai:
+			stream_ai.stop_streaming()
 		_update_generate_button_state(false, "生成故事")
 
 func _on_confirm_timeout():
