@@ -23,42 +23,31 @@ func _setup_http_client():
 	ai_http_client.stream_completed.connect(_on_stream_completed)
 	ai_http_client.stream_error.connect(_on_stream_error)
 
-func start_stream_chat(
+## 构建请求参数（不发送请求）
+## 返回 Dictionary: { url: String, headers: Array, body: String, model_config: Dictionary }
+func build_request_params(
 	task_id: String,
 	messages: Array,
 	use_json: bool = false,
-	extra_params: Dictionary = {},
-	timeout: float = 30.0
-):
-	"""启动流式 AI 请求
-	
-	Args:
-		task_id: 任务类型（如 "chat_model", "summary_model"）
-		messages: 消息数组
-		extra_params: 额外参数（优先级高于配置）
-		timeout: 超时时间（秒）
-	"""
+	extra_params: Dictionary = {}
+) -> Dictionary:
 	if not config_loader:
-		stream_error.emit("配置加载器未初始化")
-		return
+		return {"error": "配置加载器未初始化"}
 
 	var model_config = config_loader.get_model_config(task_id)
 	if model_config.is_empty():
-		stream_error.emit("模型配置未找到：" + task_id)
-		return
+		return {"error": "模型配置未找到：" + task_id}
 
 	var api_key = str(model_config.get("api_key", ""))
 	var base_url = str(model_config.get("base_url", ""))
 	var model = str(model_config.get("model", ""))
 
 	if api_key.is_empty():
-		stream_error.emit("API 密钥未配置")
-		return
+		return {"error": "API 密钥未配置"}
 	if base_url.is_empty() or model.is_empty():
-		stream_error.emit("模型配置不完整")
-		return
+		return {"error": "模型配置不完整"}
 
-	var url_suffix = model_config.get("url_suffix")
+	var url_suffix = model_config.get("url_suffix", "/chat/completions")
 	var url = base_url + url_suffix
 
 	var body = {
@@ -70,7 +59,7 @@ func start_stream_chat(
 		"stream": true
 	}
 
-	# 检查是否启用JSON模式（需要参数请求且模型配置支持）
+	# 检查是否启用JSON模式
 	if use_json and model_config.get("enable_json_mode", false):
 		body["response_format"] = {"type": "json_object"}
 
@@ -82,16 +71,46 @@ func start_stream_chat(
 	var model_params = model_config.get("params", {})
 	for key in model_params.keys():
 		body[key] = model_params[key]
+
 	var json_body = JSON.stringify(body)
-	if logger:
-		logger.log_api_request("STREAM_AI_REQUEST_" + task_id, body, json_body)
 
 	var headers = [
 		"Content-Type: application/json",
 		"Authorization: Bearer " + api_key
 	]
 
-	ai_http_client.start_stream_request(url, headers, json_body, timeout)
+	return {
+		"url": url,
+		"headers": headers,
+		"body": json_body,
+		"model_config": model_config,
+		"raw_body": body
+	}
+
+## 构建并发送流式请求
+func start_stream_chat(
+	task_id: String,
+	messages: Array,
+	use_json: bool = false,
+	extra_params: Dictionary = {},
+	timeout: float = 30.0
+):
+	# 构建请求参数
+	var params = build_request_params(task_id, messages, use_json, extra_params)
+	
+	if params.has("error"):
+		stream_error.emit(params.error)
+		return
+
+	if logger:
+		logger.log_api_request("STREAM_AI_REQUEST_" + task_id, params.raw_body, params.body)
+
+	ai_http_client.start_stream_request(
+		params.url,
+		params.headers,
+		params.body,
+		timeout
+	)
 
 func stop_streaming():
 	if ai_http_client:

@@ -396,7 +396,6 @@ func _call_chat_api(messages: Array, _user_message: String, item_data: Dictionar
 	var last_msg = messages[-1]
 	if last_msg.role == "assistant":
 		push_error("错误: messages数组最后一条消息是assistant，这会导致400错误")
-		# 添加一个占位符user消息
 		messages.append({"role": "user", "content": ""})
 		print("紧急修复: 添加user占位符以避免API错误")
 
@@ -406,43 +405,25 @@ func _call_chat_api(messages: Array, _user_message: String, item_data: Dictionar
 			messages[i].content = ""
 			print("警告: 修复了第%d条消息的空content" % i)
 
-	var chat_config = config_loader.get_model_config("chat_model")
-	var url_suffix = chat_config.get("url_suffix", "/chat/completions")
-	var url = chat_config.base_url + url_suffix
-	var api_key = chat_config.get("api_key", "")
-	
-	if api_key.is_empty():
-		push_error("对话模型 API 密钥未配置")
-		chat_error.emit("对话模型 API 密钥未配置")
+	# 使用 stream_ai 构建请求参数
+	var params = stream_ai.build_request_params(
+		"chat_model",
+		messages,
+		true,  # 启用JSON模式
+		{}     # 额外参数
+	)
+
+	if params.has("error"):
+		push_error("构建请求失败: " + params.error)
+		chat_error.emit(params.error)
 		is_chatting = false
 		return
-	
-	var headers = [
-		"Content-Type: application/json",
-		"Authorization: Bearer " + api_key
-	]
 
-	var body = {
-		"model": chat_config.get("model", ""),
-		"messages": messages,
-		"max_tokens": int(chat_config.get("max_tokens", 1024)),
-		"temperature": float(chat_config.get("temperature", 0.7)),
-		"top_p": float(chat_config.get("top_p", 0.9)),
-		"stream": true
-	}
-	# 检查是否启用JSON模式
-	var enable_json_mode = chat_config.get("enable_json_mode", true)
-	if enable_json_mode:
-		body["response_format"] = {"type": "json_object"}
-	var json_body = JSON.stringify(body)
-
-	# 验证JSON是否有效
-	var test_parse = JSON.new()
-	if test_parse.parse(json_body) != OK:
-		push_error("错误: 生成的JSON无效: " + test_parse.get_error_message())
-		chat_error.emit("JSON序列化失败")
-		is_chatting = false
-		return
+	# 可以在这里添加对话特有的额外处理
+	var url = params.url
+	var headers = params.headers
+	var json_body = params.body
+	var body = params.raw_body
 
 	logger.log_api_request("CHAT_REQUEST", body, json_body)
 
@@ -453,10 +434,12 @@ func _call_chat_api(messages: Array, _user_message: String, item_data: Dictionar
 
 	http_request.set_meta("messages", messages)
 	http_request.set_meta("request_body", body)
-	http_request.set_meta("item_data", item_data)  # 保存物品数据
+	http_request.set_meta("item_data", item_data)
 
 	var timeout = config_loader.config.chat_model.get("timeout", 30.0)
 	chat_status_changed.emit("等待响应...")
+	
+	# 直接使用 http_client_module 发送请求（因为需要连接完成后的处理）
 	http_client_module.start_stream_request(url, headers, json_body, timeout)
 
 func _on_stream_chunk_received(data: String):
