@@ -146,7 +146,7 @@ func _load_from_model_tasks(user_config: Dictionary):
 		var params = model_data.get("params", {})
 		var normalized_params = normalize_json_values(params)
 		
-		var enable_json_mode = model_data.get("enable_json_mode", true)
+		var enable_json_mode = model_data.get("enable_json_mode", false)
 		
 		# 查找厂商
 		if not providers.has(provider_name):

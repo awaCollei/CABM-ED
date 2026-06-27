@@ -94,33 +94,33 @@ const PRESET_MODELS = {
 
 # 模型任务定义
 const MODEL_TASKS = {
-	"chat_model": {
-		"name": "对话模型",
+"chat_model": {
+		"name": "💬 对话模型",
 		"description": "用于角色的对话和行为"
 	},
 	"summary_model": {
-		"name": "总结模型",
+		"name": "📝 总结模型",
 		"description": "用于信息的整合和提取"
 	},
 	"tts_model": {
-		"name": "语音模型",
+		"name": "🔊 语音模型",
 		"description": "用于语音合成"
 	},
 	"embedding_model": {
-		"name": "嵌入模型",
-		"description": "用于文本向量化"
+		"name": "🧩 嵌入模型",
+		"description": "用于记忆存储和检索"
 	},
 	"view_model": {
-		"name": "视觉模型",
+		"name": "👁️ 视觉模型",
 		"description": "用于图像识别"
 	},
 	"stt_model": {
-		"name": "语音输入",
+		"name": "🎤 语音输入",
 		"description": "用于语音识别"
 	},
 	"rerank_model": {
-		"name": "重排模型",
-		"description": "用于搜索结果重排"
+		"name": "📌 重排模型",
+		"description": "优化记忆检索"
 	}
 }
 
@@ -134,7 +134,7 @@ const CONFIG_TEMPLATES = {
 			"summary_model": "Qwen3-8B",
 			"tts_model": "",
 			"embedding_model": "bge-m3",
-			"view_model": "GLM-4.1V",
+			"view_model": "GLM-4.1V-9B",
 			"stt_model": "SenseVoice",
 			"rerank_model": "bge-reranker"
 		}

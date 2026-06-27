@@ -79,7 +79,7 @@ func setup_for_create(providers_data: Dictionary, models: Dictionary):
 	url_suffix_input.text = "/chat/completions"
 	url_suffix_input.visible = false
 	params_input.text = ""
-	json_mode_check.button_pressed = true
+	json_mode_check.button_pressed = false
 	status_label.text = ""
 	_update_provider_options()
 	_update_url_suffix_options()
@@ -121,7 +121,7 @@ func setup_for_edit(model_name: String, model_data: Dictionary, providers_data: 
 		params_input.text = ""
 	
 	# 设置 JSON 模式开关
-	json_mode_check.button_pressed = model_data.get("enable_json_mode", true)
+	json_mode_check.button_pressed = model_data.get("enable_json_mode", false)
 	
 	status_label.text = ""
 	_update_provider_options()

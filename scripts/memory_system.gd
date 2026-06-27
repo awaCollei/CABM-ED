@@ -450,7 +450,6 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 			print("召回前推理成功，添加 %d 个优化查询" % optimized_queries.size())
 		else:
 			print("召回前推理失败，使用原始查询")
-
 	# 对所有查询进行检索并合并结果
 	var seen_items = {}  # 用于去重，key为item的文本内容
 
