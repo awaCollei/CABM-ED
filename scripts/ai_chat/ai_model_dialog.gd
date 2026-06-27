@@ -45,6 +45,27 @@ func _ready():
 	# 初始化 URL 后缀选项
 	_update_url_suffix_options()
 
+static func normalize_json_values(data):
+	"""递归将 JSON 中的浮点数整数值转换为整数"""
+	match typeof(data):
+		TYPE_DICTIONARY:
+			var result = {}
+			for key in data:
+				result[key] = normalize_json_values(data[key])
+			return result
+		TYPE_ARRAY:
+			var result = []
+			for item in data:
+				result.append(normalize_json_values(item))
+			return result
+		TYPE_FLOAT:
+			# 如果是整数值（如 1024.0），转换为整数
+			if data == floor(data):
+				return int(data)
+			return data
+		_:
+			return data
+
 func setup_for_create(providers_data: Dictionary, models: Dictionary):
 	"""设置为新建模式"""
 	edit_mode = false
@@ -93,7 +114,9 @@ func setup_for_edit(model_name: String, model_data: Dictionary, providers_data: 
 	# 设置参数
 	var params = model_data.get("params", {})
 	if not params.is_empty():
-		params_input.text = JSON.stringify(params, "\t")
+		# 递归转换浮点整数值为整数
+		var normalized_params = normalize_json_values(params)
+		params_input.text = JSON.stringify(normalized_params, "\t")
 	else:
 		params_input.text = ""
 	
@@ -185,7 +208,8 @@ func _on_confirm_pressed():
 		if json.parse(params_text) != OK:
 			_show_status("参数JSON格式错误", false)
 			return
-		params = json.data
+		# 规范化数值类型
+		params = normalize_json_values(json.data)
 	
 	# 构建模型数据
 	var model_data = {

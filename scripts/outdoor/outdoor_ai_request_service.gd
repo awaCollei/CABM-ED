@@ -44,7 +44,7 @@ func _setup_http_client():
 	if ai_service and ai_service.stream_ai:
 		stream_ai = ai_service.stream_ai
 		stream_ai.stream_chunk_received.connect(_on_stream_chunk_received)
-		stream_ai.stream_completed.connect(_on_stream_completed)
+		# stream_ai.stream_completed.connect(_on_stream_completed)
 		stream_ai.stream_error.connect(_on_stream_error)
 	else:
 		push_error("AIService 或 stream_ai 未初始化")
@@ -157,8 +157,8 @@ func _finalize_stream_success() -> void:
 		return
 
 	is_chatting = false
-	if http_client_module:
-		http_client_module.stop_streaming()
+	if stream_ai:
+		stream_ai.stop_streaming()
 
 	# 只有成功收到非空回复时才保存到历史记录
 	if not _assistant_buffer.strip_edges().is_empty() and not _current_user_message.is_empty():

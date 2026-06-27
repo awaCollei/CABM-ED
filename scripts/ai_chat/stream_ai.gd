@@ -57,7 +57,7 @@ func start_stream_chat(
 		stream_error.emit("模型配置不完整")
 		return
 
-	var url_suffix = model_config.get("url_suffix", "/chat/completions")
+	var url_suffix = model_config.get("url_suffix")
 	var url = base_url + url_suffix
 
 	var body = {
@@ -69,11 +69,15 @@ func start_stream_chat(
 		"stream": true
 	}
 
+	# 先写入额外参数
 	for key in extra_params.keys():
 		body[key] = extra_params[key]
 
+	# 再用 model_config 覆盖（优先级更高）
+	var model_params = model_config.get("params", {})
+	for key in model_params.keys():
+		body[key] = model_params[key]
 	var json_body = JSON.stringify(body)
-
 	if logger:
 		logger.log_api_request("STREAM_AI_REQUEST_" + task_id, body, json_body)
 

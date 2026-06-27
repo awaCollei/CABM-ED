@@ -148,7 +148,7 @@ theme_override_constants/separation = 5
 
 [node name="ParamsLabel" type="Label" parent="MarginContainer/ScrollContainer/VBoxContainer/ParamsContainer" unique_id=930014395]
 layout_mode = 2
-text = "额外参数："
+text = "额外参数（会覆写默认参数）："
 
 [node name="ParamsInput" type="TextEdit" parent="MarginContainer/ScrollContainer/VBoxContainer/ParamsContainer" unique_id=1256853844]
 custom_minimum_size = Vector2(0, 160)

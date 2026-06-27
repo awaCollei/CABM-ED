@@ -99,8 +99,8 @@ func _build_system_prompt(story_data: Dictionary, _current_node_id: String, stor
 	var save_mgr = get_node("/root/SaveManager")
 
 	# 获取基本信息
-	# var character_name = save_mgr.get_character_name()
-	# var user_name = save_mgr.get_user_name()
+	var character_name = save_mgr.get_character_name()
+	var user_name = save_mgr.get_user_name()
 	var user_address = save_mgr.get_user_address()
 
 	var prompt_parts = []
@@ -124,6 +124,8 @@ func _build_system_prompt(story_data: Dictionary, _current_node_id: String, stor
 		var identity = ""
 		if identity_loader:
 			identity = identity_loader.get_full_identity(user_address, "")	
+		identity = identity.replace("{character_name}", character_name)
+		identity = identity.replace("{user_name}", user_name)
 		base_prompt += identity
 	
 	prompt_parts.append(base_prompt)
@@ -190,9 +192,7 @@ func _call_ai_api_async(messages: Array, user_prompt: String, story_context: Dic
 		messages,
 		{
 			"max_tokens": int(chat_config.get("max_tokens", 4096)),
-			"temperature": temperature,
-			"top_p": float(chat_config.get("top_p", 0.9)),
-			"enable_thinking": false
+			"temperature": temperature
 		},
 		30.0
 	)

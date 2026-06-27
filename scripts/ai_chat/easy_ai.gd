@@ -70,19 +70,14 @@ func request(
 		"messages": messages
 	}
 	
-	# 合并模型配置中的默认参数
-	for key in model_config.keys():
-		if key not in ["model", "base_url", "api_key", "url_suffix", "enable_json_mode"]:
-			body[key] = model_config[key]
-	
-	# 合并额外参数（优先级更高）
+	# 先写入额外参数
 	for key in extra_params.keys():
 		body[key] = extra_params[key]
-	
-	# 处理 JSON 模式
-	var model_supports_json = model_config.get("enable_json_mode", true)
-	if use_json and model_supports_json:
-		body["response_format"] = {"type": "json_object"}
+
+	# 再用 model_config 覆盖（优先级更高）
+	var model_params = model_config.get("params", {})
+	for key in model_params.keys():
+		body[key] = model_params[key]
 	
 	# 序列化 JSON
 	var json_body = JSON.stringify(body)

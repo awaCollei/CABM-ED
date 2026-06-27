@@ -78,6 +78,28 @@ func _load_user_config():
 	
 	print("AI 用户配置加载成功")
 
+# 在文件顶部添加 normalize_json_values 函数（如果还没有）
+static func normalize_json_values(data):
+	"""递归将 JSON 中的浮点数整数值转换为整数"""
+	match typeof(data):
+		TYPE_DICTIONARY:
+			var result = {}
+			for key in data:
+				result[key] = normalize_json_values(data[key])
+			return result
+		TYPE_ARRAY:
+			var result = []
+			for item in data:
+				result.append(normalize_json_values(item))
+			return result
+		TYPE_FLOAT:
+			# 如果是整数值（如 1024.0），转换为整数
+			if data == floor(data):
+				return int(data)
+			return data
+		_:
+			return data
+
 func _load_from_model_tasks(user_config: Dictionary):
 	"""从新的厂商-模型-任务系统加载配置"""
 	var providers = {}
@@ -119,7 +141,11 @@ func _load_from_model_tasks(user_config: Dictionary):
 		var provider_name = model_data.get("provider", "")
 		var identifier = model_data.get("identifier", "")
 		var url_suffix = model_data.get("url_suffix", "")
+		
+		# 获取参数并规范化数值类型
 		var params = model_data.get("params", {})
+		var normalized_params = normalize_json_values(params)
+		
 		var enable_json_mode = model_data.get("enable_json_mode", true)
 		
 		# 查找厂商
@@ -140,10 +166,7 @@ func _load_from_model_tasks(user_config: Dictionary):
 		config[task_id]["api_key"] = api_key_val
 		config[task_id]["url_suffix"] = url_suffix
 		config[task_id]["enable_json_mode"] = enable_json_mode
-		
-		# 合并模型参数
-		for param_key in params.keys():
-			config[task_id][param_key] = params[param_key]
+		config[task_id]["params"] = normalized_params
 
 func _load_from_legacy_config(user_config: Dictionary):
 	"""兼容旧版本的配置加载方式"""
