@@ -13,12 +13,40 @@ extends MarginContainer
 @onready var speed_slider = $ScrollContainer/VBoxContainer/SliderContainer/SpeedContainer/SpeedSlider
 @onready var speed_value_label = $ScrollContainer/VBoxContainer/SliderContainer/SpeedContainer/SpeedValueLabel
 @onready var cache_cleanup_option = $ScrollContainer/VBoxContainer/EnableContainer/OptionButton
+@onready var advanced_config_button = $ScrollContainer/VBoxContainer/AdvancedConfigButton
+@onready var advanced_container = $ScrollContainer/VBoxContainer/AdvancedContainer
+@onready var voice_save_check = $ScrollContainer/VBoxContainer/AdvancedContainer/VoiceSaveContainer/VoiceSaveCheck
+@onready var upload_request_container = $ScrollContainer/VBoxContainer/AdvancedContainer/UploadRequestContainer
+@onready var upload_request_input = $ScrollContainer/VBoxContainer/AdvancedContainer/UploadRequestContainer/UploadRequestInput
+@onready var upload_request_status = $ScrollContainer/VBoxContainer/AdvancedContainer/UploadRequestContainer/UploadRequestStatus
+@onready var upload_response_container = $ScrollContainer/VBoxContainer/AdvancedContainer/UploadResponseContainer
+@onready var upload_response_input = $ScrollContainer/VBoxContainer/AdvancedContainer/UploadResponseContainer/UploadResponseInput
+@onready var tts_request_input = $ScrollContainer/VBoxContainer/AdvancedContainer/TTSRequestContainer/TTSRequestInput
+@onready var tts_request_status = $ScrollContainer/VBoxContainer/AdvancedContainer/TTSRequestContainer/TTSRequestStatus
+@onready var adv_save_button = $ScrollContainer/VBoxContainer/AdvancedContainer/AdvSaveButton
 
 var _lang_index_map = {0: "zh", 1: "en", 2: "ja"}
 var _lang_name_map = {"zh": "汉语", "en": "英语", "ja": "日语"}
 var blue_theme = preload("res://theme/blue_button.tres")
 var red_theme = preload("res://theme/red_button.tres")
 const AddVoicePanelScene = preload("res://scenes/add_voice_panel.tscn")
+
+const ADV_CONFIG_PATH = "user://tts_advanced_config.json"
+const DEFAULT_TTS_REQUEST = 'curl -X POST {{base_url}}/audio/speech \
+  -H "Authorization: Bearer {{api_key}}" \
+  -H "Content-Type: application/json" \
+  -d "{
+    "model": "{{model}}",
+    "input": "{{input}}",
+    "voice": "{{voice}}",
+    "speed": {{speed}}
+  }"';
+const DEFAULT_UPLOAD_REQUEST = 'curl -X POST {{base_url}}/uploads/audio/voice \
+-H "Authorization: Bearer {{api_key}}" \
+-F "model={{model}}" \
+-F "text={{ref_text}}" \
+-F "file=@{{ref_file}}"'
+const DEFAULT_UPLOAD_RESPONSE = "uri"
 
 # 确认对话框相关
 var confirmation_dialog: AcceptDialog
@@ -34,6 +62,11 @@ func _ready():
 	delete_voice_button.pressed.connect(_on_delete_voice_pressed)
 	add_voice_button.pressed.connect(_on_add_voice_pressed)
 	cache_cleanup_option.item_selected.connect(_on_cache_cleanup_selected)
+	advanced_config_button.pressed.connect(_on_advanced_config_pressed)
+	voice_save_check.toggled.connect(_on_voice_save_toggled)
+	upload_request_input.text_changed.connect(_on_upload_request_changed)
+	tts_request_input.text_changed.connect(_on_tts_request_changed)
+	adv_save_button.pressed.connect(_on_adv_save_pressed)
 	
 	# 初始化语言选项
 	language_option.clear()
@@ -312,3 +345,108 @@ func _on_cache_cleanup_selected(index: int):
 	var cleanup_text = ["不清理", "1个月", "7天", "1天"][index]
 	status_label.text = "缓存清理设置为: %s，下次启动游戏时生效" % cleanup_text
 	status_label.add_theme_color_override("font_color", Color(0.3, 0.8, 1.0))
+
+func _on_advanced_config_pressed():
+	"""切换高级配置面板的显示/隐藏"""
+	advanced_container.visible = not advanced_container.visible
+	if advanced_container.visible:
+		advanced_config_button.text = "🔽 收起高级配置"
+		_load_advanced_config()
+	else:
+		advanced_config_button.text = "▶ 展开高级配置"
+
+func _load_advanced_config():
+	"""加载高级配置（带默认值）"""
+	var config = _read_adv_config()
+	voice_save_check.button_pressed = config.get("support_voice_save", true)
+	upload_request_input.text = config.get("upload_voice_request", DEFAULT_UPLOAD_REQUEST)
+	upload_response_input.text = config.get("upload_voice_response", DEFAULT_UPLOAD_RESPONSE)
+	tts_request_input.text = config.get("tts_request", DEFAULT_TTS_REQUEST)
+	_on_voice_save_toggled(voice_save_check.button_pressed)
+
+func _on_voice_save_toggled(enabled: bool):
+	"""切换音色保存选项时显示/隐藏相关配置"""
+	upload_request_container.visible = enabled
+	upload_response_container.visible = enabled
+
+func _on_upload_request_changed():
+	"""上传请求模板改变时验证"""
+	var text = upload_request_input.text.strip_edges()
+	if text.is_empty():
+		upload_request_status.text = ""
+		return
+	if CurlParser.is_curl_command(text):
+		var parsed = CurlParser.parse(text)
+		if parsed.url.is_empty():
+			upload_request_status.text = "⚠ 未检测到 URL"
+			upload_request_status.add_theme_color_override("font_color", Color(1.0, 0.7, 0.3))
+		else:
+			upload_request_status.text = "✓ curl 命令有效"
+			upload_request_status.add_theme_color_override("font_color", Color(0.3, 1.0, 0.3))
+	else:
+		var json = JSON.new()
+		if json.parse(text) == OK:
+			upload_request_status.text = "✓ JSON 格式有效"
+			upload_request_status.add_theme_color_override("font_color", Color(0.3, 1.0, 0.3))
+		else:
+			upload_request_status.text = "⚠ 格式无效: %s" % json.get_error_message()
+			upload_request_status.add_theme_color_override("font_color", Color(1.0, 0.7, 0.3))
+
+func _on_tts_request_changed():
+	"""TTS 请求模板改变时验证"""
+	var text = tts_request_input.text.strip_edges()
+	if text.is_empty():
+		tts_request_status.text = ""
+		return
+	if CurlParser.is_curl_command(text):
+		var parsed = CurlParser.parse(text)
+		if parsed.url.is_empty():
+			tts_request_status.text = "⚠ 未检测到 URL"
+			tts_request_status.add_theme_color_override("font_color", Color(1.0, 0.7, 0.3))
+		else:
+			tts_request_status.text = "✓ curl 命令有效"
+			tts_request_status.add_theme_color_override("font_color", Color(0.3, 1.0, 0.3))
+	else:
+		var json = JSON.new()
+		if json.parse(text) == OK:
+			tts_request_status.text = "✓ JSON 格式有效"
+			tts_request_status.add_theme_color_override("font_color", Color(0.3, 1.0, 0.3))
+		else:
+			tts_request_status.text = "⚠ 格式无效: %s" % json.get_error_message()
+			tts_request_status.add_theme_color_override("font_color", Color(1.0, 0.7, 0.3))
+
+func _on_adv_save_pressed():
+	"""保存高级配置"""
+	var config = {
+		"support_voice_save": voice_save_check.button_pressed,
+		"upload_voice_request": upload_request_input.text.strip_edges(),
+		"upload_voice_response": upload_response_input.text.strip_edges(),
+		"tts_request": tts_request_input.text.strip_edges(),
+	}
+	_write_adv_config(config)
+	# 通知 TTSService 重新加载
+	if has_node("/root/TTSService"):
+		get_node("/root/TTSService").reload_advanced_config()
+	status_label.text = "✓ TTS高级配置已保存"
+	status_label.add_theme_color_override("font_color", Color(0.3, 1.0, 0.3))
+
+static func _read_adv_config() -> Dictionary:
+	"""读取高级配置文件"""
+	if not FileAccess.file_exists(ADV_CONFIG_PATH):
+		return {}
+	var file = FileAccess.open(ADV_CONFIG_PATH, FileAccess.READ)
+	if file == null:
+		return {}
+	var json_string = file.get_as_text()
+	file.close()
+	var json = JSON.new()
+	if json.parse(json_string) == OK:
+		return json.data
+	return {}
+
+static func _write_adv_config(config: Dictionary):
+	"""写入高级配置文件"""
+	var file = FileAccess.open(ADV_CONFIG_PATH, FileAccess.WRITE)
+	if file:
+		file.store_string(JSON.stringify(config, "\t"))
+		file.close()

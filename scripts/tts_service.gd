@@ -61,6 +61,9 @@ var easy_ai: Node = EasyAi
 # 声线上传管理器
 var voice_upload_manager: Node
 
+# TTS高级配置
+var advanced_config: Dictionary = {}
+
 # 句子跟踪系统（使用哈希作为句子唯一ID）
 var sentence_audio: Dictionary = {} # {sentence_hash: audio_data 或 null}
 var sentence_state: Dictionary = {} # {sentence_hash: "pending"|"ready"|"playing"}
@@ -90,6 +93,9 @@ func _ready():
 	add_child(voice_upload_manager)
 	voice_upload_manager.upload_completed.connect(_on_upload_completed)
 	voice_upload_manager.upload_failed.connect(_on_upload_failed)
+	
+	# 加载TTS高级配置
+	_load_advanced_config()
 	
 	# 创建音频播放器
 	current_player = AudioStreamPlayer.new()
@@ -172,6 +178,27 @@ func reload_settings():
 	"""重新加载TTS设置（公共接口）"""
 	_load_tts_settings()
 	print("TTS设置已重新加载")
+
+func reload_advanced_config():
+	"""重新加载TTS高级配置"""
+	_load_advanced_config()
+	# 同时通知上传管理器重新加载
+	if voice_upload_manager:
+		voice_upload_manager.reload_advanced_config()
+	print("TTS高级配置已重新加载")
+
+func _load_advanced_config():
+	"""加载TTS高级配置"""
+	var config_path = "user://tts_advanced_config.json"
+	if FileAccess.file_exists(config_path):
+		var file = FileAccess.open(config_path, FileAccess.READ)
+		if file:
+			var json_string = file.get_as_text()
+			file.close()
+			var json = JSON.new()
+			if json.parse(json_string) == OK:
+				advanced_config = json.data
+				print("TTS高级配置加载成功")
 
 func save_tts_settings():
 	"""保存TTS设置（不保存API密钥）"""
@@ -717,6 +744,7 @@ func _synthesize_with_voice(sentence_hash: String, text: String, lang: String):
 	var api_key = tts_config.get("api_key", "")
 	var tts_model = tts_config.get("model", "")
 	var tts_base_url = tts_config.get("base_url", "")
+	var tts_url_suffix = tts_config.get("url_suffix", "/audio/speech")
 	
 	if api_key.is_empty():
 		push_error("TTS API密钥未配置")
@@ -746,20 +774,69 @@ func _synthesize_with_voice(sentence_hash: String, text: String, lang: String):
 		http_request.queue_free()
 		return
 
-	var url = tts_base_url + "/audio/speech"
-	var headers = [
-		"Authorization: Bearer " + api_key,
-		"Content-Type: application/json"
-	]
-
-	var request_body = {
-		"model": tts_model,
-		"input": text,
-		"voice": voice_uri,
-		"speed": speed
-	}
-
-	var json_body = JSON.stringify(request_body)
+	# 检查是否有自定义TTS请求模板
+	var tts_template = advanced_config.get("tts_request", "")
+	var url: String
+	var headers: PackedStringArray
+	var json_body: String
+	
+	if not tts_template.is_empty():
+		# 使用自定义模板
+		# 计算参考音频的 base64（如果模板中用到）
+		var current_voice = _get_current_voice()
+		var ref_base64 = ""
+		var ref_file = current_voice.get("audio_path", "")
+		if not ref_file.is_empty() and FileAccess.file_exists(ref_file):
+			var ref_f = FileAccess.open(ref_file, FileAccess.READ)
+			if ref_f:
+				ref_base64 = Marshalls.raw_to_base64(ref_f.get_buffer(ref_f.get_length()))
+				ref_f.close()
+		var variables = {
+			"base_url": tts_base_url,
+			"url": tts_base_url + tts_url_suffix,
+			"model": tts_model,
+			"input": text,
+			"voice": voice_uri,
+			"speed": speed,
+			"api_key": api_key,
+			"ref_file": ref_file,
+			"ref_text": current_voice.get("reference_text", ""),
+		}
+		var request_data = TTSRequestBuilder.build_tts_request(tts_template, variables)
+		# ref_base64 单独替换，避免巨量 base64 数据经过模板解析导致卡死
+		if not ref_base64.is_empty():
+			request_data.body = request_data.body.replace("{{ref_base64}}", ref_base64)
+		url = request_data.url
+		headers = PackedStringArray(request_data.headers)
+		json_body = request_data.body
+		print("url: ", url)
+		print("headers: ", headers)
+		# 打印调试信息时省略json_body中的base64内容，避免日志过长
+		var debug_json = json_body
+		if ref_base64.length() > 100:
+			# 只保留base64的前50位和后10位，中间用...省略
+			var truncated_ref_base64 = ref_base64.left(50) + "..." + ref_base64.right(10)
+			debug_json = json_body.replace(ref_base64, truncated_ref_base64)
+		print("json_body: ", debug_json)
+		if url.is_empty():
+			push_error("TTS请求模板解析失败：URL为空 hash:%s" % _short_hash(sentence_hash))
+			tts_requests.erase(sentence_hash)
+			http_request.queue_free()
+			return
+	else:
+		# 使用默认的OpenAI兼容格式
+		url = tts_base_url + tts_url_suffix
+		headers = PackedStringArray([
+			"Authorization: Bearer " + api_key,
+			"Content-Type: application/json"
+		])
+		var request_body = {
+			"model": tts_model,
+			"input": text,
+			"voice": voice_uri,
+			"speed": speed
+		}
+		json_body = JSON.stringify(request_body)
 	var error = http_request.request(url, headers, HTTPClient.METHOD_POST, json_body)
 	if error != OK:
 		push_error("TTS请求 hash:%s 发送失败: %s" % [_short_hash(sentence_hash), str(error)])

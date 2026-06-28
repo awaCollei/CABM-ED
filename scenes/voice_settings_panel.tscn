@@ -1,10 +1,11 @@
-[gd_scene load_steps=4 format=3 uid="uid://3qbujdhy5hqa"]
+[gd_scene format=3 uid="uid://3qbujdhy5hqa"]
 
 [ext_resource type="Script" uid="uid://twq8y4r0vdiq" path="res://scripts/voice_settings_panel.gd" id="1"]
 [ext_resource type="Theme" uid="uid://dxscbhbyg47rp" path="res://theme/green_button.tres" id="2"]
 [ext_resource type="Theme" uid="uid://c6gyciuad8n1j" path="res://theme/red_button.tres" id="2_niia5"]
+[ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="3_blue"]
 
-[node name="VoiceSettingsPanel" type="MarginContainer"]
+[node name="VoiceSettingsPanel" type="MarginContainer" unique_id=1420203187]
 offset_right = 760.0
 offset_bottom = 460.0
 theme_override_constants/margin_left = 10
@@ -13,31 +14,31 @@ theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 script = ExtResource("1")
 
-[node name="ScrollContainer" type="ScrollContainer" parent="."]
+[node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=1388046127]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer" unique_id=1856162541]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 15
 
-[node name="EnableContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+[node name="EnableContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer" unique_id=1861945018]
 layout_mode = 2
 alignment = 3
 
-[node name="EnableLabel" type="Label" parent="ScrollContainer/VBoxContainer/EnableContainer"]
+[node name="EnableLabel" type="Label" parent="ScrollContainer/VBoxContainer/EnableContainer" unique_id=811900108]
 layout_mode = 2
 text = "启用语音合成"
 
-[node name="EnableCheckBox" type="CheckButton" parent="ScrollContainer/VBoxContainer/EnableContainer"]
+[node name="EnableCheckBox" type="CheckButton" parent="ScrollContainer/VBoxContainer/EnableContainer" unique_id=441186450]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/EnableContainer"]
+[node name="Label" type="Label" parent="ScrollContainer/VBoxContainer/EnableContainer" unique_id=1209766778]
 layout_mode = 2
 size_flags_horizontal = 10
 text = "缓存清理"
 
-[node name="OptionButton" type="OptionButton" parent="ScrollContainer/VBoxContainer/EnableContainer"]
+[node name="OptionButton" type="OptionButton" parent="ScrollContainer/VBoxContainer/EnableContainer" unique_id=1814951931]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 size_flags_horizontal = 8
@@ -52,19 +53,19 @@ popup/item_2/id = 2
 popup/item_3/text = "1天"
 popup/item_3/id = 3
 
-[node name="SliderContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+[node name="SliderContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer" unique_id=1129650511]
 layout_mode = 2
 
-[node name="VolumeContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/SliderContainer"]
+[node name="VolumeContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/SliderContainer" unique_id=250200150]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 5
 
-[node name="VolumeLabel" type="Label" parent="ScrollContainer/VBoxContainer/SliderContainer/VolumeContainer"]
+[node name="VolumeLabel" type="Label" parent="ScrollContainer/VBoxContainer/SliderContainer/VolumeContainer" unique_id=1467267578]
 layout_mode = 2
 text = "音量"
 
-[node name="VolumeSlider" type="HSlider" parent="ScrollContainer/VBoxContainer/SliderContainer/VolumeContainer"]
+[node name="VolumeSlider" type="HSlider" parent="ScrollContainer/VBoxContainer/SliderContainer/VolumeContainer" unique_id=2003238289]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -72,26 +73,26 @@ max_value = 1.0
 step = 0.01
 value = 0.8
 
-[node name="VolumeValueLabel" type="Label" parent="ScrollContainer/VBoxContainer/SliderContainer/VolumeContainer"]
+[node name="VolumeValueLabel" type="Label" parent="ScrollContainer/VBoxContainer/SliderContainer/VolumeContainer" unique_id=1468804302]
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 text = "80%"
 horizontal_alignment = 1
 
-[node name="VSeparator" type="VSeparator" parent="ScrollContainer/VBoxContainer/SliderContainer"]
+[node name="VSeparator" type="VSeparator" parent="ScrollContainer/VBoxContainer/SliderContainer" unique_id=1973136609]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="SpeedContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/SliderContainer"]
+[node name="SpeedContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/SliderContainer" unique_id=133380425]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 5
 
-[node name="SpeedLabel" type="Label" parent="ScrollContainer/VBoxContainer/SliderContainer/SpeedContainer"]
+[node name="SpeedLabel" type="Label" parent="ScrollContainer/VBoxContainer/SliderContainer/SpeedContainer" unique_id=876524525]
 layout_mode = 2
 text = "语速"
 
-[node name="SpeedSlider" type="HSlider" parent="ScrollContainer/VBoxContainer/SliderContainer/SpeedContainer"]
+[node name="SpeedSlider" type="HSlider" parent="ScrollContainer/VBoxContainer/SliderContainer/SpeedContainer" unique_id=733587530]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
@@ -101,72 +102,197 @@ step = 0.05
 value = 1.0
 allow_greater = true
 
-[node name="SpeedValueLabel" type="Label" parent="ScrollContainer/VBoxContainer/SliderContainer/SpeedContainer"]
+[node name="SpeedValueLabel" type="Label" parent="ScrollContainer/VBoxContainer/SliderContainer/SpeedContainer" unique_id=1312099536]
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 text = "1.00x"
 horizontal_alignment = 1
 
-[node name="HSeparator1" type="HSeparator" parent="ScrollContainer/VBoxContainer"]
+[node name="HSeparator1" type="HSeparator" parent="ScrollContainer/VBoxContainer" unique_id=1997056159]
 layout_mode = 2
 
-[node name="VBoxContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+[node name="VBoxContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer" unique_id=1634215670]
 layout_mode = 2
 
-[node name="LanguageContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VBoxContainer"]
+[node name="LanguageContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VBoxContainer" unique_id=2030615222]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="LanguageLabel" type="Label" parent="ScrollContainer/VBoxContainer/VBoxContainer/LanguageContainer"]
+[node name="LanguageLabel" type="Label" parent="ScrollContainer/VBoxContainer/VBoxContainer/LanguageContainer" unique_id=790282024]
 layout_mode = 2
 text = "语言"
 
-[node name="LanguageOption" type="OptionButton" parent="ScrollContainer/VBoxContainer/VBoxContainer/LanguageContainer"]
+[node name="LanguageOption" type="OptionButton" parent="ScrollContainer/VBoxContainer/VBoxContainer/LanguageContainer" unique_id=686519144]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="VoiceContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VBoxContainer"]
+[node name="VoiceContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VBoxContainer" unique_id=1012374336]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="VoiceLabel" type="Label" parent="ScrollContainer/VBoxContainer/VBoxContainer/VoiceContainer"]
+[node name="VoiceLabel" type="Label" parent="ScrollContainer/VBoxContainer/VBoxContainer/VoiceContainer" unique_id=1371775328]
 layout_mode = 2
 text = "声线"
 
-[node name="VoiceOption" type="OptionButton" parent="ScrollContainer/VBoxContainer/VBoxContainer/VoiceContainer"]
+[node name="VoiceOption" type="OptionButton" parent="ScrollContainer/VBoxContainer/VBoxContainer/VoiceContainer" unique_id=1481295638]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="VoiceButtonsContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer"]
+[node name="VoiceButtonsContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer" unique_id=958240419]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="DeleteVoiceButton" type="Button" parent="ScrollContainer/VBoxContainer/VoiceButtonsContainer"]
+[node name="DeleteVoiceButton" type="Button" parent="ScrollContainer/VBoxContainer/VoiceButtonsContainer" unique_id=265098491]
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("2_niia5")
 text = "删除声线"
 
-[node name="AddVoiceButton" type="Button" parent="ScrollContainer/VBoxContainer/VoiceButtonsContainer"]
+[node name="AddVoiceButton" type="Button" parent="ScrollContainer/VBoxContainer/VoiceButtonsContainer" unique_id=1596176105]
 layout_mode = 2
 size_flags_horizontal = 3
 theme = ExtResource("2")
 text = "添加声线"
 
-[node name="HSeparator2" type="HSeparator" parent="ScrollContainer/VBoxContainer"]
+[node name="HSeparator2" type="HSeparator" parent="ScrollContainer/VBoxContainer" unique_id=227705432]
 layout_mode = 2
 
-[node name="StatusLabel" type="Label" parent="ScrollContainer/VBoxContainer"]
+[node name="StatusLabel" type="Label" parent="ScrollContainer/VBoxContainer" unique_id=612501454]
 layout_mode = 2
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="HintLabel" type="Label" parent="ScrollContainer/VBoxContainer"]
+[node name="HintLabel" type="Label" parent="ScrollContainer/VBoxContainer" unique_id=613800353]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
 text = "提示：
 • 「启用语音合成」那边有个开关，默认是关的，你是不是没看见（
 • 请确保语种相同——或者你就想听「日式中文」？
-• 参考音频需要是8~10秒的清晰、无噪音的WAV格式音频
-• TTS比较贵，不用的话建议关闭（可以v我50嘛awa）"
+• 参考音频需要是8~10秒的清晰、无噪音的WAV格式音频"
 autowrap_mode = 1
+
+[node name="AdvancedConfigButton" type="Button" parent="ScrollContainer/VBoxContainer" unique_id=2022588421]
+layout_mode = 2
+theme = ExtResource("3_blue")
+text = "▶ 展开高级配置"
+
+[node name="AdvancedContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer" unique_id=635554329]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="AdvHSeparator" type="HSeparator" parent="ScrollContainer/VBoxContainer/AdvancedContainer" unique_id=1827845448]
+layout_mode = 2
+
+[node name="AdvTitleLabel" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedContainer" unique_id=1228777799]
+layout_mode = 2
+text = "TTS 高级配置"
+horizontal_alignment = 1
+
+[node name="VoiceSaveContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/AdvancedContainer" unique_id=1092077954]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="VoiceSaveLabel" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedContainer/VoiceSaveContainer" unique_id=262707810]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "支持音色保存："
+
+[node name="VoiceSaveCheck" type="CheckButton" parent="ScrollContainer/VBoxContainer/AdvancedContainer/VoiceSaveContainer" unique_id=934923255]
+layout_mode = 2
+button_pressed = true
+
+[node name="UploadRequestContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/AdvancedContainer" unique_id=125284910]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="UploadRequestLabel" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedContainer/UploadRequestContainer" unique_id=740690441]
+layout_mode = 2
+text = "上传音色请求（支持 curl 或 JSON 模板）："
+
+[node name="UploadRequestInput" type="TextEdit" parent="ScrollContainer/VBoxContainer/AdvancedContainer/UploadRequestContainer" unique_id=838300493]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+mouse_filter = 1
+theme_override_font_sizes/font_size = 16
+placeholder_text = "curl -X POST {{base_url}}/uploads/audio/voice 
+-H 'Authorization: Bearer {{api_key}}' 
+-F 'model={{model}}' 
+-F 'text={{ref_text}}' 
+-F 'file=@{{ref_file}}'"
+
+[node name="UploadRequestStatus" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedContainer/UploadRequestContainer" unique_id=1064874828]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="UploadResponseContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/AdvancedContainer" unique_id=2091745305]
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="UploadResponseLabel" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedContainer/UploadResponseContainer" unique_id=1728567324]
+layout_mode = 2
+mouse_filter = 1
+text = "上传音色响应（URI 字段）："
+
+[node name="UploadResponseInput" type="LineEdit" parent="ScrollContainer/VBoxContainer/AdvancedContainer/UploadResponseContainer" unique_id=2037017068]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "uri"
+placeholder_text = "uri"
+
+[node name="UploadResponseHint" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedContainer/UploadResponseContainer" unique_id=1242224130]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "提示：填写响应 JSON 中 voice URI 的字段名，如 uri、data.uri
+"
+autowrap_mode = 1
+
+[node name="TTSRequestContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/AdvancedContainer" unique_id=1430764325]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="TTSRequestLabel" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedContainer/TTSRequestContainer" unique_id=1687572031]
+layout_mode = 2
+text = "TTS 请求（支持 curl 或 JSON 模板）："
+
+[node name="TTSRequestInput" type="TextEdit" parent="ScrollContainer/VBoxContainer/AdvancedContainer/TTSRequestContainer" unique_id=631641295]
+custom_minimum_size = Vector2(0, 200)
+layout_mode = 2
+mouse_filter = 1
+theme_override_font_sizes/font_size = 16
+placeholder_text = "curl -X POST {{base_url}}/audio/speech \\
+  -H \"Authorization: Bearer {{api_key}}\" \\
+  -H \"Content-Type: application/json\" \\
+  -d \"{
+    \"model\": \"{{model}}\",
+    \"input\": \"{{input}}\",
+    \"voice\": \"{{voice}}\",
+    \"speed\": {{speed}}
+  }\""
+
+[node name="TTSRequestStatus" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedContainer/TTSRequestContainer" unique_id=123016745]
+layout_mode = 2
+horizontal_alignment = 1
+
+[node name="AdvPlaceholderHint" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedContainer" unique_id=95815906]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "可用占位符：
+{{url}}：模型服务商的完整URL
+{{base_url}}：模型服务商的基础URL
+{{model}}：模型名
+{{api_key}}：API密钥
+{{input}}：需要TTS的文本
+{{voice}}：保存的音色URI
+{{speed}}：语速
+{{ref_file}}：参考音频（文件）
+{{ref_base64}}：参考音频（Base64）
+{{ref_text}}：参考文本"
+autowrap_mode = 1
+
+[node name="AdvSaveButton" type="Button" parent="ScrollContainer/VBoxContainer/AdvancedContainer" unique_id=1395604054]
+layout_mode = 2
+theme = ExtResource("2")
+text = "保存高级配置"

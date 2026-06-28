@@ -53,9 +53,7 @@ func describe_image(path: String) -> String:
 	var body = {
 		"model": model,
 		"messages": messages,
-		"max_tokens": max_tokens,
-		"temperature": temperature,
-		"top_p": top_p
+		"temperature": temperature
 	}
 	var json_body = JSON.stringify(body)
 	http_request.timeout = timeout_s
