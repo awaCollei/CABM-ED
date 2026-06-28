@@ -65,12 +65,14 @@ func _load_user_config():
 
 	var user_config = json.data
 	
-	# 新版本：通过 model_tasks 系统加载配置
-	if user_config.has("model_tasks") and user_config.has("providers") and user_config.has("models"):
-		_load_from_model_tasks(user_config)
-	else:
-		# 兼容旧版本：直接加载模型配置
-		_load_from_legacy_config(user_config)
+	# 新版本：通过 model_tasks 系统加载配置。
+	# providers/models 都是用户自定义增量字段，可能不存在；
+	# 预设厂商/模型会在 _load_from_model_tasks() 内部自动合并。
+	if not user_config.has("model_tasks") or typeof(user_config["model_tasks"]) != TYPE_DICTIONARY:
+		push_error("AI 用户配置缺少 model_tasks，无法加载新版配置")
+		return
+
+	_load_from_model_tasks(user_config)
 	
 	# 根级 api_key 仅供界面展示，不参与请求（见 user://ai_keys.json 约定）
 	# 注入有效密钥到所有模型配置（含内置密钥覆盖各槽位）
@@ -122,8 +124,7 @@ func _load_from_model_tasks(user_config: Dictionary):
 			models[m_name] = user_config.models[m_name]
 	
 	# 加载任务配置
-	if user_config.has("model_tasks"):
-		tasks = user_config.model_tasks
+	tasks = user_config.model_tasks
 	
 	# 为每个任务解析模型配置
 	for task_id in tasks.keys():
@@ -167,42 +168,6 @@ func _load_from_model_tasks(user_config: Dictionary):
 		config[task_id]["url_suffix"] = url_suffix
 		config[task_id]["enable_json_mode"] = enable_json_mode
 		config[task_id]["params"] = normalized_params
-
-func _load_from_legacy_config(user_config: Dictionary):
-	"""兼容旧版本的配置加载方式"""
-	# 处理每个模型的配置：只更新 api_key, base_url, model
-	_update_model_config("chat_model", user_config)
-	_update_model_config("summary_model", user_config)
-	_update_model_config("relationship_model", user_config)
-	_update_model_config("tts_model", user_config)
-	_update_model_config("embedding_model", user_config)
-	_update_model_config("view_model", user_config)
-	_update_model_config("stt_model", user_config)
-	_update_model_config("rerank_model", user_config)
-
-func _update_model_config(model_name: String, user_config: Dictionary):
-	"""更新指定模型的配置（仅更新 api_key, base_url, model, enable_json_mode）"""
-	if not user_config.has(model_name):
-		return
-	
-	var user_model_config = user_config[model_name]
-	
-	# 确保配置字典中有该模型
-	if not config.has(model_name):
-		config[model_name] = {}
-	
-	# 只更新特定字段
-	if user_model_config.has("api_key"):
-		config[model_name]["api_key"] = user_model_config.api_key
-	
-	if user_model_config.has("base_url"):
-		config[model_name]["base_url"] = user_model_config.base_url
-	
-	if user_model_config.has("model"):
-		config[model_name]["model"] = user_model_config.model
-	
-	if user_model_config.has("enable_json_mode"):
-		config[model_name]["enable_json_mode"] = user_model_config.enable_json_mode
 
 
 func load_generation_options() -> bool:
