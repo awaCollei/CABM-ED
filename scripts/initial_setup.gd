@@ -330,47 +330,26 @@ func _save_initial_data(user_name: String, character_name: String, api_key: Stri
 	_create_initial_save(user_name, character_name)
 
 func _save_api_key(api_key: String):
-	"""保存API密钥并应用标准模板"""
+	"""保存API密钥并应用标准模板（厂商-模型-任务系统）"""
 	var keys_path = "user://ai_keys.json"
 	
 	# 使用标准模板配置（与ai_config_panel.gd保持一致）
 	var keys = {
 		"template": "standard",
-		"api_key": api_key,
-		"chat_model": {
-			"model": "deepseek-ai/DeepSeek-V3.2",
-			"base_url": "https://api.siliconflow.cn/v1",
-			"api_key": api_key
+		"providers": {
+			"硅基流动": {
+				"base_url": "https://api.siliconflow.cn/v1",
+				"api_key": api_key
+			}
 		},
-		"summary_model": {
-			"model": "Qwen/Qwen3-30B-A3B-Instruct-2507",
-			"base_url": "https://api.siliconflow.cn/v1",
-			"api_key": api_key
-		},
-		"tts_model": {
-			"model": "FunAudioLLM/CosyVoice2-0.5B",
-			"base_url": "https://api.siliconflow.cn/v1",
-			"api_key": api_key
-		},
-		"embedding_model": {
-			"model": "BAAI/bge-m3",
-			"base_url": "https://api.siliconflow.cn/v1",
-			"api_key": api_key
-		},
-		"view_model": {
-			"model": "Qwen/Qwen3-Omni-30B-A3B-Captioner",
-			"base_url": "https://api.siliconflow.cn/v1",
-			"api_key": api_key
-		},
-		"stt_model": {
-			"model": "FunAudioLLM/SenseVoiceSmall",
-			"base_url": "https://api.siliconflow.cn/v1",
-			"api_key": api_key
-		},
-		"rerank_model": {
-			"model": "BAAI/bge-reranker-v2-m3",
-			"base_url": "https://api.siliconflow.cn/v1",
-			"api_key": api_key
+		"model_tasks": {
+			"chat_model": {"model": "DeepSeek-V3.2"},
+			"summary_model": {"model": "Qwen3-30B-A3B"},
+			"tts_model": {"model": "CosyVoice2"},
+			"embedding_model": {"model": "bge-m3"},
+			"view_model": {"model": "Qwen3-Omni"},
+			"stt_model": {"model": "SenseVoice"},
+			"rerank_model": {"model": "bge-reranker"}
 		}
 	}
 	
@@ -378,7 +357,7 @@ func _save_api_key(api_key: String):
 	if file:
 		file.store_string(JSON.stringify(keys, "\t"))
 		file.close()
-		print("API密钥已保存（标准模板）")
+		print("API密钥已保存（标准模板，厂商-模型-任务系统）")
 		
 		# 重新加载AI服务配置
 		if has_node("/root/AIService"):

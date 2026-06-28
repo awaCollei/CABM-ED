@@ -211,33 +211,6 @@ func get_template(template_name: String) -> Dictionary:
 func get_all_templates() -> Dictionary:
 	return CONFIG_TEMPLATES
 
-## 验证API密钥
-func verify_api_key(input_key: String) -> bool:
-	if not FileAccess.file_exists(CONFIG_PATH):
-		return false
-	
-	var file = FileAccess.open(CONFIG_PATH, FileAccess.READ)
-	var json_string = file.get_as_text()
-	file.close()
-	
-	var json = JSON.new()
-	if json.parse(json_string) != OK:
-		return false
-	
-	var config = json.data
-	
-	# 检查 chat_model 的 api_key
-	if config.has("chat_model") and config.chat_model.has("api_key"):
-		if config.chat_model.api_key == input_key:
-			return true
-	
-	# 检查快速配置的 api_key
-	if config.has("api_key"):
-		if config.api_key == input_key:
-			return true
-	
-	return false
-
 ## 加载特定模型的配置
 func load_model_config(model_type: String) -> Dictionary:
 	var config = load_config()
