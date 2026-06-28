@@ -809,15 +809,6 @@ func _synthesize_with_voice(sentence_hash: String, text: String, lang: String):
 		url = request_data.url
 		headers = PackedStringArray(request_data.headers)
 		json_body = request_data.body
-		print("url: ", url)
-		print("headers: ", headers)
-		# 打印调试信息时省略json_body中的base64内容，避免日志过长
-		var debug_json = json_body
-		if ref_base64.length() > 100:
-			# 只保留base64的前50位和后10位，中间用...省略
-			var truncated_ref_base64 = ref_base64.left(50) + "..." + ref_base64.right(10)
-			debug_json = json_body.replace(ref_base64, truncated_ref_base64)
-		print("json_body: ", debug_json)
 		if url.is_empty():
 			push_error("TTS请求模板解析失败：URL为空 hash:%s" % _short_hash(sentence_hash))
 			tts_requests.erase(sentence_hash)
@@ -899,14 +890,26 @@ func _on_tts_completed(result: int, response_code: int, _headers: PackedStringAr
 	if body.size() > 0 and result == HTTPRequest.RESULT_SUCCESS and response_code == 200:
 		print("句子 hash:%s 接收到音频数据: %d 字节" % [_short_hash(sentence_hash), body.size()])
 
-		# 保存音频文件到永久存储
-		_save_audio_to_file(sentence_hash, body)
+		# 根据响应格式解析音频数据
+		var audio_data = _parse_tts_response_body(body, sentence_hash)
+		if audio_data.is_empty():
+			push_error("句子 hash:%s 响应解析失败，无有效音频数据" % _short_hash(sentence_hash))
+			sentence_audio[sentence_hash] = PackedByteArray()
+			if sentence_hash == current_sentence_hash:
+				get_tree().create_timer(1.0).timeout.connect(_notify_voice_finished)
+			return
 
-		# 存储音频数据
-		sentence_audio[sentence_hash] = body
+		# 移除 MP3 的 ID3 标签，避免 Godot 播放 MP3 时解析失败
+		audio_data = _strip_mp3_id3_tags(audio_data)
+
+		# 保存音频文件到永久存储
+		_save_audio_to_file(sentence_hash, audio_data)
+
+		# 存储已清理的音频数据，保证本次立即播放也不会被 ID3 标签影响
+		sentence_audio[sentence_hash] = audio_data
 		sentence_state[sentence_hash] = "ready"
 
-		audio_chunk_ready.emit(body)
+		audio_chunk_ready.emit(audio_data)
 		var cur_disp = "(none)"
 		if current_sentence_hash != "":
 			cur_disp = _short_hash(current_sentence_hash)
@@ -921,15 +924,181 @@ func _on_tts_completed(result: int, response_code: int, _headers: PackedStringAr
 		# 没有有效音频数据，但仍然保存空的音频数据以避免重复请求
 		sentence_audio[sentence_hash] = PackedByteArray()
 		print("句子 hash:%s 没有有效的音频数据，标记为空" % _short_hash(sentence_hash))
-		
+
 		# 如果是当前应播放的句子，通知对话框继续（当作语音播完了）
 		if sentence_hash == current_sentence_hash:
 			print("句子 hash:%s 是当前应播放的句子，但 TTS 失败，1秒后通知对话框继续" % _short_hash(sentence_hash))
 			get_tree().create_timer(1.0).timeout.connect(_notify_voice_finished)
 
+func _parse_tts_response_body(body: PackedByteArray, sentence_hash: String) -> PackedByteArray:
+	"""根据高级配置解析 TTS 响应体
+	- response_format == 0 (二进制数据): 直接返回 body
+	- response_format == 1 (Base64): 解析 JSON，提取 base64 字段并解码
+	  - 若设置了 audio_content_field，先从 JSON 中定位该字段再解码
+	  - 若未设置，将整个响应体作为 base64 字符串解码
+	"""
+	var response_format = advanced_config.get("response_format", 0)
+	if response_format == 0:
+		# 二进制数据，直接返回
+		return body
+
+	# Base64 模式：解析 JSON 响应
+	var response_text = body.get_string_from_utf8()
+	var audio_content_field = advanced_config.get("audio_content_field", "")
+
+	var base64_str: String
+
+	if audio_content_field.is_empty():
+		# 没有指定字段名，尝试将整个响应体当作 JSON 解析并找音频数据
+		# 或者响应体本身就是纯 base64 字符串
+		var json = JSON.new()
+		if json.parse(response_text) == OK and json.data is String:
+			base64_str = json.data
+		else:
+			# 可能是纯 base64 字符串（非 JSON）
+			base64_str = response_text.strip_edges()
+	else:
+		# 从 JSON 中提取指定字段
+		base64_str = _resolve_json_field(response_text, audio_content_field)
+
+	if base64_str.is_empty():
+		push_error("句子 hash:%s base64 响应中未找到有效音频数据" % _short_hash(sentence_hash))
+		return PackedByteArray()
+
+	# 解码 base64
+	var decoded = Marshalls.base64_to_raw(base64_str)
+	if decoded.is_empty():
+		push_error("句子 hash:%s base64 解码失败" % _short_hash(sentence_hash))
+		return PackedByteArray()
+
+	print("句子 hash:%s 成功从 base64 解码音频数据: %d 字节" % [_short_hash(sentence_hash), decoded.size()])
+	return decoded
+
+func _resolve_json_field(response_text: String, field_path: String) -> String:
+	"""从 JSON 响应中按字段路径提取字符串值
+	支持嵌套字段如 choices[0].message.audio.data
+	"""
+	var json = JSON.new()
+	if json.parse(response_text) != OK:
+		push_error("JSON 解析失败: %s" % json.get_error_message())
+		return ""
+
+	var current = json.data
+	var parts = field_path.split(".")
+	for part in parts:
+		# 处理数组索引，如 choices[0]
+		var bracket_start = part.find("[")
+		if bracket_start != -1:
+			var key = part.substr(0, bracket_start)
+			var index_str = part.substr(bracket_start + 1, part.find("]") - bracket_start - 1)
+			var index = index_str.to_int()
+			if current is Dictionary and current.has(key):
+				current = current[key]
+			else:
+				push_error("JSON 字段路径解析失败: 找不到 '%s' (在路径 '%s')" % [key, field_path])
+				return ""
+			if current is Array and index >= 0 and index < current.size():
+				current = current[index]
+			else:
+				push_error("JSON 字段路径解析失败: 数组索引 '%s' 越界 (在路径 '%s')" % [index_str, field_path])
+				return ""
+		else:
+			if current is Dictionary and current.has(part):
+				current = current[part]
+			else:
+				push_error("JSON 字段路径解析失败: 找不到 '%s' (在路径 '%s')" % [part, field_path])
+				return ""
+
+	return str(current)
+
+func _has_bytes_at(data: PackedByteArray, offset: int, expected: Array) -> bool:
+	"""检查 PackedByteArray 在指定位置是否匹配指定字节序列"""
+	if offset < 0 or offset + expected.size() > data.size():
+		return false
+	for i in range(expected.size()):
+		if data[offset + i] != expected[i]:
+			return false
+	return true
+
+func _get_id3v2_tag_total_size(data: PackedByteArray, offset: int = 0) -> int:
+	"""返回 offset 位置 ID3v2 标签的总长度；不是合法 ID3v2 标签则返回 0"""
+	# ID3v2 header: "ID3" + version(2) + flags(1) + synchsafe size(4)
+	if offset + 10 > data.size():
+		return 0
+	if not _has_bytes_at(data, offset, [0x49, 0x44, 0x33]): # "ID3"
+		return 0
+
+	var major_version = data[offset + 3]
+	var revision = data[offset + 4]
+	if major_version == 0xFF or revision == 0xFF:
+		return 0
+
+	var tag_size = 0
+	for i in range(4):
+		var size_byte = data[offset + 6 + i]
+		# ID3v2 的 size 使用 synchsafe integer，每个字节最高位必须为 0
+		if (size_byte & 0x80) != 0:
+			return 0
+		tag_size = (tag_size << 7) | size_byte
+
+	var total_size = 10 + tag_size
+	var flags = data[offset + 5]
+	# ID3v2.4 footer 不计入 header 中的 size，需要额外跳过 10 字节
+	if major_version == 4 and (flags & 0x10) != 0:
+		total_size += 10
+
+	if total_size <= 0 or offset + total_size > data.size():
+		push_warning("检测到异常 ID3v2 标签大小，保留原始音频数据")
+		return 0
+	return total_size
+
+func _strip_mp3_id3_tags(audio_data: PackedByteArray) -> PackedByteArray:
+	"""移除 MP3 开头的 ID3v2 标签和结尾的 ID3v1/Enhanced ID3v1 标签"""
+	if audio_data.size() == 0:
+		return audio_data
+
+	var start = 0
+	var end = audio_data.size()
+	var removed_front = 0
+	var removed_back = 0
+
+	# 移除文件开头的一个或多个 ID3v2 标签
+	while start + 10 <= end:
+		var id3v2_size = _get_id3v2_tag_total_size(audio_data, start)
+		if id3v2_size <= 0:
+			break
+		start += id3v2_size
+		removed_front += id3v2_size
+
+	# 移除文件结尾的 ID3v1 标签（固定 128 字节，签名为 "TAG"）
+	if end - start >= 128 and _has_bytes_at(audio_data, end - 128, [0x54, 0x41, 0x47]): # "TAG"
+		end -= 128
+		removed_back += 128
+
+		# 少数文件会在 ID3v1 前带 Enhanced ID3v1 标签（227 字节，签名为 "TAG+"）
+		if end - start >= 227 and _has_bytes_at(audio_data, end - 227, [0x54, 0x41, 0x47, 0x2B]): # "TAG+"
+			end -= 227
+			removed_back += 227
+
+	if removed_front == 0 and removed_back == 0:
+		return audio_data
+
+	if start >= end:
+		push_warning("移除 ID3 标签后音频数据为空，保留原始音频数据")
+		return audio_data
+
+	var stripped_data = audio_data.slice(start, end)
+	print("已移除 MP3 ID3 标签: 开头 %d 字节, 结尾 %d 字节, %d -> %d 字节" % [
+		removed_front,
+		removed_back,
+		audio_data.size(),
+		stripped_data.size()
+	])
+	return stripped_data
+
 func _save_audio_to_file(sentence_hash: String, audio_data: PackedByteArray) -> bool:
 	"""保存音频数据到 user://speech/ 目录，使用哈希作为文件名
-	
+
 	返回: 是否保存成功
 	"""
 	# 确保目录存在
@@ -940,54 +1109,87 @@ func _save_audio_to_file(sentence_hash: String, audio_data: PackedByteArray) -> 
 		if error != OK:
 			push_error("创建目录失败: user://speech/")
 			return false
-	
+
 	# 构建文件路径（使用哈希作为文件名，保存为MP3格式）
 	var file_path = dir_path + sentence_hash + ".mp3"
+	var clean_audio_data = _strip_mp3_id3_tags(audio_data)
+	if clean_audio_data.size() == 0:
+		push_error("音频数据移除 ID3 标签后为空，取消保存: %s" % file_path)
+		return false
+
 	var file = FileAccess.open(file_path, FileAccess.WRITE)
 	if file == null:
 		var error = FileAccess.get_open_error()
 		push_error("无法创建音频文件 %s (错误: %d)" % [file_path, error])
 		return false
-	
-	# 写入音频数据
-	file.store_buffer(audio_data)
+
+	# 写入已移除 ID3 标签的音频数据
+	file.store_buffer(clean_audio_data)
 	file.close()
-	
-	print("音频文件已保存: %s (%d 字节)" % [file_path, audio_data.size()])
+
+	if clean_audio_data.size() != audio_data.size():
+		print("音频文件已保存: %s (%d 字节，原始 %d 字节)" % [
+			file_path,
+			clean_audio_data.size(),
+			audio_data.size()
+		])
+	else:
+		print("音频文件已保存: %s (%d 字节)" % [file_path, clean_audio_data.size()])
 	return true
 
 func _load_audio_from_file(sentence_hash: String) -> bool:
 	"""从磁盘加载缓存的音频文件
-	
+
 	返回: 是否加载成功
 	"""
 	var file_path = "user://speech/" + sentence_hash + ".mp3"
-	
+
 	# 检查文件是否存在
 	if not FileAccess.file_exists(file_path):
 		return false
-	
+
 	# 读取音频文件
 	var file = FileAccess.open(file_path, FileAccess.READ)
 	if file == null:
 		var error = FileAccess.get_open_error()
 		push_error("无法打开音频文件 %s (错误: %d)" % [file_path, error])
 		return false
-	
+
 	var audio_data = file.get_buffer(file.get_length())
 	file.close()
-	
+
 	if audio_data.size() == 0:
 		print("音频文件为空: %s" % file_path)
 		return false
-	
+
+	# 兼容旧缓存：加载时也移除 ID3 标签，并回写为干净的 MP3
+	var clean_audio_data = _strip_mp3_id3_tags(audio_data)
+	if clean_audio_data.size() == 0:
+		print("音频文件移除 ID3 标签后为空: %s" % file_path)
+		return false
+	if clean_audio_data.size() != audio_data.size():
+		audio_data = clean_audio_data
+		var rewrite_file = FileAccess.open(file_path, FileAccess.WRITE)
+		if rewrite_file:
+			rewrite_file.store_buffer(audio_data)
+			rewrite_file.close()
+			print("已更新音频缓存（移除 ID3 标签）: %s (%d 字节)" % [
+				file_path,
+				audio_data.size()
+			])
+		else:
+			var rewrite_error = FileAccess.get_open_error()
+			push_error("无法更新音频缓存 %s (错误: %d)" % [file_path, rewrite_error])
+	else:
+		audio_data = clean_audio_data
+
 	# 存储到内存缓存
 	sentence_audio[sentence_hash] = audio_data
 	sentence_state[sentence_hash] = "ready"
-	
+
 	print("【缓存命中】从磁盘加载音频缓存: %s (%d 字节)" % [file_path, audio_data.size()])
 	return true
-		
+
 func on_new_sentence_displayed(sentence_hash: String):
 	"""用户通知：某个句子（通过其哈希ID）已被显示。
 
@@ -1021,7 +1223,7 @@ func on_new_sentence_displayed(sentence_hash: String):
 		sentence_state[sentence_hash] = "pending"
 		sentence_audio[sentence_hash] = null
 		print("初始化句子 hash:%s 的状态为 pending" % _short_hash(sentence_hash))
-		
+
 		# 尝试从磁盘加载缓存的音频
 		_load_audio_from_file(sentence_hash)
 	else:
@@ -1088,7 +1290,14 @@ func _try_play_sentence():
 		else:
 			current_player.play()
 
-		print("开始播放语音 hash:%s，音频流长度: %.2f 秒" % [_short_hash(current_sentence_hash), stream.get_length()])
+		var stream_length = stream.get_length()
+		if stream_length > 0:
+			print("开始播放语音 hash:%s，音频流长度: %.2f 秒" % [
+				_short_hash(current_sentence_hash),
+				stream_length
+			])
+		else:
+			print("开始播放语音 hash:%s，音频流长度未知" % _short_hash(current_sentence_hash))
 	else:
 		print("音频流创建失败，跳过")
 		is_playing = false
@@ -1100,24 +1309,31 @@ func _create_audio_stream(audio_data: PackedByteArray) -> AudioStream:
 	if audio_data.size() == 0:
 		push_error("音频数据为空")
 		return null
-	
+
+	# 播放前再次确保没有 ID3 标签，
+	# 防止旧内存缓存或外部调用传入未清理数据
+	audio_data = _strip_mp3_id3_tags(audio_data)
+	if audio_data.size() == 0:
+		push_error("音频数据移除 ID3 标签后为空")
+		return null
+
 	# 检查音频格式（前几个字节）
 	var header = ""
 	for i in range(min(4, audio_data.size())):
 		header += "%02X " % audio_data[i]
 	print("音频数据头: ", header)
-	
+
 	# API返回的是MP3格式
 	var stream = AudioStreamMP3.new()
 	stream.data = audio_data
-	
-	# 尝试获取音频长度来验证是否有效
+
+	# 注意：部分合法 MP3 在 Godot 中 get_length() 会返回 0，
+	# 但仍然可以正常播放；不要用长度判断流是否有效。
 	var length = stream.get_length()
-	if length <= 0:
-		push_error("音频流无效，长度: %.2f" % length)
-		return null
-	
-	print("音频流创建成功，长度: %.2f 秒" % length)
+	if length > 0:
+		print("AudioStreamMP3 创建成功，长度: %.2f 秒" % length)
+	else:
+		print("AudioStreamMP3 创建成功，长度未知，直接播放")
 	return stream
 
 func _detect_silence_duration(_stream: AudioStream) -> float:

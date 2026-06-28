@@ -24,6 +24,8 @@ extends MarginContainer
 @onready var tts_request_input = $ScrollContainer/VBoxContainer/AdvancedContainer/TTSRequestContainer/TTSRequestInput
 @onready var tts_request_status = $ScrollContainer/VBoxContainer/AdvancedContainer/TTSRequestContainer/TTSRequestStatus
 @onready var adv_save_button = $ScrollContainer/VBoxContainer/AdvancedContainer/AdvSaveButton
+@onready var response_format_option = $ScrollContainer/VBoxContainer/AdvancedContainer/ResponseFormatContainer/ResponseFormatOption
+@onready var audio_content_field_input = $ScrollContainer/VBoxContainer/AdvancedContainer/AudioContentFieldContainer/AudioContentFieldInput
 
 var _lang_index_map = {0: "zh", 1: "en", 2: "ja"}
 var _lang_name_map = {"zh": "汉语", "en": "英语", "ja": "日语"}
@@ -362,6 +364,8 @@ func _load_advanced_config():
 	upload_request_input.text = config.get("upload_voice_request", DEFAULT_UPLOAD_REQUEST)
 	upload_response_input.text = config.get("upload_voice_response", DEFAULT_UPLOAD_RESPONSE)
 	tts_request_input.text = config.get("tts_request", DEFAULT_TTS_REQUEST)
+	response_format_option.select(config.get("response_format", 0))
+	audio_content_field_input.text = config.get("audio_content_field", "")
 	_on_voice_save_toggled(voice_save_check.button_pressed)
 
 func _on_voice_save_toggled(enabled: bool):
@@ -422,6 +426,8 @@ func _on_adv_save_pressed():
 		"upload_voice_request": upload_request_input.text.strip_edges(),
 		"upload_voice_response": upload_response_input.text.strip_edges(),
 		"tts_request": tts_request_input.text.strip_edges(),
+		"response_format": response_format_option.selected,
+		"audio_content_field": audio_content_field_input.text.strip_edges(),
 	}
 	_write_adv_config(config)
 	# 通知 TTSService 重新加载

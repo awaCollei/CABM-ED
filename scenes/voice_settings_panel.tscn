@@ -234,7 +234,7 @@ theme_override_constants/separation = 5
 [node name="UploadResponseLabel" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedContainer/UploadResponseContainer" unique_id=1728567324]
 layout_mode = 2
 mouse_filter = 1
-text = "上传音色响应（URI 字段）："
+text = "音色ID的字段名："
 
 [node name="UploadResponseInput" type="LineEdit" parent="ScrollContainer/VBoxContainer/AdvancedContainer/UploadResponseContainer" unique_id=2037017068]
 layout_mode = 2
@@ -245,7 +245,7 @@ placeholder_text = "uri"
 [node name="UploadResponseHint" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedContainer/UploadResponseContainer" unique_id=1242224130]
 layout_mode = 2
 theme_override_font_sizes/font_size = 14
-text = "提示：填写响应 JSON 中 voice URI 的字段名，如 uri、data.uri
+text = "提示：填写响应 JSON 中音色ID的字段名，如 uri、data.id
 "
 autowrap_mode = 1
 
@@ -290,6 +290,44 @@ text = "可用占位符：
 {{ref_file}}：参考音频（文件）
 {{ref_base64}}：参考音频（Base64）
 {{ref_text}}：参考文本"
+autowrap_mode = 1
+
+[node name="ResponseFormatContainer" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/AdvancedContainer" unique_id=1954405098]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ResponseFormatLabel" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedContainer/ResponseFormatContainer" unique_id=1040487736]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "响应格式："
+
+[node name="ResponseFormatOption" type="OptionButton" parent="ScrollContainer/VBoxContainer/AdvancedContainer/ResponseFormatContainer" unique_id=133462587]
+layout_mode = 2
+size_flags_horizontal = 3
+selected = 0
+item_count = 2
+popup/item_0/text = "二进制数据"
+popup/item_0/id = 0
+popup/item_1/text = "Base64"
+popup/item_1/id = 1
+
+[node name="AudioContentFieldContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/AdvancedContainer" unique_id=840969725]
+layout_mode = 2
+theme_override_constants/separation = 5
+
+[node name="AudioContentFieldLabel" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedContainer/AudioContentFieldContainer" unique_id=2119559431]
+layout_mode = 2
+text = "音频内容字段名："
+
+[node name="AudioContentFieldInput" type="LineEdit" parent="ScrollContainer/VBoxContainer/AdvancedContainer/AudioContentFieldContainer" unique_id=287916544]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+placeholder_text = "留空则解析整个响应体"
+
+[node name="AudioContentFieldHint" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedContainer/AudioContentFieldContainer" unique_id=211886467]
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+text = "提示：填写响应 JSON 中音频数据的字段路径，如 choices[0].message.audio.data"
 autowrap_mode = 1
 
 [node name="AdvSaveButton" type="Button" parent="ScrollContainer/VBoxContainer/AdvancedContainer" unique_id=1395604054]
