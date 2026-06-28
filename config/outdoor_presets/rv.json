@@ -1,0 +1,32 @@
+{
+    "name":"房车",
+    "prompt":"旅行房车内",
+    "presets": [
+        {
+            "id": "azure_neko",
+            "name": "蔚蓝猫语",
+            "description": "",
+            "prompt": "你现在穿着宽松的浅蓝色连帽卫衣外套，内搭白衬衫，蓝灰色百褶短裙",
+            "presets": [
+            {
+                "des": "坐在沙发上",
+                "image": "1.png",
+                "scale": 0.6,
+                "position": {
+                "x": 0.33,
+                "y": 0.71
+                }
+            },
+            {
+                "des": "站在面前",
+                "image": "2.png",
+                "scale": 0.6,
+                "position": {
+                "x": 0.75,
+                "y": 0.61
+                }
+            }
+            ]
+        }
+    ]
+}

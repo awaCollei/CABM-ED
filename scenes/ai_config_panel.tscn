@@ -149,7 +149,7 @@ theme_override_constants/separation = 10
 [node name="UseBuiltinKeyCheckBox" type="CheckButton" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/UseBuiltinKeyContainer" unique_id=1323917275]
 layout_mode = 2
 tooltip_text = "使用内置的免费API密钥（功能受限）"
-text = "使用免费内置密钥"
+text = "使用免费内置密钥（已停止服务）"
 
 [node name="ApplyButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer" unique_id=1815244826]
 layout_mode = 2
@@ -174,10 +174,12 @@ layout_mode = 2
 current_tab = 0
 
 [node name="模型厂商" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs" unique_id=202450690 instance=ExtResource("5_providers")]
+layout_mode = 2
 metadata/_tab_index = 0
 
 [node name="模型列表" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs" unique_id=502243852 instance=ExtResource("6_models")]
 visible = false
+layout_mode = 2
 metadata/_tab_index = 1
 
 [node name="模型任务" parent="MarginContainer/VBoxContainer/TabContainer/详细配置/DetailTabs" unique_id=1584163840 instance=ExtResource("7_tasks")]
