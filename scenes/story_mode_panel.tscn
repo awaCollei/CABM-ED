@@ -1,4 +1,4 @@
-[gd_scene load_steps=22 format=3 uid="uid://dtmqem8v5cr7m"]
+[gd_scene format=3 uid="uid://dtmqem8v5cr7m"]
 
 [ext_resource type="Script" uid="uid://oumaobjth63w" path="res://scripts/story/story_mode_panel.gd" id="1"]
 [ext_resource type="Texture2D" uid="uid://ciav2n21hexqb" path="res://assets/images/story_background.png" id="2"]
@@ -54,6 +54,123 @@ shadow_size = 3
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ay0wa"]
 bg_color = Color(0, 0, 0, 0.16470589)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_delete_normal"]
+bg_color = Color(0.9592077, 0.00034875542, 0.11491979, 0.90588236)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.8, 0.8, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 0.2)
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_delete_pressed"]
+bg_color = Color(0.8, 0.35, 0.35, 0.90588236)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.6, 0.6, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_delete_hover"]
+bg_color = Color(0.83137256, 0.2, 0.13725491, 0.77254903)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 1, 1, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_right = 6
+corner_radius_bottom_left = 6
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kg3em"]
+bg_color = Color(0.26835972, 0.6612928, 0.19275102, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ce253"]
+bg_color = Color(0.21489933, 0.75829023, 0.31385657, 1)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_57v36"]
+bg_color = Color(0.21456605, 0.8545345, 0, 0.88235295)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_edit_normal"]
+bg_color = Color(0.2, 0.5, 0.65, 0.9)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.65, 0.8, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.3)
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_edit_pressed"]
+bg_color = Color(0.15, 0.4, 0.55, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.55, 0.7, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 1
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_edit_hover"]
+bg_color = Color(0.35, 0.65, 0.8, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.5, 0.8, 1, 1)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+shadow_color = Color(0, 0, 0, 0.4)
+shadow_size = 3
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_go_to_root_normal"]
 bg_color = Color(0.2, 0.4, 0.8, 0.9)
@@ -139,124 +256,7 @@ corner_radius_bottom_left = 4
 shadow_color = Color(0, 0, 0, 0.4)
 shadow_size = 3
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_kg3em"]
-bg_color = Color(0.26835972, 0.6612928, 0.19275102, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ce253"]
-bg_color = Color(0.21489933, 0.75829023, 0.31385657, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_57v36"]
-bg_color = Color(0.21456605, 0.8545345, 0, 0.88235295)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_edit_normal"]
-bg_color = Color(0.2, 0.5, 0.65, 0.9)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.3, 0.65, 0.8, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-shadow_color = Color(0, 0, 0, 0.3)
-shadow_size = 2
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_edit_pressed"]
-bg_color = Color(0.15, 0.4, 0.55, 0.95)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.2, 0.55, 0.7, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-shadow_color = Color(0, 0, 0, 0.5)
-shadow_size = 1
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_edit_hover"]
-bg_color = Color(0.35, 0.65, 0.8, 0.95)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.5, 0.8, 1, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-shadow_color = Color(0, 0, 0, 0.4)
-shadow_size = 3
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_delete_normal"]
-bg_color = Color(0.8, 0.2, 0.2, 0.8)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(1, 0.3, 0.3, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-shadow_color = Color(0, 0, 0, 0.3)
-shadow_size = 2
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_delete_pressed"]
-bg_color = Color(0.6, 0.1, 0.1, 0.9)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.8, 0.2, 0.2, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-shadow_color = Color(0, 0, 0, 0.5)
-shadow_size = 1
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_delete_hover"]
-bg_color = Color(1, 0.3, 0.3, 0.9)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(1, 0.5, 0.5, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-shadow_color = Color(0, 0, 0, 0.4)
-shadow_size = 3
-
-[node name="StoryModePanel" type="Control"]
+[node name="StoryModePanel" type="Control" unique_id=252498725]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -265,7 +265,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=906732905]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -273,13 +273,13 @@ texture = ExtResource("2")
 expand_mode = 1
 stretch_mode = 6
 
-[node name="Overlay" type="ColorRect" parent="."]
+[node name="Overlay" type="ColorRect" parent="." unique_id=1228923023]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
 color = Color(0, 0, 0, 0.3)
 
-[node name="Panel" type="Panel" parent="."]
+[node name="Panel" type="Panel" parent="." unique_id=94458652]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -288,7 +288,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_pkgs8")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel" unique_id=632546460]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -297,33 +297,34 @@ offset_top = 20.0
 offset_right = -20.0
 offset_bottom = -20.0
 
-[node name="TitleBar" type="HBoxContainer" parent="Panel/VBoxContainer"]
+[node name="TitleBar" type="HBoxContainer" parent="Panel/VBoxContainer" unique_id=876523702]
 layout_mode = 2
 size_flags_vertical = 0
 
-[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer/TitleBar"]
+[node name="TitleLabel" type="Label" parent="Panel/VBoxContainer/TitleBar" unique_id=318779832]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_font_sizes/font_size = 24
 text = "故事模式"
 horizontal_alignment = 1
 
-[node name="CloseButton" type="Button" parent="Panel/VBoxContainer/TitleBar"]
+[node name="CloseButton" type="Button" parent="Panel/VBoxContainer/TitleBar" unique_id=434682329]
 layout_mode = 2
 size_flags_horizontal = 0
 text = "关闭"
 
-[node name="HSplitContainer" type="HSplitContainer" parent="Panel/VBoxContainer"]
+[node name="HSplitContainer" type="HSplitContainer" parent="Panel/VBoxContainer" unique_id=1304846801]
 layout_mode = 2
 size_flags_vertical = 3
+split_offsets = PackedInt32Array(300)
 split_offset = 300
 
-[node name="StoryListPanel" type="Panel" parent="Panel/VBoxContainer/HSplitContainer"]
+[node name="StoryListPanel" type="Panel" parent="Panel/VBoxContainer/HSplitContainer" unique_id=1862396709]
 custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_ama4m")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/HSplitContainer/StoryListPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/HSplitContainer/StoryListPanel" unique_id=2084041617]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -332,22 +333,22 @@ offset_top = 10.0
 offset_right = -10.0
 offset_bottom = -10.0
 
-[node name="StoryListLabel" type="Label" parent="Panel/VBoxContainer/HSplitContainer/StoryListPanel/VBoxContainer"]
+[node name="StoryListLabel" type="Label" parent="Panel/VBoxContainer/HSplitContainer/StoryListPanel/VBoxContainer" unique_id=1571266679]
 layout_mode = 2
 size_flags_vertical = 0
 theme_override_font_sizes/font_size = 18
 text = "故事列表"
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Panel/VBoxContainer/HSplitContainer/StoryListPanel/VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/VBoxContainer/HSplitContainer/StoryListPanel/VBoxContainer" unique_id=1169041858]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="StoryListContainer" type="VBoxContainer" parent="Panel/VBoxContainer/HSplitContainer/StoryListPanel/VBoxContainer/ScrollContainer"]
+[node name="StoryListContainer" type="VBoxContainer" parent="Panel/VBoxContainer/HSplitContainer/StoryListPanel/VBoxContainer/ScrollContainer" unique_id=1990485212]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 10
 
-[node name="PlusButton" type="Button" parent="Panel/VBoxContainer/HSplitContainer/StoryListPanel/VBoxContainer/ScrollContainer/StoryListContainer"]
+[node name="PlusButton" type="Button" parent="Panel/VBoxContainer/HSplitContainer/StoryListPanel/VBoxContainer/ScrollContainer/StoryListContainer" unique_id=226540431]
 custom_minimum_size = Vector2(0, 60)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -357,11 +358,11 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_plus_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_plus_hover")
 text = "+"
 
-[node name="TreeViewPanel" type="Panel" parent="Panel/VBoxContainer/HSplitContainer"]
+[node name="TreeViewPanel" type="Panel" parent="Panel/VBoxContainer/HSplitContainer" unique_id=938515867]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_ay0wa")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel" unique_id=781486885]
 layout_mode = 0
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -370,19 +371,19 @@ offset_top = 10.0
 offset_right = -10.0
 offset_bottom = -10.0
 
-[node name="TreeViewLabel" type="Label" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer"]
+[node name="TreeViewLabel" type="Label" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer" unique_id=833566706]
 layout_mode = 2
 size_flags_vertical = 0
 theme_override_font_sizes/font_size = 18
 text = "命路歧图"
 
-[node name="OperationBar" type="HBoxContainer" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer"]
+[node name="OperationBar" type="HBoxContainer" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer" unique_id=1327797724]
 custom_minimum_size = Vector2(0, 40)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_constants/separation = 10
+theme_override_constants/separation = 25
 
-[node name="NodeTextLabel" type="Label" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar"]
+[node name="NodeTextLabel" type="Label" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar" unique_id=45740449]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
@@ -390,33 +391,19 @@ theme_override_font_sizes/font_size = 14
 autowrap_mode = 1
 clip_text = true
 
-[node name="GoToRootButton" type="Button" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar"]
+[node name="DeleteNodeButton" type="Button" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar" unique_id=1787475802]
 visible = false
 custom_minimum_size = Vector2(120, 30)
 layout_mode = 2
 size_flags_horizontal = 0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(0.8, 0.8, 0.8, 1)
 theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_styles/normal = SubResource("StyleBoxFlat_go_to_root_normal")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_go_to_root_pressed")
-theme_override_styles/hover = SubResource("StyleBoxFlat_go_to_root_hover")
-text = "回到开头"
+theme_override_styles/normal = SubResource("StyleBoxFlat_delete_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_delete_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_delete_hover")
+text = "删除节点"
 
-[node name="GoToLatestButton" type="Button" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar"]
-visible = false
-custom_minimum_size = Vector2(120, 30)
-layout_mode = 2
-size_flags_horizontal = 0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
-theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
-theme_override_styles/normal = SubResource("StyleBoxFlat_go_to_latest_normal")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_go_to_latest_pressed")
-theme_override_styles/hover = SubResource("StyleBoxFlat_go_to_latest_hover")
-text = "最新节点"
-
-[node name="StartFromButton" type="Button" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar"]
+[node name="StartFromButton" type="Button" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar" unique_id=1699031422]
 visible = false
 custom_minimum_size = Vector2(120, 30)
 layout_mode = 2
@@ -429,7 +416,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_ce253")
 theme_override_styles/hover = SubResource("StyleBoxFlat_57v36")
 text = "从此开始"
 
-[node name="EditStoryButton" type="Button" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar"]
+[node name="EditStoryButton" type="Button" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar" unique_id=507806030]
 visible = false
 custom_minimum_size = Vector2(120, 30)
 layout_mode = 2
@@ -442,10 +429,45 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_edit_pressed")
 theme_override_styles/hover = SubResource("StyleBoxFlat_edit_hover")
 text = "编辑故事"
 
-[node name="TreeViewContainer" type="Control" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer"]
+[node name="TreeViewContainer" type="Control" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer" unique_id=1021541144]
 clip_contents = true
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="TreeView" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/TreeViewContainer" instance=ExtResource("3")]
+[node name="TreeView" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/TreeViewContainer" unique_id=1537894393 instance=ExtResource("3")]
 layout_mode = 1
+
+[node name="GoToRootButton" type="Button" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel" unique_id=1735849113]
+visible = false
+custom_minimum_size = Vector2(120, 30)
+layout_mode = 0
+offset_left = 20.0
+offset_top = 580.0
+offset_right = 140.0
+offset_bottom = 620.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_go_to_root_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_go_to_root_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_go_to_root_hover")
+text = "回到开头"
+
+[node name="GoToLatestButton" type="Button" parent="Panel/VBoxContainer/HSplitContainer/TreeViewPanel" unique_id=409330720]
+visible = false
+custom_minimum_size = Vector2(120, 30)
+layout_mode = 0
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -140.0
+offset_top = 580.0
+offset_right = -20.0
+offset_bottom = 620.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_pressed_color = Color(1, 1, 1, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_go_to_latest_normal")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_go_to_latest_pressed")
+theme_override_styles/hover = SubResource("StyleBoxFlat_go_to_latest_hover")
+text = "最新节点"

@@ -16,11 +16,11 @@ const StoryCreationPanel = preload("res://scenes/story_creation_panel.tscn")
 # 操作栏相关
 @onready var operation_bar: HBoxContainer = $Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar
 @onready var node_text_label: Label = $Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar/NodeTextLabel
-@onready var go_to_root_button: Button = $Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar/GoToRootButton
-@onready var go_to_latest_button: Button = $Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar/GoToLatestButton
+@onready var go_to_root_button: Button = $Panel/VBoxContainer/HSplitContainer/TreeViewPanel/GoToRootButton
+@onready var go_to_latest_button: Button = $Panel/VBoxContainer/HSplitContainer/TreeViewPanel/GoToLatestButton
 @onready var start_from_button: Button = $Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar/StartFromButton
 @onready var edit_story_button: Button = $Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar/EditStoryButton
-
+@onready var delete_node_button: Button = $Panel/VBoxContainer/HSplitContainer/TreeViewPanel/VBoxContainer/OperationBar/DeleteNodeButton
 # 故事数据
 var stories_data: Dictionary = {}
 var current_story_id: String = ""
@@ -50,6 +50,8 @@ func _ready():
 		go_to_latest_button.pressed.connect(_on_go_to_latest_pressed)
 	start_from_button.pressed.connect(_on_start_from_pressed)
 	edit_story_button.pressed.connect(_on_edit_story_pressed)
+	if delete_node_button:
+		delete_node_button.pressed.connect(_on_delete_node_pressed)
 
 	# 连接树状图信号
 	tree_view.node_selected.connect(_on_tree_node_selected)
@@ -95,29 +97,36 @@ func _create_tween():
 
 func _update_operation_buttons():
 	"""更新操作按钮的显示状态"""
+	var story_selected = not selected_story_id.is_empty()
+	var node_selected = not selected_node_id.is_empty()
+
 	# 编辑按钮：只在选择了故事且没有选中节点时显示
 	if edit_story_button:
-		edit_story_button.visible = not selected_story_id.is_empty() and selected_node_id.is_empty()
-	# 返回开头按钮：在选择了故事时显示
+		edit_story_button.visible = story_selected and not node_selected
+	# 从此开始按钮：只在选中节点时显示
+	if start_from_button:
+		start_from_button.visible = node_selected
+	# 删除节点按钮：只在选中节点时显示
+	if delete_node_button:
+		delete_node_button.visible = node_selected
+	# 返回开头按钮：在选择了故事时始终显示（在图的左上角）
 	if go_to_root_button:
-		go_to_root_button.visible = not selected_story_id.is_empty()
-	# 最新节点按钮：在选择了故事且存在last_node_id时显示
+		go_to_root_button.visible = story_selected
+	# 最新节点按钮：在选择了故事且存在last_node_id时显示（在图的右上角）
 	if go_to_latest_button and current_story_id and stories_data.has(current_story_id):
 		var last_id = ""
 		var sd = stories_data[current_story_id]
 		if sd and sd is Dictionary:
 			last_id = sd.get("last_node_id", "")
-		go_to_latest_button.visible = not selected_story_id.is_empty() and not last_id.is_empty()
+		go_to_latest_button.visible = story_selected and not last_id.is_empty()
 
 func _clear_node_selection():
 	"""清除节点选中状态"""
 	selected_node_id = ""
-	if start_from_button:
-		start_from_button.visible = false
 	if node_text_label:
 		node_text_label.text = ""
 
-	# 更新删除按钮显示状态
+	# 更新按钮显示状态
 	_update_operation_buttons()
 
 	# 使用TreeView的方法清除选中状态
@@ -387,7 +396,6 @@ func _render_story_tree():
 func _on_tree_node_selected(node_id: String):
 	"""树状图节点选中"""
 	selected_node_id = node_id
-	start_from_button.visible = true
 
 	# 在操作栏显示完整节点文本
 	if node_text_label and current_story_id and stories_data.has(current_story_id):
@@ -409,8 +417,8 @@ func _on_tree_node_selected(node_id: String):
 func _on_tree_node_deselected():
 	"""树状图节点取消选中"""
 	selected_node_id = ""
-	start_from_button.visible = false
-	node_text_label.text = ""
+	if node_text_label:
+		node_text_label.text = ""
 
 	# 更新操作按钮状态
 	_update_operation_buttons()
@@ -446,6 +454,156 @@ func _on_go_to_latest_pressed():
 	if last_id.is_empty():
 		return
 	tree_view.select_node(last_id)
+
+func _on_delete_node_pressed():
+	"""删除节点按钮点击处理"""
+	if selected_node_id.is_empty() or current_story_id.is_empty():
+		return
+
+	var story_data = stories_data[current_story_id]
+	if not story_data or not story_data is Dictionary:
+		return
+
+	var root_node_id = story_data.get("root_node", "")
+
+	# 如果试图删除根节点
+	if selected_node_id == root_node_id:
+		MessageDisplay.show_failure_message("无法删除根节点，你可以在“编辑故事”中删除故事")
+		return
+
+	var nodes = story_data.get("nodes", {})
+	if not nodes.has(selected_node_id):
+		return
+
+	# 计算所有子节点数量和分支数
+	var result = _count_descendant_nodes(selected_node_id, nodes)
+	var total_count = result.total  # 不含自身
+	var branch_count = result.branches
+
+	# 构建确认消息
+	var confirm_message = "确认删除此节点"
+	if total_count > 0:
+		confirm_message += "及之后的%d个节点（共%d个分支）" % [total_count, branch_count]
+	confirm_message+="？\n此操作不可撤销！"
+	_show_delete_confirm_dialog(confirm_message)
+
+func _count_descendant_nodes(node_id: String, nodes: Dictionary) -> Dictionary:
+	var total = 0
+	var branches = 0
+	var node_data = nodes.get(node_id, {})
+	var child_nodes = node_data.get("child_nodes", [])
+
+	# 如果当前节点没有子节点，则它本身是一个分支（叶子节点）
+	if child_nodes.is_empty():
+		return {"total": 0, "branches": 1}
+
+	# 遍历所有子节点
+	for child_id in child_nodes:
+		total += 1  # 子节点自身
+		var sub_result = _count_descendant_nodes(child_id, nodes)
+		total += sub_result.total
+		branches += sub_result.branches
+
+	return {"total": total, "branches": branches}
+
+func _show_delete_confirm_dialog(message: String):
+	"""显示删除确认弹窗"""
+	var dialog = ConfirmationDialog.new()
+	dialog.title = "删除节点"
+	dialog.dialog_text = message
+	dialog.ok_button_text = "确认"
+	dialog.cancel_button_text = "手滑了"
+
+	# 添加到场景树
+	add_child(dialog)
+
+	# 连接信号
+	dialog.confirmed.connect(_on_delete_confirmed.bind(dialog))
+	dialog.canceled.connect(_on_delete_cancelled.bind(dialog))
+	# dialog.about_to_popup.connect(_on_delete_cancelled)
+	# 显示弹窗
+	dialog.popup_centered(Vector2i(400, 150))
+
+	# 默认聚焦"手滑了"按钮
+	var cancel_btn = dialog.get_cancel_button()
+	if cancel_btn:
+		cancel_btn.grab_focus()
+
+func _on_delete_cancelled(dialog: ConfirmationDialog):
+	"""取消删除"""
+	dialog.queue_free()
+
+func _on_delete_confirmed(dialog: ConfirmationDialog):
+	"""确认删除节点及其所有子节点"""
+	dialog.queue_free()
+
+	if selected_node_id.is_empty() or current_story_id.is_empty():
+		return
+
+	var story_data = stories_data[current_story_id]
+	if not story_data or not story_data is Dictionary:
+		return
+
+	var nodes = story_data.get("nodes", {})
+	if not nodes.has(selected_node_id):
+		return
+
+	# 收集需要删除的所有节点ID（包括自身）
+	var nodes_to_delete = _collect_descendant_ids(selected_node_id, nodes)
+	nodes_to_delete.append(selected_node_id)
+
+	# 从父节点的child_nodes中移除该节点
+	for parent_id in nodes:
+		var parent_data = nodes[parent_id]
+		var child_nodes = parent_data.get("child_nodes", [])
+		if selected_node_id in child_nodes:
+			child_nodes.erase(selected_node_id)
+			break
+
+	# 删除所有节点
+	for node_id in nodes_to_delete:
+		nodes.erase(node_id)
+
+	# 清除选中状态
+	_clear_node_selection()
+
+	# 更新last_node_id（如果被删除的节点是last_node）
+	if story_data.get("last_node_id", "") in nodes_to_delete:
+		story_data["last_node_id"] = ""
+
+	# 保存故事数据
+	_save_story_file(current_story_id, story_data)
+
+	# 刷新树状图
+	tree_view.reset_view()
+	_render_story_tree()
+
+	print("已删除 %d 个节点" % nodes_to_delete.size())
+
+func _collect_descendant_ids(node_id: String, nodes: Dictionary) -> Array:
+	"""收集节点的所有后代节点ID"""
+	var ids = []
+	var node_data = nodes.get(node_id, {})
+	var child_nodes = node_data.get("child_nodes", [])
+
+	for child_id in child_nodes:
+		ids.append(child_id)
+		ids.append_array(_collect_descendant_ids(child_id, nodes))
+
+	return ids
+
+func _save_story_file(story_id: String, story_data: Dictionary):
+	"""保存故事文件"""
+	var file_path = "user://story/" + story_id + ".json"
+	var file = FileAccess.open(file_path, FileAccess.WRITE)
+	if file == null:
+		print("无法保存故事文件: ", file_path)
+		return
+
+	var json_string = JSON.stringify(story_data, "\t")
+	file.store_string(json_string)
+	file.close()
+	print("故事已保存: ", file_path)
 
 func _create_story_creation_panel():
 	"""创建故事创建面板"""

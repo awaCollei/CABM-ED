@@ -43,7 +43,7 @@ var previous_node_id: String = ""  # 上一个节点（父节点）
 var displayed_nodes: Dictionary = {}  # 当前显示的节点集合
 var warning_label: Label = null  # 警告标签，动态创建
 
-const NODE_SIZE = Vector2(200, 60)
+const NODE_SIZE = Vector2(200, 68)
 const NODE_SPACING_X = 250
 const NODE_SPACING_Y = 80
 
