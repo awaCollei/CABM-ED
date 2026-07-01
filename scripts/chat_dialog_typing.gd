@@ -175,10 +175,16 @@ func _on_typing_timer_timeout():
 func stop():
 	if typing_timer:
 		typing_timer.stop()
-		if message_label:
-			message_label.add_theme_color_override("font_color", COLOR_NORMAL)
+	display_buffer = ""
+	displayed_text = ""
+	splitter_state = SentenceSplitter.StreamState.new()
+	sentence_queue = []
+	current_sentence_index = 0
 	is_receiving_stream = false
 	is_showing_sentence = false
+	if message_label:
+		message_label.add_theme_color_override("font_color", COLOR_NORMAL)
+		message_label.text = ""
 
 func _compute_sentence_hash(original_text: String) -> String:
 	if has_node("/root/TTSService"):

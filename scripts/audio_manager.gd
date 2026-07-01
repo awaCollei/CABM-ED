@@ -678,7 +678,7 @@ func _play_ambient_for_scene(scene_id: String, _time_id: String, weather_id: Str
 func _is_outdoor_scene(scene_id: String) -> bool:
 	"""检查是否为户外场景"""
 	# 检查常见的户外场景ID
-	var outdoor_scenes = ["beach", "gensokyo1", "gensokyo2", "snowy_mountain","hot_spring"]
+	var outdoor_scenes = ["beach", "gensokyo1", "gensokyo2", "snowy_mountain","hot_spring","rv"]
 	return scene_id in outdoor_scenes
 
 func get_current_bgm_path() -> String:

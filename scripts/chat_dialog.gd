@@ -372,6 +372,8 @@ func show_dialog(mode: String = "passive"):
 			input_field.grab_focus()
 
 func _setup_reply_mode():
+	if typing_manager:
+		typing_manager.stop()
 	is_input_mode = false
 	character_name_label.visible = true
 	message_label.visible = true
@@ -468,8 +470,9 @@ func _on_ai_response(response: String):
 func _on_ai_response_completed():
 	"""AI 流式响应完成回调"""
 	if not typing_manager.has_content():
+		typing_manager.stop()
 		var character_name = _get_character_name()
-		_handle_empty_msg_response(character_name + "欲言又止")
+		await _handle_empty_msg_response(character_name + "欲言又止")
 		return
 	
 	typing_manager.end_stream()
@@ -486,12 +489,15 @@ func _on_options_generated(options: Array):
 		pending_options.clear()
 
 func _on_ai_error(error_message: String):
-	"""AI 错误回调 - 撤回用户消息"""
+	"""AI 错误回调 - 撤回用户消息并恢复输入框"""
 	print("AI 错误: ", error_message)
 	_on_chat_status_changed("")
 	
-	# 撤回用户消息：从历史中删除最后一条用户消息，并恢复到输入框
-	_retract_last_user_message()
+	# 立刻停止任何流式显示状态，避免卡在“等待文本显示/继续”。
+	if typing_manager:
+		typing_manager.stop()
+	if message_label:
+		message_label.text = ""
 	
 	# 重置等待状态 
 	waiting_for_continue = false
@@ -506,13 +512,16 @@ func _on_ai_error(error_message: String):
 	if auto_continue_timer:
 		auto_continue_timer.stop()
 	
-	# 显示错误提示
-	# var error_text = ""
-	# if error_message.contains("超时"):
-	# 	error_text = "请求超时（错误代码：408）"
-	# else:
-	var error_text = "请求出错：" + error_message
+	# 错误后不展示基于失败回复生成的选项。
+	pending_options.clear()
+	_clear_options()
 	
+	# 撤回用户消息：从历史中删除最后一条用户消息，并恢复到输入框。
+	# 必须等待模式切换完成，否则UI可能停在回复模式。
+	await _retract_last_user_message()
+	
+	# 显示错误提示
+	var error_text = "请求出错：" + error_message
 	await _show_error_notification(error_text)
 
 func _update_action_button_state():
@@ -589,6 +598,8 @@ func _on_input_submitted(text: String):
 			ai_service.clear_pending_goto()
 			_hide_goto_notification()
 	
+	if typing_manager:
+		typing_manager.stop()
 	await ui_manager.transition_to_reply_mode(_get_character_name())
 	
 	if has_node("/root/EventManager"):
@@ -960,20 +971,15 @@ func _handle_reply_refusal(user_message: String, refusal_message: String):
 	if has_node("/root/AIService"):
 		var ai_service = get_node("/root/AIService")
 		ai_service.add_to_history("user", user_message)
-		ai_service.add_to_history("assistant", "……")
+		ai_service.add_to_history("assistant", "{\"mood\": 0, \"msg\": \"……\", \"will\": 0, \"like\": 0, \"goto\": -1}")
 
 func _handle_empty_msg_response(message: String):
 	await _show_refusal_message(message)
 	
 	await ui_manager.transition_to_input_mode()
 	
-	if has_node("/root/AIService"):
-		var ai_service = get_node("/root/AIService")
-		ai_service.add_to_history("assistant", "……")
-	
-	if has_node("/root/AIService"):
-		var ai_service = get_node("/root/AIService")
-		ai_service.add_to_history("assistant", "……")
+	# AIService在完成回调前已经把空msg回复写成“……”放入历史。
+	# 这里仅负责UI提示，避免重复追加或把损坏JSON留在上下文里。
 
 func _show_refusal_message(message: String = ""):
 	var character_name = _get_character_name()
@@ -1024,6 +1030,8 @@ func _retract_last_user_message():
 	if last_user_index >= 0:
 		conversation.remove_at(last_user_index)
 		print("撤回用户消息: ", last_user_message)
+		if ai_service.has_method("_save_temp_conversation"):
+			ai_service._save_temp_conversation()
 	
 	# 切换回输入模式
 	await ui_manager.transition_to_input_mode()

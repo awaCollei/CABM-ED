@@ -38,6 +38,7 @@ var stt_request: HTTPRequest
 # 对话状态
 var current_conversation: Array = []
 var is_chatting: bool = false
+var _stream_parse_error_emitted: bool = false
 var is_first_message: bool = true
 var last_conversation_time: float = 0.0 # 上次对话结束时间（Unix时间戳）
 var temp_conversation_file: String = "user://temp_conversation.json" # 临时对话文件路径
@@ -428,6 +429,7 @@ func _call_chat_api(messages: Array, _user_message: String, item_data: Dictionar
 	# 额外的调试信息
 	print("发送对话请求，messages数量: %d, 最后一条role: %s" % [messages.size(), messages[-1].role])
 
+	_stream_parse_error_emitted = false
 	response_parser.reset()
 
 	http_request.set_meta("messages", messages)
@@ -470,7 +472,9 @@ func _on_content_received(content: String):
 
 func _on_parse_error(error_message: String):
 	"""解析错误回调 - 触发错误并撤回"""
+	_stream_parse_error_emitted = true
 	is_chatting = false
+	chat_status_changed.emit("")
 	print("响应解析错误: ", error_message)
 	chat_error.emit(error_message)
 
@@ -486,16 +490,25 @@ func _finalize_stream_response():
 
 	var extracted_fields = response_parser.finalize_response()
 	
-	# 检查解析是否失败（返回空字典）
+	# 检查解析是否失败（返回空字典）。parser通常会先发parse_error；这里兜底，
+	# 防止UI停在回复模式等待不存在的文本。
 	if extracted_fields.is_empty():
+		var error_msg = response_parser.last_error_message if response_parser.last_error_message != "" else "JSON解析错误，无法从响应中提取任何有效字段"
 		print("JSON解析失败，不保存此次对话")
+		if not _stream_parse_error_emitted:
+			chat_error.emit(error_msg)
+		_stream_parse_error_emitted = false
 		return
 	
+	_stream_parse_error_emitted = false
 	_apply_extracted_fields(extracted_fields)
 
-	var full_response = response_parser.get_full_response()
+	var raw_response = response_parser.get_full_response()
+	var history_response = response_parser.get_history_response_content()
 	var timestamp = Time.get_unix_time_from_system()
-	current_conversation.append({"role": "assistant", "content": full_response, "timestamp": timestamp})
+	current_conversation.append({"role": "assistant", "content": history_response, "timestamp": timestamp})
+	if history_response != raw_response:
+		print("AI回复已写入修复/占位后的历史，避免损坏JSON污染上下文: ", history_response)
 
 	# 实时记录AI回复时间
 	last_conversation_time = timestamp
@@ -505,7 +518,7 @@ func _finalize_stream_response():
 	print("添加AI回复到历史，当前上下文数量: %d" % current_conversation.size())
 
 	var messages = http_request.get_meta("messages", [])
-	logger.log_api_call("CHAT_RESPONSE", messages, full_response)
+	logger.log_api_call("CHAT_RESPONSE", messages, raw_response)
 	
 	# 处理物品接收逻辑
 	var item_data = http_request.get_meta("item_data", {})
