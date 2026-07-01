@@ -52,6 +52,7 @@ var is_multi_line_mode: bool = false  # false = 单行模式，true = 多行模�
 
 # AI响应状态
 var is_ai_responding: bool = false  # 跟踪AI是否正在响应
+var is_checkpointing: bool = false  # 跟踪是否正在创建存档点
 
 # 脉冲动画相关
 var checkpoint_pulse_tween: Tween = null  # 存档点按钮脉冲动画
@@ -582,42 +583,56 @@ func _on_load_previous_button_pressed():
 
 func _on_create_checkpoint_pressed():
 	"""创建存档点按钮点击"""
-	if save_manager:
-		# 禁用输入控件
-		message_input.editable = false
-		message_input.modulate = Color(0.7, 0.7, 0.7)  # 变暗表示禁用
-		message_input.placeholder_text = "正在创建存档点..."
-		_update_send_button_style()
-
-		# 改变按钮状态为"正在创建..."
-		create_checkpoint_button.text = "正在创建..."
-		create_checkpoint_button.disabled = true
-
-		var result = await save_manager.create_checkpoint()
-		if result.success:
-			print("存档点创建成功")
-			var summary_text = result.summary
-			_add_system_message("↑\n" + summary_text)
-			# 停止脉冲动画，因为已经创建了存档点
-			_stop_checkpoint_pulse_animation()
-		else:
-			print("存档点创建失败")
-			_add_system_message("创建存档点失败："+result.reason)
-
-		# 恢复按钮状态
-		create_checkpoint_button.text = "创建存档点"
-		create_checkpoint_button.disabled = false
-
-		# 恢复输入控件
-		message_input.editable = true
-		message_input.modulate = Color(1, 1, 1)  # 恢复正常颜色
-		message_input.placeholder_text = "输入消息..."
-		_update_send_button_style()
-		# 恢复光标焦点
-		call_deferred("_grab_message_input_focus")
-	else:
+	if not save_manager:
 		print("保存管理器未初始化")
 		_add_system_message("保存管理器未初始化，无法创建存档点")
+		return
+
+	# 防止重复点击
+	if is_checkpointing:
+		return
+
+	is_checkpointing = true
+
+	# 禁用输入控件
+	message_input.editable = false
+	message_input.modulate = Color(0.7, 0.7, 0.7)  # 变暗表示禁用
+	message_input.placeholder_text = "正在创建存档点..."
+	_update_send_button_style()
+
+	# 改变按钮状态为"正在创建..."
+	create_checkpoint_button.text = "正在创建..."
+	create_checkpoint_button.disabled = true
+
+	var result = await save_manager.create_checkpoint()
+
+	# 确保 result 有效（防止 await 异常导致 result 为 null）
+	if result == null:
+		result = {"success": false, "reason": "创建存档点时发生未知错误"}
+
+	if result.get("success", false):
+		print("存档点创建成功")
+		var summary_text = result.get("summary", "")
+		_add_system_message("↑\n" + summary_text)
+		# 停止脉冲动画，因为已经创建了存档点
+		_stop_checkpoint_pulse_animation()
+	else:
+		print("存档点创建失败")
+		_add_system_message("创建存档点失败：" + str(result.get("reason", "未知错误")))
+
+	# 恢复按钮状态
+	create_checkpoint_button.text = "创建存档点"
+	create_checkpoint_button.disabled = false
+
+	# 恢复输入控件
+	message_input.editable = true
+	message_input.modulate = Color(1, 1, 1)  # 恢复正常颜色
+	message_input.placeholder_text = "输入消息..."
+	_update_send_button_style()
+	# 恢复光标焦点
+	call_deferred("_grab_message_input_focus")
+
+	is_checkpointing = false
 
 func _on_back_button_pressed():
 	"""返回按钮点击"""
@@ -651,6 +666,8 @@ func _on_send_message_pressed():
 	"""发送消息按钮点击"""
 	if not message_input or not is_instance_valid(message_input):
 		return
+	if is_checkpointing:
+		return
 		
 	var message_text = message_input.text.strip_edges()
 	if message_text.is_empty():
@@ -683,8 +700,8 @@ func _update_send_button_style():
 		
 	var has_content = not message_input.text.strip_edges().is_empty()
 
-	if has_content and not is_ai_responding:
-		# 有内容且AI未响应时：激活状态，绿色背景
+	if has_content and not is_ai_responding and not is_checkpointing:
+		# 有内容且AI未响应且未创建存档点时：激活状态，绿色背景
 		send_button.modulate = Color(0.2, 0.8, 0.2)  # 绿色
 		send_button.disabled = false
 	else:
@@ -809,6 +826,9 @@ func hide_panel():
 	if tts_service:
 		tts_service.stop_playback()
 		print("退出故事，已停止语音播放")
+	
+	# 重置状态标记
+	is_checkpointing = false
 	
 	visible = false
 	dialog_closed.emit()

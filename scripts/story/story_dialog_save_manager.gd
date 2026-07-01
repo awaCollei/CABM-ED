@@ -145,13 +145,13 @@ func create_checkpoint() -> Dictionary:
 	if summary_text.is_empty():
 		MessageDisplay.show_failure_message("获取总结失败")
 		push_error("获取总结失败")
-		return {"success": false, "summary": ""}
+		return {"success": false, "summary": "", "reason": "获取总结失败，请检查网络或API配置"}
 
 	# 创建新节点
 	var success = _create_new_story_node(summary_text)
 	if not success:
 		push_error("创建新节点失败")
-		return {"success": false, "summary": ""}
+		return {"success": false, "summary": "", "reason": "创建新节点失败"}
 
 	# 清空当前节点消息，为新节点做准备
 	clear_current_node_messages()
