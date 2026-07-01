@@ -843,7 +843,7 @@ func rerank_documents(query: String, documents: Array) -> Array:
 	for doc in documents:
 		document_texts.append(doc.text)
 
-	var url = rerank_base_url.trim_suffix("/") + "/rerank"
+	var url = rerank_base_url.trim_suffix("/") + config.rerank_model.get("url_suffix","")
 	var headers = [
 		"Content-Type: application/json",
 		"Authorization: Bearer " + api_key

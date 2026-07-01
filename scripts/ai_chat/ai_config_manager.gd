@@ -88,7 +88,7 @@ const PRESET_MODELS = {
 		"identifier": "BAAI/bge-reranker-v2-m3",
 		"enable_json_mode": false,
 		"params": {},
-		"url_suffix": "/embeddings"
+		"url_suffix": "/rerank"
 	}
 }
 

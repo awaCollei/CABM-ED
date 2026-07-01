@@ -29,7 +29,7 @@ var providers: Dictionary = {}
 const PRESET_SUFFIXES = [
 	"/chat/completions",
 	"/embeddings",
-	"/rererank",
+	"/rerank",
 	"/audio/speech",
 	"/audio/transcriptions",
 	"自定义..."
