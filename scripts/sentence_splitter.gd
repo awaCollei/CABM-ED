@@ -367,7 +367,18 @@ static func split_stream(state: StreamState, new_text: String, is_end: bool = fa
 				# 不切分：跳过这个省略号，继续找下一个切分点
 				var next_pos = _find_next_split_point(state.buffer, earliest_pos + ELLIPSIS.length())
 				if next_pos == -1:
-					# 没有更多切分点，等待更多内容
+					if is_end:
+						# 流已经结束：不能继续等待后续文本。
+						# 例如完整回复只有“……”时，省略号不满足实时切分条件，
+						# 但结束时必须 flush 成最后一句，否则打字机没有句子可显示，UI会卡在回复模式。
+						var final_sentence = state.buffer.strip_edges()
+						if not final_sentence.is_empty():
+							var result_text = final_sentence
+							if state.in_paren:
+								result_text = LEFT_PAREN_CN + final_sentence + RIGHT_PAREN_CN
+							results.append({ "text": result_text, "no_tts": state.in_paren})
+						state.buffer = ""
+						state.last_ellipsis_pos = -1
 					break
 				else:
 					var sentence = state.buffer.substr(0, next_pos).strip_edges()
