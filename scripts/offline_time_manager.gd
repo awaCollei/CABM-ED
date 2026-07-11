@@ -326,9 +326,10 @@ func _generate_character_diary(offline_minutes: float, event_count: int):
 	_call_diary_generation_api(system_prompt, start_datetime, end_datetime)
 
 func _call_diary_generation_api(system_prompt: String, start_datetime: Dictionary, end_datetime: Dictionary):
-	"""调用AI API生成日记（使用 easy_ai）"""
+	"""调用AI API生成日记（使用 easy_ai），失败自动重试"""
 	if not has_node("/root/AIService"):
 		print("错误: AIService 未加载")
+		MessageDisplay.show_failure_message("错误: AIService 未加载")
 		return
 	
 	var ai_service = get_node("/root/AIService")
@@ -336,6 +337,7 @@ func _call_diary_generation_api(system_prompt: String, start_datetime: Dictionar
 	# 检查API密钥
 	if not ai_service.has_api_key:
 		print("错误: API密钥未配置，跳过日记生成")
+		MessageDisplay.show_failure_message("错误: API密钥未配置，无法生成日记")
 		return
 	
 	var messages = [
@@ -343,20 +345,37 @@ func _call_diary_generation_api(system_prompt: String, start_datetime: Dictionar
 		{"role": "user", "content": "请生成日记"}
 	]
 	
-	# 使用 easy_ai 发送请求
-	var result = await ai_service.easy_ai.request(
-		"chat_model",  # 使用 chat_model 任务
-		messages, 
-		true,  # 使用 JSON 模式
-		{}  # 无额外参数
-	)
+	const MAX_RETRIES = 2  # 重试2次，总共尝试3次
+	var success = false
+	var last_error = ""
 	
-	if not result.success:
-		print("日记生成失败: " + result.error)
-		return
+	for attempt in range(MAX_RETRIES + 1):
+		print("尝试生成日记，第 %d 次" % (attempt + 1))
+		
+		# 使用 easy_ai 发送请求
+		var result = await ai_service.easy_ai.request(
+			"chat_model",  # 使用 chat_model 任务
+			messages, 
+			true,  # 使用 JSON 模式
+			{}  # 无额外参数
+		)
+		
+		if result.success:
+			# 解析并保存日记
+			_parse_and_save_diary(result.content, start_datetime, end_datetime)
+			success = true
+			break
+		else:
+			last_error = result.error
+			print("第 %d 次尝试失败: %s" % [attempt + 1, last_error])
+			
+			# 如果不是最后一次尝试，稍微延迟后重试
+			if attempt < MAX_RETRIES:
+				await get_tree().create_timer(1.0).timeout
 	
-	# 解析并保存日记
-	_parse_and_save_diary(result.content, start_datetime, end_datetime)
+	if not success:
+		print("日记生成失败，已达到最大重试次数: " + last_error)
+		MessageDisplay.show_failure_message("日记生成失败: " + last_error)
 
 func _clean_json_content(content: String) -> String:
 	"""清理JSON内容，移除markdown包裹"""
