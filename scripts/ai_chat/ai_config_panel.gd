@@ -250,25 +250,21 @@ func _show_conflict_dialog(result: Dictionary):
 	
 	conflict_message += "\n是否要覆盖这些项？"
 	
-	# 创建确认对话框
-	var dialog = AcceptDialog.new()
+	# 改用 ConfirmationDialog
+	var dialog = ConfirmationDialog.new()
 	dialog.title = "确认覆盖"
 	dialog.dialog_text = conflict_message
 	dialog.ok_button_text = "覆盖"
-	dialog.cancel_button_text = "取消"
+	dialog.cancel_button_text = "取消"  # 现在可以正常使用了
 	
 	# 获取保存的密钥
 	var quick_config_key = result.get("api_key", "")
-	
-	# 添加取消按钮
-	dialog.add_button("取消", false, "取消")
 	
 	dialog.confirmed.connect(func():
 		# 用户确认覆盖
 		var force_result = config_manager.force_import_template(result.template, quick_config_key)
 		if force_result.success:
 			config_manager.save_use_builtin_key(use_builtin_key_checkbox.button_pressed)
-			# 保存模板和密钥到配置
 			var config = config_manager.load_config()
 			config["template"] = "custom"
 			if result.has("custom_template_json"):
@@ -280,7 +276,6 @@ func _show_conflict_dialog(result: Dictionary):
 			_reload_ai_service()
 			_reload_tts_service()
 			voice_panel._load_settings()
-			# 刷新所有配置面板
 			providers_panel.refresh()
 			models_panel.refresh()
 			model_tasks_panel._build_task_list()

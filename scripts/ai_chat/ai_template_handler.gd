@@ -206,15 +206,22 @@ func style_template_buttons() -> void:
 
 ## 编辑模板
 func edit_template() -> void:
-	is_editing_template = true
-	template_text_edit_container.visible = true
-	
-	# 加载当前自定义模板
-	if custom_template_json.is_empty():
-		# 如果没有自定义模板，尝试导出当前配置
-		custom_template_json = config_manager.export_template()
-	
-	template_text_edit.text = custom_template_json
+	# 切换模板输入框的显示/隐藏状态
+	if template_text_edit_container.visible:
+		# 如果已显示，则隐藏
+		template_text_edit_container.visible = false
+		is_editing_template = false
+	else:
+		# 如果已隐藏，则显示并加载模板
+		is_editing_template = true
+		template_text_edit_container.visible = true
+		
+		# 加载当前自定义模板
+		if custom_template_json.is_empty():
+			# 如果没有自定义模板，尝试导出当前配置
+			custom_template_json = config_manager.export_template()
+		
+		template_text_edit.text = custom_template_json
 
 ## 复制当前配置为模板
 func copy_current_config_as_template() -> void:
