@@ -3,6 +3,8 @@ extends MarginContainer
 # 模型任务配置面板
 # 显示所有模型任务，每个任务可以选择要使用的模型
 
+signal config_changed  # 配置变更，需要重新加载
+
 @onready var tasks_container = $ScrollContainer/VBoxContainer/TasksContainer
 @onready var status_label = $ScrollContainer/VBoxContainer/StatusLabel
 
@@ -180,6 +182,7 @@ func _auto_save():
 	
 	if config_manager.save_model_tasks(tasks):
 		_show_status("已自动保存", true)
+		config_changed.emit()
 	else:
 		_show_status("保存失败", false)
 

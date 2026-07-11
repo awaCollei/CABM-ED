@@ -4,6 +4,7 @@ extends MarginContainer
 # 显示所有模型，支持新建、编辑、删除
 
 signal models_changed
+signal config_changed  # 配置变更，需要重新加载
 
 @onready var add_button = $VBoxContainer/TopBar/AddButton
 @onready var models_container = $VBoxContainer/ScrollContainer/ModelsContainer
@@ -136,6 +137,7 @@ func _on_delete_pressed(model_name: String):
 		_show_status("模型已删除", true)
 		_refresh_list()
 		models_changed.emit()
+		config_changed.emit()
 	else:
 		_show_status("删除失败", false)
 
@@ -149,6 +151,7 @@ func _on_model_saved(model_name: String, model_data: Dictionary, old_name: Strin
 		_show_status("模型已保存", true)
 		_refresh_list()
 		models_changed.emit()
+		config_changed.emit()
 	else:
 		_show_status("保存失败", false)
 

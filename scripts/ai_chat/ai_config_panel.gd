@@ -102,6 +102,11 @@ func _ready():
 	providers_panel.providers_changed.connect(models_panel.refresh)
 	models_panel.models_changed.connect(model_tasks_panel._build_task_list)
 	
+	# 配置变更时重新加载AI服务
+	providers_panel.config_changed.connect(_reload_ai_service)
+	models_panel.config_changed.connect(_reload_ai_service)
+	model_tasks_panel.config_changed.connect(_reload_ai_service)
+	
 	# 连接信号
 	close_button.pressed.connect(_on_close_pressed)
 	quick_template_free.pressed.connect(_on_template_selected.bind("free"))
@@ -219,7 +224,9 @@ func _on_quick_apply_pressed():
 		_reload_ai_service()
 		_reload_tts_service()
 		voice_panel._load_settings()
-		# 刷新模型任务面板
+		# 刷新所有配置面板
+		providers_panel.refresh()
+		models_panel.refresh()
 		model_tasks_panel._build_task_list()
 	elif result.has("conflicts"):
 		# 有冲突，询问用户是否覆盖
@@ -273,6 +280,9 @@ func _show_conflict_dialog(result: Dictionary):
 			_reload_ai_service()
 			_reload_tts_service()
 			voice_panel._load_settings()
+			# 刷新所有配置面板
+			providers_panel.refresh()
+			models_panel.refresh()
 			model_tasks_panel._build_task_list()
 		else:
 			_update_quick_status(false, force_result.message)

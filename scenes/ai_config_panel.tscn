@@ -4,6 +4,7 @@
 [ext_resource type="PackedScene" uid="uid://0rwyjqp8cdi0" path="res://scenes/resource_manager_panel.tscn" id="2_6aqcn"]
 [ext_resource type="Theme" uid="uid://dxscbhbyg47rp" path="res://theme/green_button.tres" id="2_82fv0"]
 [ext_resource type="PackedScene" uid="uid://cbnksm5qnqh5p" path="res://scenes/memory_config_panel.tscn" id="2_qlv36"]
+[ext_resource type="Theme" uid="uid://e1svjwc5fekc" path="res://theme/blue_button.tres" id="2_sxb7y"]
 [ext_resource type="PackedScene" uid="uid://3qbujdhy5hqa" path="res://scenes/voice_settings_panel.tscn" id="3_qhc2h"]
 [ext_resource type="PackedScene" uid="uid://c8v7y3x2xap4q" path="res://scenes/save_export_panel.tscn" id="3_save_export"]
 [ext_resource type="PackedScene" uid="uid://ckeysjhgp4xpm" path="res://scenes/ai_response_settings.tscn" id="4_response"]
@@ -129,7 +130,7 @@ button_group = SubResource("ButtonGroup_template")
 text = "自定义"
 
 [node name="DescriptionLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer" unique_id=337969218]
-custom_minimum_size = Vector2(0, 60)
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
 horizontal_alignment = 1
 vertical_alignment = 1
@@ -137,21 +138,25 @@ autowrap_mode = 3
 
 [node name="CustomButtonsContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer" unique_id=337969219]
 visible = false
+custom_minimum_size = Vector2(0, 50)
 layout_mode = 2
-theme_override_constants/separation = 10
+theme_override_constants/separation = 60
 alignment = 1
 
 [node name="EditTemplateButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/CustomButtonsContainer" unique_id=337969220]
 layout_mode = 2
-text = "编辑模板"
-
-[node name="CopyTemplateButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/CustomButtonsContainer" unique_id=337969221]
-layout_mode = 2
-text = "复制模板"
+theme = ExtResource("2_sxb7y")
+text = "✏️编辑模板"
 
 [node name="PasteTemplateButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/CustomButtonsContainer" unique_id=337969224]
 layout_mode = 2
-text = "粘贴模板"
+theme = ExtResource("2_82fv0")
+text = "📎 粘贴模板"
+
+[node name="CopyTemplateButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/CustomButtonsContainer" unique_id=337969221]
+layout_mode = 2
+theme = ExtResource("2_82fv0")
+text = "📋复制模板"
 
 [node name="TemplateTextEditContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer" unique_id=337969222]
 visible = false
@@ -162,7 +167,14 @@ theme_override_constants/separation = 10
 custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 size_flags_vertical = 3
+theme_override_font_sizes/font_size = 16
 placeholder_text = "在此粘贴或编辑模板JSON"
+minimap_draw = true
+
+[node name="Label" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/TemplateTextEditContainer" unique_id=733282999]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "ℹ改完记得点下面的“应用配置”↓"
 
 [node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer" unique_id=2035909845]
 layout_mode = 2
@@ -192,11 +204,14 @@ text = "应用配置"
 
 [node name="Label" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/ApplyButton" unique_id=400176252]
 layout_mode = 0
-offset_top = 41.0
+offset_top = 45.0
 offset_right = 732.0
-offset_bottom = 61.0
+offset_bottom = 65.0
 theme_override_font_sizes/font_size = 15
-text = "注：点击这个按钮将重置并覆盖详细配置—模型任务的内容"
+text = "ℹ点击这个按钮将重置并覆盖详细配置—模型任务的内容"
+
+[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer" unique_id=2103236118]
+layout_mode = 2
 
 [node name="StatusLabel" type="Label" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer" unique_id=939569533]
 layout_mode = 2

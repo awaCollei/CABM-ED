@@ -4,6 +4,7 @@ extends MarginContainer
 # 显示所有厂商，支持新建、编辑、删除
 
 signal providers_changed
+signal config_changed  # 配置变更，需要重新加载
 
 @onready var add_button = $VBoxContainer/TopBar/AddButton
 @onready var providers_container = $VBoxContainer/ScrollContainer/ProvidersContainer
@@ -18,6 +19,10 @@ func _ready():
 func initialize(cfg_mgr: Node):
 	"""初始化面板"""
 	config_manager = cfg_mgr
+	_refresh_list()
+
+func refresh():
+	"""外部调用刷新"""
 	_refresh_list()
 
 func _refresh_list():
@@ -125,6 +130,7 @@ func _on_delete_pressed(provider_name: String):
 		_show_status("厂商已删除", true)
 		_refresh_list()
 		providers_changed.emit()
+		config_changed.emit()
 	else:
 		_show_status("删除失败", false)
 
@@ -138,6 +144,7 @@ func _on_provider_saved(provider_name: String, provider_data: Dictionary, old_na
 		_show_status("厂商已保存", true)
 		_refresh_list()
 		providers_changed.emit()
+		config_changed.emit()
 	else:
 		_show_status("保存失败", false)
 
