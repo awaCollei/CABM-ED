@@ -10,7 +10,15 @@ extends Panel
 @onready var quick_template_free = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/TemplateContainer/FreeButton
 @onready var quick_template_standard = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/TemplateContainer/StandardButton
 @onready var quick_template_alternate = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/TemplateContainer/AlternateButton
+@onready var quick_template_custom = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/TemplateContainer/CustomButton
 @onready var quick_description_label = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/DescriptionLabel
+@onready var custom_buttons_container = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/CustomButtonsContainer
+@onready var edit_template_button = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/CustomButtonsContainer/EditTemplateButton
+@onready var copy_template_button = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/CustomButtonsContainer/CopyTemplateButton
+@onready var paste_template_button = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/CustomButtonsContainer/PasteTemplateButton
+@onready var template_text_edit_container = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/TemplateTextEditContainer
+@onready var template_text_edit = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/TemplateTextEditContainer/TemplateTextEdit
+@onready var hint_label = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/HintLabel
 @onready var quick_key_input = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/KeyInput
 @onready var use_builtin_key_checkbox = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/UseBuiltinKeyContainer/UseBuiltinKeyCheckBox
 @onready var quick_apply_button = $MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/ApplyButton
@@ -50,7 +58,12 @@ func _ready():
 	template_handler.quick_template_free = quick_template_free
 	template_handler.quick_template_standard = quick_template_standard
 	template_handler.quick_template_alternate = quick_template_alternate
+	template_handler.quick_template_custom = quick_template_custom
 	template_handler.quick_description_label = quick_description_label
+	template_handler.custom_buttons_container = custom_buttons_container
+	template_handler.template_text_edit_container = template_text_edit_container
+	template_handler.template_text_edit = template_text_edit
+	template_handler.hint_label = hint_label
 	add_child(template_handler)
 	
 	# 初始化日志导出器
@@ -94,6 +107,11 @@ func _ready():
 	quick_template_free.pressed.connect(_on_template_selected.bind("free"))
 	quick_template_standard.pressed.connect(_on_template_selected.bind("standard"))
 	quick_template_alternate.pressed.connect(_on_template_selected.bind("alternate"))
+	quick_template_custom.pressed.connect(_on_template_selected.bind("custom"))
+	edit_template_button.pressed.connect(_on_edit_template_pressed)
+	copy_template_button.pressed.connect(_on_copy_template_pressed)
+	paste_template_button.pressed.connect(_on_paste_template_pressed)
+	template_text_edit.text_changed.connect(_on_template_text_changed)
 	use_builtin_key_checkbox.toggled.connect(_on_use_builtin_key_toggled)
 	quick_apply_button.pressed.connect(_on_quick_apply_pressed)
 	log_export_button.pressed.connect(log_exporter.on_log_export_pressed)
@@ -133,6 +151,52 @@ func _on_template_selected(template: String):
 	"""选择配置模板"""
 	template_handler.select_template(template)
 
+func _on_edit_template_pressed():
+	"""编辑模板"""
+	template_handler.edit_template()
+
+func _on_copy_template_pressed():
+	"""复制当前配置为模板"""
+	template_handler.copy_current_config_as_template()
+	_update_quick_status(true, "已将当前配置复制为模板并保存到剪贴板")
+
+func _on_paste_template_pressed():
+	"""粘贴模板按钮点击"""
+	# 创建确认对话框
+	var dialog = AcceptDialog.new()
+	dialog.title = "粘贴模板"
+	dialog.dialog_text = "将粘贴剪切板的内容？"
+	dialog.ok_button_text = "粘贴"
+	
+	# 添加取消按钮
+	dialog.add_button("取消", false, "取消")
+	
+	dialog.confirmed.connect(func():
+		# 用户确认粘贴
+		if DisplayServer.has_feature(DisplayServer.FEATURE_CLIPBOARD):
+			var clipboard_content = DisplayServer.clipboard_get()
+			if not clipboard_content.is_empty():
+				template_text_edit.text = clipboard_content
+				template_text_edit_container.visible = true
+				template_handler.custom_template_json = clipboard_content
+				template_handler.save_custom_template()
+				_update_quick_status(true, "已粘贴模板到编辑器")
+			else:
+				_update_quick_status(false, "剪切板为空")
+		dialog.queue_free()
+	)
+	
+	dialog.canceled.connect(func():
+		dialog.queue_free()
+	)
+	
+	add_child(dialog)
+	dialog.popup_centered()
+
+func _on_template_text_changed():
+	"""模板文本改变时保存"""
+	template_handler.save_custom_template()
+
 func _on_quick_apply_pressed():
 	"""应用快速配置模板"""
 	var api_key = quick_key_input.text.strip_edges()
@@ -157,8 +221,70 @@ func _on_quick_apply_pressed():
 		voice_panel._load_settings()
 		# 刷新模型任务面板
 		model_tasks_panel._build_task_list()
+	elif result.has("conflicts"):
+		# 有冲突，询问用户是否覆盖
+		_show_conflict_dialog(result)
 	else:
 		_update_quick_status(false, result.message)
+
+func _show_conflict_dialog(result: Dictionary):
+	"""显示冲突确认对话框"""
+	var conflict_message = "有重名且内容不一样的厂商/模型：\n"
+	
+	if not result.conflicts.providers.is_empty():
+		conflict_message += "\n厂商：\n"
+		for n in result.conflicts.providers:
+			conflict_message += "- " + n + "\n"
+	
+	if not result.conflicts.models.is_empty():
+		conflict_message += "\n模型：\n"
+		for n in result.conflicts.models:
+			conflict_message += "- " + n + "\n"
+	
+	conflict_message += "\n是否要覆盖这些项？"
+	
+	# 创建确认对话框
+	var dialog = AcceptDialog.new()
+	dialog.title = "确认覆盖"
+	dialog.dialog_text = conflict_message
+	dialog.ok_button_text = "覆盖"
+	dialog.cancel_button_text = "取消"
+	
+	# 获取保存的密钥
+	var quick_config_key = result.get("api_key", "")
+	
+	# 添加取消按钮
+	dialog.add_button("取消", false, "取消")
+	
+	dialog.confirmed.connect(func():
+		# 用户确认覆盖
+		var force_result = config_manager.force_import_template(result.template, quick_config_key)
+		if force_result.success:
+			config_manager.save_use_builtin_key(use_builtin_key_checkbox.button_pressed)
+			# 保存模板和密钥到配置
+			var config = config_manager.load_config()
+			config["template"] = "custom"
+			if result.has("custom_template_json"):
+				config["custom_template_json"] = result.custom_template_json
+			config["api_key"] = quick_config_key
+			config_manager.save_config(config)
+			
+			_update_quick_status(true, force_result.message)
+			_reload_ai_service()
+			_reload_tts_service()
+			voice_panel._load_settings()
+			model_tasks_panel._build_task_list()
+		else:
+			_update_quick_status(false, force_result.message)
+		dialog.queue_free()
+	)
+	
+	dialog.canceled.connect(func():
+		dialog.queue_free()
+	)
+	
+	add_child(dialog)
+	dialog.popup_centered()
 
 func _load_existing_config():
 	"""加载现有的AI配置"""

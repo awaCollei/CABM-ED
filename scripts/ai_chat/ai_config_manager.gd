@@ -513,3 +513,140 @@ func get_task_model_config(task_id: String) -> Dictionary:
 		return {}
 	
 	return get_model_full_config(model_name)
+
+## 导出当前配置为模板（不含API密钥）
+func export_template() -> String:
+	var template = {
+		"version": "1.0",
+		"model_tasks": {},
+		"models": {},
+		"providers": {}
+	}
+	
+	# 获取当前模型任务配置
+	var tasks = get_model_tasks()
+	for task_id in tasks.keys():
+		var task = tasks[task_id]
+		template.model_tasks[task_id] = {
+			"model": task.get("model", "")
+		}
+	
+	# 收集所有需要的模型
+	var used_models = {}
+	var used_providers = {}
+	
+	for task_id in template.model_tasks.keys():
+		var model_name = template.model_tasks[task_id].get("model", "")
+		if not model_name.is_empty():
+			used_models[model_name] = true
+	
+	# 获取所有模型
+	var all_models = get_all_models()
+	for model_name in used_models.keys():
+		if all_models.has(model_name):
+			var model = all_models[model_name].duplicate()
+			template.models[model_name] = model
+			
+			# 收集依赖的厂商
+			var provider_name = model.get("provider", "")
+			if not provider_name.is_empty():
+				used_providers[provider_name] = true
+	
+	# 获取所有厂商（不含API密钥）
+	var all_providers = get_all_providers()
+	for provider_name in used_providers.keys():
+		if all_providers.has(provider_name):
+			var provider = all_providers[provider_name].duplicate()
+			# 移除API密钥
+			provider.erase("api_key")
+			template.providers[provider_name] = provider
+	
+	return JSON.stringify(template, "\t")
+
+## 导入模板
+func import_template(template_json: String, quick_config_key: String = "") -> Dictionary:
+	var json = JSON.new()
+	if json.parse(template_json) != OK:
+		return {"success": false, "message": "JSON格式错误"}
+	
+	var template = json.data as Dictionary
+	
+	if not template.has("version") or not template.has("model_tasks") or not template.has("models") or not template.has("providers"):
+		return {"success": false, "message": "模板格式不完整"}
+	
+	var conflicts = {
+		"providers": [],
+		"models": []
+	}
+	
+	var all_providers = get_all_providers()
+	var all_models = get_all_models()
+	
+	# 检查厂商冲突
+	for provider_name in template.providers.keys():
+		if all_providers.has(provider_name):
+			var existing_provider = all_providers[provider_name].duplicate()
+			existing_provider.erase("api_key")  # 比较时不含API密钥
+			var new_provider = template.providers[provider_name]
+			
+			if JSON.stringify(existing_provider) != JSON.stringify(new_provider):
+				conflicts.providers.append(provider_name)
+	
+	# 检查模型冲突
+	for model_name in template.models.keys():
+		if all_models.has(model_name):
+			var existing_model = all_models[model_name]
+			var new_model = template.models[model_name]
+			
+			if JSON.stringify(existing_model) != JSON.stringify(new_model):
+				conflicts.models.append(model_name)
+	
+	# 如果有冲突，返回冲突信息
+	if not conflicts.providers.is_empty() or not conflicts.models.is_empty():
+		return {"success": false, "message": "有重名且内容不一样的厂商/模型", "conflicts": conflicts, "template": template}
+	
+	# 没有冲突，直接应用
+	return _apply_template(template, false, quick_config_key)
+
+## 强制应用模板（覆盖冲突项）
+func force_import_template(template: Dictionary, quick_config_key: String = "") -> Dictionary:
+	return _apply_template(template, true, quick_config_key)
+
+## 内部应用模板的函数
+func _apply_template(template: Dictionary, force: bool = false, quick_config_key: String = "") -> Dictionary:
+	# 检查厂商数量
+	var provider_count = template.providers.size()
+	
+	# 创建厂商
+	for provider_name in template.providers.keys():
+		var provider_data = template.providers[provider_name]
+		var all_providers = get_all_providers()
+		
+		if all_providers.has(provider_name):
+			# 厂商已存在，保留原有的 API 密钥
+			var existing_provider = all_providers[provider_name]
+			if existing_provider.has("api_key"):
+				provider_data.api_key = existing_provider.api_key
+		else:
+			# 厂商不存在，创建新的
+			if provider_count == 1 and not quick_config_key.is_empty():
+				# 只有 1 个厂商，使用快速配置中填入的密钥
+				provider_data.api_key = quick_config_key
+			else:
+				# 2 个及以上厂商，密钥留空
+				provider_data.api_key = ""
+		
+		save_provider(provider_name, provider_data)
+	
+	# 创建模型
+	for model_name in template.models.keys():
+		var model_data = template.models[model_name]
+		save_model(model_name, model_data)
+	
+	# 应用模型任务配置
+	var tasks = {}
+	for task_id in template.model_tasks.keys():
+		tasks[task_id] = template.model_tasks[task_id]
+	save_model_tasks(tasks)
+	
+	return {"success": true, "message": "模板导入成功"}
