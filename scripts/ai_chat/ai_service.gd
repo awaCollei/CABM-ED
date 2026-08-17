@@ -478,9 +478,9 @@ func _on_parse_error(error_message: String):
 	print("响应解析错误: ", error_message)
 	chat_error.emit(error_message)
 
-func _on_mood_extracted(mood_id: int):
-	"""mood字段提取完成"""
-	_apply_mood_immediately(mood_id)
+func _on_mood_extracted(mood_name_en: String):
+	"""mood字段提取完成（模型现在返回英文名称字符串）"""
+	_apply_mood_immediately(mood_name_en)
 
 func _finalize_stream_response():
 	"""完成流式响应处理"""
@@ -536,21 +536,21 @@ func _finalize_stream_response():
 		print("开始生成对话选项...")
 		options_generator.generate_options(current_conversation)
 
-func _apply_mood_immediately(mood_id: int):
-	"""立即应用mood字段"""
+func _apply_mood_immediately(mood_name_en: String):
+	"""立即应用模型返回的英文mood名称"""
 	if not has_node("/root/SaveManager"):
 		return
 
 	var save_mgr = get_node("/root/SaveManager")
 	var prompt_builder = get_node("/root/PromptBuilder")
-
-	var mood_name_en = prompt_builder.get_mood_name_en(mood_id)
-	if not mood_name_en.is_empty():
+	var mood_id = prompt_builder.get_mood_id_by_name_en(mood_name_en)
+	if mood_id >= 0:
 		save_mgr.set_mood(mood_name_en)
 		print("实时更新心情: ", mood_name_en, " (ID: ", mood_id, ")")
+		# 表情系统仍使用ID，保持对现有角色脚本的兼容。
 		chat_fields_extracted.emit({"mood": mood_id})
 	else:
-		print("警告: 无法找到mood ID对应的英文名称: ", mood_id)
+		print("警告: 无法找到mood名称对应的ID: ", mood_name_en)
 
 func _apply_extracted_fields(extracted_fields: Dictionary):
 	"""应用提取的字段到游戏状态"""
@@ -561,10 +561,10 @@ func _apply_extracted_fields(extracted_fields: Dictionary):
 
 	# mood字段兜底处理
 	if extracted_fields.has("mood") and not extracted_fields.mood == null:
-		var mood_id = int(extracted_fields.mood)
+		var mood_name_en = str(extracted_fields.mood)
 		var prompt_builder = get_node("/root/PromptBuilder")
-		var mood_name_en = prompt_builder.get_mood_name_en(mood_id)
-		if not mood_name_en.is_empty():
+		var mood_id = prompt_builder.get_mood_id_by_name_en(mood_name_en)
+		if mood_id >= 0:
 			save_mgr.set_mood(mood_name_en)
 			print("兜底更新心情: ", mood_name_en, " (ID: ", mood_id, ")")
 

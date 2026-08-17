@@ -4,7 +4,7 @@ extends Node
 # 负责解析流式响应和提取字段
 
 signal content_received(content: String)
-signal mood_extracted(mood_id: int)
+signal mood_extracted(mood_name_en: String)
 signal parse_error(error_message: String)
 signal warning(message: String)  # 新增：警告信号
 
@@ -166,57 +166,33 @@ func _emit_msg_delta_if_changed(extracted_content: String):
 			warning.emit("msg字段为空字符串")
 
 func _extract_mood_from_buffer(buffer: String):
-	"""从缓冲中提取mood字段"""
+	"""从缓冲中提取英文mood名称。"""
 	if extracted_fields.has("mood"):
 		return
-
 	var mood_start = buffer.find('"mood"')
 	if mood_start == -1:
-		var anonymous_mood = _extract_mood_from_anonymous_fields(buffer)
-		if anonymous_mood >= 0 and anonymous_mood <= 10:
-			extracted_fields["mood"] = anonymous_mood
-			print("实时容错提取到匿名mood字段: ", anonymous_mood)
-			mood_extracted.emit(anonymous_mood)
 		return
-
 	var colon_pos = buffer.find(':', mood_start)
 	if colon_pos == -1:
 		return
-
-	var value_start = -1
-	for i in range(colon_pos + 1, buffer.length()):
-		var ch = buffer[i]
-		if ch == ' ' or ch == '\t' or ch == '\n':
-			continue
-		value_start = i
-		break
-
+	var value_start = _find_next_non_whitespace(buffer, colon_pos + 1)
 	if value_start == -1:
 		return
-
 	var value_str = ""
-	for i in range(value_start, buffer.length()):
-		var ch = buffer[i]
-		if ch in [',', '\n', ' ', '\t', '}', '\r']:
-			break
-		value_str += ch
-
-	if value_str.is_empty():
+	if buffer[value_start] == '"':
+		var parsed = _extract_json_string_at(buffer, value_start)
+		value_str = str(parsed.get("value", ""))
+	else:
+		for i in range(value_start, buffer.length()):
+			if buffer[i] in [',', '\n', ' ', '\t', '}', '\r']:
+				break
+			value_str += buffer[i]
+	var mood_name = _normalize_mood_name(value_str)
+	if mood_name.is_empty():
 		return
-
-	if value_str.begins_with("null"):
-		print("mood字段为null，跳过")
-		extracted_fields["mood"] = null
-		return
-
-	if not value_str.is_valid_int():
-		return
-
-	var mood_id = int(value_str)
-	extracted_fields["mood"] = mood_id
-
-	print("实时提取到mood字段: ", mood_id)
-	mood_extracted.emit(mood_id)
+	extracted_fields["mood"] = mood_name
+	print("实时提取到mood字段: ", mood_name)
+	mood_extracted.emit(mood_name)
 
 func finalize_response() -> Dictionary:
 	"""完成流式响应处理，返回提取的所有字段
@@ -313,11 +289,11 @@ func _extract_fields_from_json(data) -> bool:
 				warning.emit("空key消息候选信息量过低，按空消息处理: " + anonymous_msg)
 
 	if data.has("mood") and data.mood != null:
-		var mood_val = int(data.mood) if typeof(data.mood) != TYPE_STRING or data.mood.is_valid_int() else -1
-		if mood_val >= 0 and mood_val <= 10:
-			extracted_fields["mood"] = mood_val
+		var mood_name = _normalize_mood_name(str(data.mood))
+		if not mood_name.is_empty():
+			extracted_fields["mood"] = mood_name
 		else:
-			extracted_fields["mood"] = 0  # 默认平静
+			extracted_fields["mood"] = "calm"  # 默认平静
 			warning.emit("mood字段值无效: " + str(data.mood))
 		recovered_any = true
 	
@@ -363,10 +339,10 @@ func _attempt_fallback_extraction(clean_json: String) -> bool:
 	
 	# 尝试提取mood（如果还没有）
 	if not extracted_fields.has("mood") or extracted_fields["mood"] == null:
-		var mood_val = _extract_mood_fallback(clean_json)
-		if mood_val >= 0 and mood_val <= 10:
-			extracted_fields["mood"] = mood_val
-			mood_extracted.emit(mood_val)
+		var mood_name = _extract_mood_fallback(clean_json)
+		if not mood_name.is_empty():
+			extracted_fields["mood"] = mood_name
+			mood_extracted.emit(mood_name)
 			recovered_any = true
 	
 	# 尝试提取will
@@ -407,7 +383,7 @@ func _has_recovered_real_field() -> bool:
 func _fill_default_fields_for_missing():
 	"""容错提取成功后，为缺失的非文本字段补安全默认值。"""
 	if not extracted_fields.has("mood") or extracted_fields["mood"] == null:
-		extracted_fields["mood"] = 0  # 默认平静
+		extracted_fields["mood"] = "calm"  # 默认平静
 	if not extracted_fields.has("will") or extracted_fields["will"] == null:
 		extracted_fields["will"] = 0
 	if not extracted_fields.has("like") or extracted_fields["like"] == null:
@@ -697,39 +673,35 @@ func _find_previous_non_whitespace(text: String, start_pos: int) -> int:
 			return i
 	return -1
 
-func _extract_mood_fallback(text: String) -> int:
-	"""容错提取mood字段"""
+func _normalize_mood_name(value: String) -> String:
+	var mood_name = value.strip_edges().trim_prefix("\"").trim_suffix("\"")
+	if mood_name.is_empty():
+		return ""
+	var prompt_builder = get_node_or_null("/root/PromptBuilder")
+	if prompt_builder and prompt_builder.has_method("get_mood_name_en_by_display_name"):
+		# 中文是提示词要求的格式，英文保留用于兼容旧回复。
+		return prompt_builder.get_mood_name_en_by_display_name(mood_name)
+	return mood_name if mood_name in ["calm", "happy", "sad", "angry", "surprised", "scared", "disgusted", "doubtful", "shy", "speechless", "worried"] else ""
+
+func _extract_mood_fallback(text: String) -> String:
+	"""容错提取英文mood名称。"""
 	var mood_start = text.find('"mood"')
 	if mood_start == -1:
-		return _extract_mood_from_anonymous_fields(text)
-	
+		return ""
 	var colon_pos = text.find(':', mood_start)
 	if colon_pos == -1:
-		return _extract_mood_from_anonymous_fields(text)
-	
-	var value_start = -1
-	for i in range(colon_pos + 1, text.length()):
-		if text[i] not in [' ', '\t', '\n', '\r']:
-			value_start = i
-			break
-	
+		return ""
+	var value_start = _find_next_non_whitespace(text, colon_pos + 1)
 	if value_start == -1:
-		return _extract_mood_from_anonymous_fields(text)
-	
-	var value_str = ""
-	for i in range(value_start, min(value_start + 10, text.length())):
-		var ch = text[i]
-		if ch in [',', '\n', ' ', '\t', '}', '\r']:
+		return ""
+	if text[value_start] == '"':
+		return _normalize_mood_name(str(_extract_json_string_at(text, value_start).get("value", "")))
+	var value = ""
+	for i in range(value_start, text.length()):
+		if text[i] in [',', '\n', ' ', '\t', '}', '\r']:
 			break
-		if ch.is_valid_int() or ch == '-':
-			value_str += ch
-		else:
-			break
-	
-	if value_str.is_empty() or not value_str.is_valid_int():
-		return _extract_mood_from_anonymous_fields(text)
-	
-	return int(value_str)
+		value += text[i]
+	return _normalize_mood_name(value)
 
 func _extract_mood_from_anonymous_fields(text: String) -> int:
 	"""从 {\": 7, \": "msg"} 这种字段名缺失格式中推断mood。"""
@@ -858,7 +830,7 @@ func get_history_response_content() -> String:
 	容错解析成功时写入修复后的合法JSON；msg缺失时写入占位文本，避免损坏JSON污染上下文。
 	"""
 	if msg_buffer.strip_edges().is_empty():
-		return "{\"mood\": 0, \"msg\": \"……\", \"will\": 0, \"like\": 0, \"goto\": -1}"
+		return "{\"mood\": \"calm\", \"msg\": \"……\", \"will\": 0, \"like\": 0, \"goto\": -1}"
 
 	if fallback_extraction_used:
 		return _build_repaired_response_json()
@@ -869,7 +841,7 @@ func _build_repaired_response_json() -> String:
 	# 不使用 JSON.stringify(Dictionary)，因为Godot会按key排序；这里需要固定输出顺序，
 	# 避免修复后的历史与提示词要求的字段顺序不一致。
 	var parts = []
-	parts.append("\"mood\":" + str(_get_int_field_for_repaired_json("mood", 0)))
+	parts.append("\"mood\":\"" + str(extracted_fields.get("mood", "calm")) + "\"")
 	parts.append("\"msg\":\"" + _escape_json_string(msg_buffer) + "\"")
 	parts.append("\"will\":" + str(_get_int_field_for_repaired_json("will", 0)))
 	parts.append("\"like\":" + str(_get_int_field_for_repaired_json("like", 0)))

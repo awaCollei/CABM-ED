@@ -193,7 +193,7 @@ func _generate_moods_list() -> String:
 	var mood_config_path = "res://config/mood_config.json"
 	if not FileAccess.file_exists(mood_config_path):
 		# 如果配置文件不存在，使用默认值
-		return "0=平静, 1=开心, 2=难过, 3=生气, 4=惊讶, 5=害怕, 6=厌恶"
+		return "平静, 开心, 委屈, 生气, 惊讶, 害怕, 厌恶, 疑惑, 害羞, 无语, 担忧"
 	
 	var file = FileAccess.open(mood_config_path, FileAccess.READ)
 	var json_string = file.get_as_text()
@@ -201,15 +201,16 @@ func _generate_moods_list() -> String:
 	
 	var json = JSON.new()
 	if json.parse(json_string) != OK:
-		return "0=平静, 1=开心, 2=难过, 3=生气, 4=惊讶, 5=害怕, 6=厌恶"
+		return "平静, 开心, 委屈, 生气, 惊讶, 害怕, 厌恶, 疑惑, 害羞, 无语, 担忧"
 	
 	var mood_config = json.data
 	if not mood_config.has("moods"):
-		return "0=平静, 1=开心, 2=难过, 3=生气, 4=惊讶, 5=害怕, 6=厌恶"
+		return "平静, 开心, 委屈, 生气, 惊讶, 害怕, 厌恶, 疑惑, 害羞, 无语, 担忧"
 	
 	var moods_array = []
 	for mood in mood_config.moods:
-		moods_array.append("%d=%s" % [mood.id, mood.name])
+		# 提示词要求模型输出中文名称；内部仍使用稳定的英文标识保存。
+		moods_array.append(str(mood.name))
 	
 	return ", ".join(moods_array)
 
@@ -468,7 +469,7 @@ func get_relationship_context() -> String:
 	return latest.content
 
 func get_mood_name_en(mood_id: int) -> String:
-	"""根据mood ID获取英文名称"""
+	"""根据mood ID获取英文名称（兼容旧数据和旧调用方）"""
 	var mood_config_path = "res://config/mood_config.json"
 	if not FileAccess.file_exists(mood_config_path):
 		return ""
@@ -490,6 +491,38 @@ func get_mood_name_en(mood_id: int) -> String:
 			return mood.name_en
 	
 	return ""
+
+func get_mood_name_en_by_display_name(mood_name: String) -> String:
+	"""将中文或英文心情名称统一转换为内部英文标识。"""
+	var mood_config_path = "res://config/mood_config.json"
+	if not FileAccess.file_exists(mood_config_path):
+		return ""
+	var file = FileAccess.open(mood_config_path, FileAccess.READ)
+	var json = JSON.new()
+	var result = json.parse(file.get_as_text())
+	file.close()
+	if result != OK or not json.data.has("moods"):
+		return ""
+	for mood in json.data.moods:
+		if str(mood.get("name", "")) == mood_name or str(mood.get("name_en", "")) == mood_name:
+			return str(mood.get("name_en", ""))
+	return ""
+
+func get_mood_id_by_name_en(mood_name_en: String) -> int:
+	"""根据模型输出的英文心情名称获取旧版表情系统使用的ID。"""
+	var mood_config_path = "res://config/mood_config.json"
+	if not FileAccess.file_exists(mood_config_path):
+		return -1
+	var file = FileAccess.open(mood_config_path, FileAccess.READ)
+	var json = JSON.new()
+	var result = json.parse(file.get_as_text())
+	file.close()
+	if result != OK or not json.data.has("moods"):
+		return -1
+	for mood in json.data.moods:
+		if str(mood.get("name_en", "")) == mood_name_en:
+			return int(mood.get("id", -1))
+	return -1
 
 
 func build_offline_diary_prompt(start_time: String, end_time: String, event_count: int) -> String:

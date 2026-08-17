@@ -971,7 +971,7 @@ func _handle_reply_refusal(user_message: String, refusal_message: String):
 	if has_node("/root/AIService"):
 		var ai_service = get_node("/root/AIService")
 		ai_service.add_to_history("user", user_message)
-		ai_service.add_to_history("assistant", "{\"mood\": 0, \"msg\": \"……\", \"will\": 0, \"like\": 0, \"goto\": -1}")
+		ai_service.add_to_history("assistant", "{\"mood\": \"calm\", \"msg\": \"……\", \"will\": 0, \"like\": 0, \"goto\": -1}")
 
 func _handle_empty_msg_response(message: String):
 	await _show_refusal_message(message)

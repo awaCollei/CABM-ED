@@ -207,6 +207,7 @@ func get_http_error_text(response_code: int) -> String:
 		# 4xx: 客户端错误
 		400: return "参数错误 - 请检查模型名是否正确"
 		401: return "未授权 - 请检查API密钥是否正确"
+		402: return "需要付款 - 请检查服务商的余额"
 		403: return "请求被拒绝 - 可能是因为余额不足或未实名认证达到请求限制"
 		404: return "网页不存在 - 请检查BaseURL是否正确"
 		405: return "方法禁用 - 客户端请求中的方法被禁止"

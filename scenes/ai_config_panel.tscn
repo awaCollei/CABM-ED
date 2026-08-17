@@ -195,7 +195,7 @@ theme_override_constants/separation = 10
 [node name="UseBuiltinKeyCheckBox" type="CheckButton" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer/UseBuiltinKeyContainer" unique_id=1323917275]
 layout_mode = 2
 tooltip_text = "使用内置的免费API密钥（功能受限）"
-text = "使用免费内置密钥（已停止服务）"
+text = "使用免费内置密钥"
 
 [node name="ApplyButton" type="Button" parent="MarginContainer/VBoxContainer/TabContainer/快速配置/ScrollContainer/VBoxContainer" unique_id=1815244826]
 layout_mode = 2
