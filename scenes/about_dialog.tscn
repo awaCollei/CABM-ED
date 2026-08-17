@@ -80,8 +80,8 @@ uri = "https://github.com/awaCollei/CABM-ED"
 [node name="CustomerServiceLink" type="LinkButton" parent="MarginContainer/VBoxContainer" unique_id=1302377536]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.875, 0.875, 0.875, 1)
-text = "奇妙的小网站"
-uri = "https://cabm.shasnow.top"
+text = "赞助作者"
+uri = "https://ifdian.net/a/awaCollei"
 
 [node name="HSeparator3" type="HSeparator" parent="MarginContainer/VBoxContainer" unique_id=301527882]
 layout_mode = 2
