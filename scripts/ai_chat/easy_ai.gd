@@ -21,7 +21,7 @@ func request(
 	messages: Array, 
 	use_json: bool = false, 
 	extra_params: Dictionary = {},
-	timeout: float = 30.0
+	timeout: float = 60.0
 ) -> Dictionary:
 	"""
 	执行非流式 AI 请求

@@ -357,7 +357,8 @@ func _call_diary_generation_api(system_prompt: String, start_datetime: Dictionar
 			"chat_model",  # 使用 chat_model 任务
 			messages, 
 			true,  # 使用 JSON 模式
-			{}  # 无额外参数
+			{},  # 无额外参数
+			120.0
 		)
 		
 		if result.success:
