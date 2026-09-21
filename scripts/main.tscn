@@ -1,4 +1,4 @@
-[gd_scene load_steps=18 format=3 uid="uid://c8yqvxm7qwxqj"]
+[gd_scene format=3 uid="uid://c8yqvxm7qwxqj"]
 
 [ext_resource type="Script" uid="uid://b84t0i8227422" path="res://scripts/main.gd" id="1_main"]
 [ext_resource type="Theme" uid="uid://contcf3ey12vl" path="res://default_theme.tres" id="1_ragmj"]
@@ -26,7 +26,7 @@ shadow_size = 3
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_0im0j"]
 
-[node name="Main" type="Control"]
+[node name="Main" type="Control" unique_id=739145118]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -36,7 +36,7 @@ grow_vertical = 2
 theme = ExtResource("1_ragmj")
 script = ExtResource("1_main")
 
-[node name="Background" type="TextureRect" parent="."]
+[node name="Background" type="TextureRect" parent="." unique_id=1007783114]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -46,11 +46,11 @@ grow_vertical = 2
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Character" type="TextureButton" parent="Background"]
+[node name="Character" type="TextureButton" parent="Background" unique_id=791091771]
 layout_mode = 1
 script = ExtResource("3_character")
 
-[node name="InteractiveElements" type="Control" parent="."]
+[node name="InteractiveElements" type="Control" parent="." unique_id=1841186407]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -59,15 +59,15 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="CharacterDiaryButton" parent="InteractiveElements" instance=ExtResource("11_interactive")]
+[node name="CharacterDiaryButton" parent="InteractiveElements" unique_id=1943324095 instance=ExtResource("11_interactive")]
 layout_mode = 0
 element_id = "character_diary_button"
 
-[node name="StoryModeButton" parent="InteractiveElements" instance=ExtResource("11_interactive")]
+[node name="StoryModeButton" parent="InteractiveElements" unique_id=118853274 instance=ExtResource("11_interactive")]
 layout_mode = 0
 element_id = "story_mode_button"
 
-[node name="CharacterDebugHelper" type="Control" parent="."]
+[node name="CharacterDebugHelper" type="Control" parent="." unique_id=1606727156]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -77,7 +77,7 @@ grow_vertical = 2
 mouse_filter = 2
 script = ExtResource("5_debug")
 
-[node name="RightClickArea" type="Control" parent="."]
+[node name="RightClickArea" type="Control" parent="." unique_id=27762065]
 layout_mode = 1
 anchor_left = 0.75
 anchor_right = 1.0
@@ -87,10 +87,10 @@ grow_horizontal = 0
 grow_vertical = 2
 mouse_filter = 1
 
-[node name="AudioManager" type="Node" parent="."]
+[node name="AudioManager" type="Node" parent="." unique_id=1389990010]
 script = ExtResource("8_audio_manager")
 
-[node name="Sidebar" type="Panel" parent="."]
+[node name="Sidebar" type="Panel" parent="." unique_id=189329074]
 custom_minimum_size = Vector2(250, 0)
 layout_mode = 0
 offset_right = 250.0
@@ -98,7 +98,7 @@ offset_bottom = 600.0
 theme_override_styles/panel = SubResource("StyleBoxFlat_0im0j")
 script = ExtResource("2_sidebar")
 
-[node name="MarginContainer" type="MarginContainer" parent="Sidebar"]
+[node name="MarginContainer" type="MarginContainer" parent="Sidebar" unique_id=1721941428]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -110,34 +110,34 @@ theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="VBoxContainer" type="VBoxContainer" parent="Sidebar/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="Sidebar/MarginContainer" unique_id=106448399]
 layout_mode = 2
 
-[node name="Title" type="Label" parent="Sidebar/MarginContainer/VBoxContainer"]
+[node name="Title" type="Label" parent="Sidebar/MarginContainer/VBoxContainer" unique_id=427147869]
 visible = false
 layout_mode = 2
 horizontal_alignment = 1
 
-[node name="HSeparator" type="HSeparator" parent="Sidebar/MarginContainer/VBoxContainer"]
+[node name="HSeparator" type="HSeparator" parent="Sidebar/MarginContainer/VBoxContainer" unique_id=235347821]
 layout_mode = 2
 
-[node name="ScrollContainer" type="ScrollContainer" parent="Sidebar/MarginContainer/VBoxContainer"]
+[node name="ScrollContainer" type="ScrollContainer" parent="Sidebar/MarginContainer/VBoxContainer" unique_id=154150598]
 layout_mode = 2
 size_flags_vertical = 3
 horizontal_scroll_mode = 0
 
-[node name="SceneList" type="VBoxContainer" parent="Sidebar/MarginContainer/VBoxContainer/ScrollContainer"]
+[node name="SceneList" type="VBoxContainer" parent="Sidebar/MarginContainer/VBoxContainer/ScrollContainer" unique_id=1235370700]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="Exit" type="Button" parent="Sidebar/MarginContainer/VBoxContainer"]
+[node name="Exit" type="Button" parent="Sidebar/MarginContainer/VBoxContainer" unique_id=1571512681]
 modulate = Color(1, 1, 1, 0.7254902)
 layout_mode = 2
 size_flags_horizontal = 0
 size_flags_vertical = 8
 text = "🚪退出"
 
-[node name="ToggleButton" type="Button" parent="Sidebar"]
+[node name="ToggleButton" type="Button" parent="Sidebar" unique_id=1881898077]
 layout_mode = 1
 anchors_preset = 6
 anchor_left = 1.0
@@ -152,7 +152,7 @@ grow_horizontal = 0
 grow_vertical = 2
 text = "<"
 
-[node name="ChatDialog" type="Panel" parent="."]
+[node name="ChatDialog" type="Panel" parent="." unique_id=1411296023]
 custom_minimum_size = Vector2(800, 80)
 layout_mode = 0
 offset_top = 520.0
@@ -160,7 +160,7 @@ offset_right = 800.0
 offset_bottom = 600.0
 script = ExtResource("4_chat_dialog")
 
-[node name="MarginContainer" type="MarginContainer" parent="ChatDialog"]
+[node name="MarginContainer" type="MarginContainer" parent="ChatDialog" unique_id=957363111]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -172,7 +172,7 @@ theme_override_constants/margin_top = 15
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 15
 
-[node name="StatusLabel" type="Label" parent="ChatDialog/MarginContainer"]
+[node name="StatusLabel" type="Label" parent="ChatDialog/MarginContainer" unique_id=1533742800]
 visible = false
 layout_mode = 2
 size_flags_horizontal = 8
@@ -182,54 +182,54 @@ theme_override_font_sizes/font_size = 16
 text = "正在加载..."
 horizontal_alignment = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ChatDialog/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="ChatDialog/MarginContainer" unique_id=1651749903]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="CharacterNameLabel" type="Label" parent="ChatDialog/MarginContainer/VBoxContainer"]
+[node name="CharacterNameLabel" type="Label" parent="ChatDialog/MarginContainer/VBoxContainer" unique_id=677915704]
 visible = false
 layout_mode = 2
 text = "角色名"
 
-[node name="MessageLabel" type="Label" parent="ChatDialog/MarginContainer/VBoxContainer"]
+[node name="MessageLabel" type="Label" parent="ChatDialog/MarginContainer/VBoxContainer" unique_id=2075962258]
 visible = false
 layout_mode = 2
 size_flags_vertical = 3
 text = "角色回复内容..."
 autowrap_mode = 3
 
-[node name="InputContainer" type="HBoxContainer" parent="ChatDialog/MarginContainer/VBoxContainer"]
+[node name="InputContainer" type="HBoxContainer" parent="ChatDialog/MarginContainer/VBoxContainer" unique_id=69711226]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="InputField" type="LineEdit" parent="ChatDialog/MarginContainer/VBoxContainer/InputContainer"]
+[node name="InputField" type="LineEdit" parent="ChatDialog/MarginContainer/VBoxContainer/InputContainer" unique_id=1110465899]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 placeholder_text = "输入消息..."
 
-[node name="MicButton" type="Button" parent="ChatDialog/MarginContainer/VBoxContainer/InputContainer"]
+[node name="MicButton" type="Button" parent="ChatDialog/MarginContainer/VBoxContainer/InputContainer" unique_id=87851394]
 custom_minimum_size = Vector2(40, 0)
 layout_mode = 2
 focus_mode = 0
 
-[node name="PicButton" type="Button" parent="ChatDialog/MarginContainer/VBoxContainer/InputContainer"]
+[node name="PicButton" type="Button" parent="ChatDialog/MarginContainer/VBoxContainer/InputContainer" unique_id=55199557]
 custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 icon = ExtResource("6_0im0j")
 icon_alignment = 1
 expand_icon = true
 
-[node name="SendButton" type="Button" parent="ChatDialog/MarginContainer/VBoxContainer/InputContainer"]
+[node name="SendButton" type="Button" parent="ChatDialog/MarginContainer/VBoxContainer/InputContainer" unique_id=388749442]
 custom_minimum_size = Vector2(80, 0)
 layout_mode = 2
 text = "发送"
 
-[node name="EndButton" type="Button" parent="ChatDialog/MarginContainer/VBoxContainer"]
+[node name="EndButton" type="Button" parent="ChatDialog/MarginContainer/VBoxContainer" unique_id=1630822852]
 layout_mode = 2
 text = "查看历史"
 
-[node name="ContinueIndicator" type="Label" parent="ChatDialog"]
+[node name="ContinueIndicator" type="Label" parent="ChatDialog" unique_id=314517803]
 visible = false
 layout_mode = 1
 anchors_preset = 3
@@ -248,7 +248,7 @@ text = "▼"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ActionMenu" type="Panel" parent="."]
+[node name="ActionMenu" type="Panel" parent="." unique_id=1413762698]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 0
 offset_right = 120.0
@@ -258,7 +258,7 @@ size_flags_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxEmpty_0im0j")
 script = ExtResource("6_action_menu")
 
-[node name="MarginContainer" type="MarginContainer" parent="ActionMenu"]
+[node name="MarginContainer" type="MarginContainer" parent="ActionMenu" unique_id=114834784]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -270,37 +270,37 @@ theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ActionMenu/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="ActionMenu/MarginContainer" unique_id=548612757]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 5
 
-[node name="ChatButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer"]
+[node name="ChatButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer" unique_id=372931058]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "💬 聊天"
 
-[node name="CompanionButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer"]
+[node name="CompanionButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer" unique_id=1790799822]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "📚 陪伴"
 
-[node name="SleepButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer"]
+[node name="SleepButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer" unique_id=324894282]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "💤 助眠"
 
-[node name="GameButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer"]
+[node name="GameButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer" unique_id=2075903665]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "🎮 游戏"
 
-[node name="GameSubmenu" type="Panel" parent="ActionMenu"]
+[node name="GameSubmenu" type="Panel" parent="ActionMenu" unique_id=1989096140]
 z_index = 1
 custom_minimum_size = Vector2(120, 140)
 layout_mode = 0
@@ -308,7 +308,7 @@ offset_left = 130.0
 offset_right = 250.0
 offset_bottom = 130.0
 
-[node name="MarginContainer" type="MarginContainer" parent="ActionMenu/GameSubmenu"]
+[node name="MarginContainer" type="MarginContainer" parent="ActionMenu/GameSubmenu" unique_id=405932473]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -320,30 +320,30 @@ theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ActionMenu/GameSubmenu/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="ActionMenu/GameSubmenu/MarginContainer" unique_id=659934335]
 layout_mode = 2
 theme_override_constants/separation = 5
 
-[node name="GomokuButton" type="Button" parent="ActionMenu/GameSubmenu/MarginContainer/VBoxContainer"]
+[node name="GomokuButton" type="Button" parent="ActionMenu/GameSubmenu/MarginContainer/VBoxContainer" unique_id=1496210613]
 layout_mode = 2
 text = "五子棋"
 
-[node name="ChineseChessButton" type="Button" parent="ActionMenu/GameSubmenu/MarginContainer/VBoxContainer"]
+[node name="ChineseChessButton" type="Button" parent="ActionMenu/GameSubmenu/MarginContainer/VBoxContainer" unique_id=1156181161]
 layout_mode = 2
 text = "中国象棋"
 
-[node name="CardGameButton" type="Button" parent="ActionMenu/GameSubmenu/MarginContainer/VBoxContainer"]
+[node name="CardGameButton" type="Button" parent="ActionMenu/GameSubmenu/MarginContainer/VBoxContainer" unique_id=261494205]
 layout_mode = 2
 text = "卡牌"
 
-[node name="SceneMenu" type="Panel" parent="."]
+[node name="SceneMenu" type="Panel" parent="." unique_id=1589743021]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 0
 offset_right = 150.0
 offset_bottom = 80.0
 script = ExtResource("7_scene_menu")
 
-[node name="MarginContainer" type="MarginContainer" parent="SceneMenu"]
+[node name="MarginContainer" type="MarginContainer" parent="SceneMenu" unique_id=1741174978]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -355,17 +355,17 @@ theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="VBoxContainer" type="VBoxContainer" parent="SceneMenu/MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="SceneMenu/MarginContainer" unique_id=1344825612]
 layout_mode = 2
 theme_override_constants/separation = 5
 
-[node name="CharacterDiaryViewer" parent="." instance=ExtResource("13_m1sh3")]
+[node name="CharacterDiaryViewer" parent="." unique_id=1563419829 instance=ExtResource("13_m1sh3")]
 visible = false
 layout_mode = 0
 offset_right = 900.0
 offset_bottom = 650.0
 
-[node name="AutoButton" type="Button" parent="."]
+[node name="AutoButton" type="Button" parent="." unique_id=592785163]
 layout_mode = 0
 offset_left = 1060.0
 offset_top = 10.0
@@ -374,10 +374,10 @@ offset_bottom = 50.0
 focus_mode = 0
 text = "自动"
 
-[node name="InventoryButton" parent="." instance=ExtResource("12_o6pr8")]
+[node name="InventoryButton" parent="." unique_id=606328298 instance=ExtResource("12_o6pr8")]
 layout_mode = 1
 
-[node name="MusicPlayerPanel" parent="." instance=ExtResource("15_music_panel")]
+[node name="MusicPlayerPanel" parent="." unique_id=140613059 instance=ExtResource("15_music_panel")]
 visible = false
 layout_mode = 0
 anchors_preset = 0
@@ -392,7 +392,7 @@ offset_bottom = 600.0
 grow_horizontal = 1
 grow_vertical = 1
 
-[node name="AutoSaveIndicator" parent="." instance=ExtResource("14_m1sh3")]
+[node name="AutoSaveIndicator" parent="." unique_id=1439211255 instance=ExtResource("14_m1sh3")]
 layout_mode = 1
 anchors_preset = 1
 offset_left = -134.0
