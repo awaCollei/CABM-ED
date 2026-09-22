@@ -37,6 +37,7 @@ driver/force_input_mono=true
 AndroidPermissions="*res://scripts/android_permissions.gd"
 SceneTransition="*res://scripts/scene_transition.gd"
 PlatformManager="*res://scripts/platform_manager.gd"
+TouchEmulator="*res://scripts/touch_emulator.gd"
 ResourceManager="*res://scripts/resource_manager.gd"
 SaveManager="*res://scripts/save_manager.gd"
 MessageDisplay="*res://scripts/message_display_manager.gd"
