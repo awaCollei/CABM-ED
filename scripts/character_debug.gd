@@ -5,6 +5,7 @@ extends Control
 # 在调试模式下，可以拖动角色到想要的位置
 # 双击角色：移动到当前场景的下一个预设点位
 # 滚轮：以鼠标下角色区域为中心放大/缩小角色
+# 右键：水平翻转原始图片文件
 # 按 S 键：把当前位置和缩放写回配置文件
 # 控制台会输出对应的配置坐标
 
@@ -63,6 +64,7 @@ func _input(event):
 			print("拖动角色到想要的位置")
 			print("双击角色：切换到当前场景的下一个预设点位")
 			print("滚轮：放大/缩小角色")
+			print("右键：水平翻转原始图片文件")
 			print("按 S 键：把当前位置和缩放写回配置文件")
 			print("松开鼠标后会在控制台输出配置坐标")
 			print("按 F1 关闭调试模式\n")
@@ -93,6 +95,11 @@ func _on_character_gui_input(event):
 			var factor: float = SCALE_STEP if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / SCALE_STEP
 			_zoom_character(factor)
 			accept_event()
+			return
+
+		# 右键：水平翻转原始图片文件
+		if event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+			_flip_character_image()
 			return
 
 		if event.button_index == MOUSE_BUTTON_LEFT:
@@ -200,6 +207,61 @@ func _zoom_character(factor: float):
 	_sync_original_preset()
 	_update_debug_info()
 
+# 右键：对当前显示的原始图片做水平翻转并写回文件
+func _flip_character_image():
+	if not character or not character.texture_normal:
+		print("错误: 当前没有可翻转的角色图片")
+		return
+
+	if loaded_scene_id != character.current_scene or scene_presets.is_empty() or preset_index < 0:
+		_ensure_scene_presets_loaded()
+	if scene_presets.is_empty() or preset_index < 0:
+		print("错误: 无法定位当前图片对应的预设")
+		return
+
+	var costume_id = character._get_costume_id()
+	var image_name = scene_presets[preset_index].get("image", "1.png")
+	var source_path = character._get_character_image_path(costume_id, loaded_scene_id, image_name)
+
+	# 定位物理文件路径：res:// 需转为项目内绝对路径，导出后资源只读不可写
+	var file_path = source_path
+	if source_path.begins_with("res://"):
+		file_path = ProjectSettings.globalize_path(source_path)
+
+	var image = Image.load_from_file(file_path)
+	if not image:
+		print("错误: 无法读取图片文件: ", file_path)
+		return
+
+	if image.is_compressed():
+		image.decompress()
+	image.flip_x()
+
+	var err = image.save_png(file_path)
+	if err != OK:
+		print("错误: 写回翻转图片失败 (%d): %s" % [err, file_path])
+		return
+
+	# 用刚翻转的 Image 立即生成纹理，保证当前显示的是翻转后的图片
+	var flipped_texture = ImageTexture.create_from_image(image)
+	character.texture_normal = flipped_texture
+	character.custom_minimum_size = flipped_texture.get_size()
+	character.size = flipped_texture.get_size()
+
+	# res:// 资源再用 REPLACE 缓存模式重新从磁盘加载，覆盖缓存中的旧纹理
+	if source_path.begins_with("res://"):
+		var reloaded = ResourceLoader.load(source_path, "", ResourceLoader.CACHE_MODE_REPLACE)
+		if reloaded is Texture2D:
+			character.texture_normal = reloaded
+			character.custom_minimum_size = reloaded.get_size()
+			character.size = reloaded.get_size()
+
+	# 按当前预设重新刷新位置和缩放
+	character._update_position_and_scale_from_preset()
+
+	print("已水平翻转原始图片: ", file_path)
+	_update_debug_info()
+
 # 把角色当前的位置/缩放同步到 original_preset
 func _sync_original_preset():
 	if not character:
@@ -217,7 +279,7 @@ func _update_debug_info():
 	var config = _get_current_config()
 
 	debug_label.text = "调试模式 (F1关闭)\n"
-	debug_label.text += "拖动移动 | 双击切换预设 | 滚轮缩放 | S保存\n"
+	debug_label.text += "拖动移动 | 双击切换预设 | 滚轮缩放 | 右键翻转 | S保存\n"
 	debug_label.text += "---\n"
 	if scene_presets.size() > 0:
 		debug_label.text += "预设: %d/%d\n" % [max(preset_index, 0) + 1, scene_presets.size()]
