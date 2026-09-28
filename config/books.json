@@ -62,11 +62,13 @@
     {
       "id": "h",
       "title": "🔞小煌文",
-      "author": "西柚柠檬茶",
+      "author": ["西柚柠檬茶", "awaCollei", "DeepSeek"],
       "icon": "res://assets/images/books/book4.png",
       "description": "🔞阅读本书前，请确保您已满18周岁",
       "chapters": [
-        { "index": 1, "title": "可爱的傲娇老大被狠狠欺负然后堕落" }
+        { "index": 1, "title": "可爱的傲娇老大被狠狠欺负然后堕落" },
+        { "index": 2, "title": "艺术与臣服" },
+        { "index": 3, "title": "胜负凭证" }
       ]
     }
   ]

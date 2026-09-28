@@ -3,7 +3,7 @@ extends Control
 # 角色位置调试工具
 # 按 F1 开启/关闭调试模式
 # 在调试模式下，可以拖动角色到想要的位置
-# 双击角色：移动到当前场景的下一个预设点位
+# 空格键：移动到当前场景的下一个预设点位
 # 滚轮：以鼠标下角色区域为中心放大/缩小角色
 # 右键：水平翻转原始图片文件
 # 按 S 键：把当前位置和缩放写回配置文件
@@ -62,7 +62,7 @@ func _input(event):
 		if debug_mode:
 			print("\n=== 角色位置调试模式已开启 ===")
 			print("拖动角色到想要的位置")
-			print("双击角色：切换到当前场景的下一个预设点位")
+			print("空格键：切换到当前场景的下一个预设点位")
 			print("滚轮：放大/缩小角色")
 			print("右键：水平翻转原始图片文件")
 			print("按 S 键：把当前位置和缩放写回配置文件")
@@ -75,8 +75,16 @@ func _input(event):
 		_update_debug_info()
 		return
 
+	if not debug_mode:
+		return
+
+	# 空格键：切换到下一个预设点位
+	if event.keycode == KEY_SPACE:
+		_move_to_next_preset()
+		return
+
 	# S 键写回配置文件
-	if event.keycode == KEY_S and debug_mode:
+	if event.keycode == KEY_S:
 		_save_config()
 
 func _on_character_gui_input(event):
@@ -84,12 +92,6 @@ func _on_character_gui_input(event):
 		return
 
 	if event is InputEventMouseButton:
-		# 双击：切换到下一个预设点位
-		if event.button_index == MOUSE_BUTTON_LEFT and event.double_click:
-			dragging = false
-			_move_to_next_preset()
-			return
-
 		# 滚轮：以角色中心为锚点缩放
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP or event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 			var factor: float = SCALE_STEP if event.button_index == MOUSE_BUTTON_WHEEL_UP else 1.0 / SCALE_STEP
@@ -279,7 +281,7 @@ func _update_debug_info():
 	var config = _get_current_config()
 
 	debug_label.text = "调试模式 (F1关闭)\n"
-	debug_label.text += "拖动移动 | 双击切换预设 | 滚轮缩放 | 右键翻转 | S保存\n"
+	debug_label.text += "拖动移动 | 空格切换预设 | 滚轮缩放 | 右键翻转 | S保存\n"
 	debug_label.text += "---\n"
 	if scene_presets.size() > 0:
 		debug_label.text += "预设: %d/%d\n" % [max(preset_index, 0) + 1, scene_presets.size()]
