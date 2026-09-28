@@ -9,6 +9,13 @@ signal options_error(error_message: String)
 var owner_service: Node  # AIService
 var logger: Node
 
+# 生成请求的代次。每次发起新请求或取消时自增，用于丢弃过期结果
+var _generation_id: int = 0
+
+func cancel():
+	"""取消进行中的选项生成，使其结果被丢弃"""
+	_generation_id += 1
+
 func generate_options(conversation_history: Array):
 	"""根据对话历史生成三个选项"""
 	if not owner_service or not owner_service.config_loader:
@@ -32,6 +39,10 @@ func generate_options(conversation_history: Array):
 		{"role": "user", "content": conversation_text}
 	]
 	
+	# 记录本次请求代次，若期间被取消或发起了新请求，则丢弃本次结果
+	_generation_id += 1
+	var generation_id = _generation_id
+
 	# 使用 easy_ai 发送请求
 	var result = await owner_service.easy_ai.request(
 		"summary_model",  # 使用 summary_model 任务
@@ -43,6 +54,10 @@ func generate_options(conversation_history: Array):
 			"top_p": 0.9
 		}
 	)
+
+	if generation_id != _generation_id:
+		print("选项生成已过期（对话已结束或已发起新请求），丢弃结果")
+		return
 
 	if not result.success:
 		MessageDisplay.show_failure_message("选项生成失败: " + result.error)

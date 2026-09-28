@@ -33,6 +33,9 @@ var options_container: VBoxContainer = null
 var option_buttons: Array = []
 var pending_options: Array = []  # 暂存待显示的选项
 
+# 对话会话是否处于激活状态（对话框可见）。用于丢弃对话结束后才返回的过期数据
+var _chat_active: bool = false
+
 # 模块化组件
 var input_handler: Node
 var ui_manager: Node
@@ -337,6 +340,7 @@ func show_dialog(mode: String = "passive"):
 		return
 	
 	visible = true
+	_chat_active = true
 	pivot_offset = size / 2.0
 	
 	# 显示自动播放按钮
@@ -391,12 +395,16 @@ func _setup_reply_mode():
 	_update_top_input_visibility(false)
 
 func hide_dialog():
+	# 立即标记会话为非激活，后续迟到的选项/点击一律丢弃
+	_chat_active = false
+	
 	# 如果已经隐藏，忽略重复调用
 	if not visible:
 		print("聊天对话框已隐藏，忽略重复调用")
 		return
 	
-	# 清除选项
+	# 清除选项（包括尚未显示的暂存选项）
+	pending_options.clear()
 	_clear_options()
 	
 	pivot_offset = size / 2.0
@@ -480,6 +488,11 @@ func _on_ai_response_completed():
 func _on_options_generated(options: Array):
 	"""选项生成完成回调"""
 	print("收到生成的选项: ", options)
+	# 对话已结束（对话框不可见）时，丢弃迟到的选项，避免结束后才显示
+	if not _chat_active or not visible:
+		print("对话已结束，丢弃迟到的选项")
+		pending_options.clear()
+		return
 	# 暂存选项，等待用户点击继续后再显示
 	pending_options = options
 	
@@ -1084,6 +1097,11 @@ func _get_character_name() -> String:
 
 func _show_options(options: Array):
 	"""在屏幕右侧中上部显示三个选项"""
+	# 对话已结束时不显示任何选项
+	if not _chat_active or not visible:
+		pending_options.clear()
+		return
+	
 	# 清除旧的选项
 	_clear_options()
 	
@@ -1143,6 +1161,12 @@ func _clear_options():
 func _on_option_selected(option_text: String):
 	"""选项被点击时的处理"""
 	print("用户选择了选项: ", option_text)
+	
+	# 对话已结束时忽略点击，避免在后台触发对话
+	if not _chat_active or not visible:
+		print("对话已结束，忽略选项点击")
+		_clear_options()
+		return
 	
 	# 清除选项
 	_clear_options()

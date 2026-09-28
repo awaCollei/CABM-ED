@@ -273,6 +273,10 @@ func start_chat(user_message: String = "", trigger_mode: String = "passive", ite
 
 	is_chatting = true
 
+	# 新的一轮对话开始，丢弃上一轮可能仍在进行中的选项生成结果
+	if options_generator:
+		options_generator.cancel()
+
 	var actual_trigger_mode = trigger_mode if is_first_message else "ongoing"
 
 	var prompt_builder = get_node("/root/PromptBuilder")
@@ -589,6 +593,10 @@ func _apply_extracted_fields(extracted_fields: Dictionary):
 
 func end_chat():
 	"""结束对话，调用总结"""
+	# 对话结束，立即取消进行中的选项生成，避免结束后选项才显示
+	if options_generator:
+		options_generator.cancel()
+
 	if current_conversation.is_empty():
 		return
 
