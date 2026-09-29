@@ -119,6 +119,17 @@ static func create_panel_style(style_id: String, opacity: float = 1.0) -> StyleB
 	return panel
 
 
+static func create_sidebar_panel_style(style_id: String, opacity: float = 1.0) -> StyleBox:
+	"""侧边栏贴屏幕左侧：只保留右侧圆角与描边，左侧不圆角、不描边。"""
+	var panel := create_panel_style(style_id, opacity)
+	var flat := panel as StyleBoxFlat
+	if flat != null:
+		flat.corner_radius_top_left = 0
+		flat.corner_radius_bottom_left = 0
+		flat.border_width_left = 0
+	return panel
+
+
 static func _palette(style_id: String) -> Dictionary:
 	match style_id:
 		STYLE_MODERN:

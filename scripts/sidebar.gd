@@ -878,7 +878,7 @@ func _apply_ui_style(style_id: String) -> void:
 	else:
 		theme = UIStyleFactory.create_theme(current_ui_style, button_opacity, sidebar_opacity)
 		add_theme_stylebox_override(
-			"panel", UIStyleFactory.create_panel_style(current_ui_style, sidebar_opacity)
+			"panel", UIStyleFactory.create_sidebar_panel_style(current_ui_style, sidebar_opacity)
 		)
 	_refresh_notebook_only_nodes()
 	_apply_button_opacity_tree(
