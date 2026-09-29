@@ -417,9 +417,11 @@ func _update_element_visibility(element_id: String, element, current_scene: Stri
 		element.disable()
 
 func _on_scene_changed(scene_id: String, weather_id: String, time_id: String):
-	# 如果正在聊天，忽略场景切换请求
+	# 如果正在聊天，忽略场景切换请求，并把侧边栏按钮还原为实际生效的状态
 	if chat_dialog.visible or character.is_chatting:
 		print("正在聊天，忽略场景切换请求")
+		if scene_manager:
+			sidebar.restore_selection(scene_manager.current_weather, scene_manager.current_time)
 		return
 	
 	if not scene_manager:

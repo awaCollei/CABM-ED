@@ -377,6 +377,13 @@ func _on_weather_selected(weather_id: String):
 	_emit_scene_change()
 
 
+func restore_selection(weather_id: String, time_id: String) -> void:
+	"""场景切换被拒绝（如聊天中）时，把选择与按钮显示还原为实际生效的状态。"""
+	current_weather_id = weather_id
+	current_time_id = time_id
+	_update_button_states()
+
+
 func _update_button_states():
 	# 更新时间按钮状态
 	for time_id in time_buttons:
