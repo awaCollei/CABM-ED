@@ -90,9 +90,14 @@ func update_sidebar_layout():
 		return
 	
 	var scene_rect = scene_manager.scene_rect
-	sidebar.position = scene_rect.position
 	sidebar.size.y = scene_rect.size.y
 	sidebar.custom_minimum_size.y = scene_rect.size.y
+	
+	# 侧边栏靠整页平移实现收起/展开，横向位置由它自己根据基础位置计算
+	if sidebar.has_method("set_base_x"):
+		sidebar.set_base_x(scene_rect.position.x)
+	else:
+		sidebar.position = scene_rect.position
 
 func update_chat_dialog_layout():
 	"""更新聊天对话框布局"""
@@ -101,7 +106,12 @@ func update_chat_dialog_layout():
 	
 	var scene_rect = scene_manager.scene_rect
 	var dialog_height = chat_dialog.size.y
-	var sidebar_width = sidebar.size.x if (sidebar and sidebar.visible) else 0.0
+	var sidebar_width = 0.0
+	if sidebar and sidebar.visible:
+		if sidebar.has_method("get_visible_width"):
+			sidebar_width = sidebar.get_visible_width()
+		else:
+			sidebar_width = sidebar.size.x
 	
 	var dialog_x = scene_rect.position.x + sidebar_width
 	var dialog_width = scene_rect.size.x - sidebar_width
