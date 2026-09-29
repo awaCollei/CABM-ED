@@ -4,13 +4,12 @@ extends Node
 # 负责文本的逐字显示和句子分段
 signal sentence_completed
 signal all_sentences_completed
-signal sentence_ready_for_tts(text: String) # 句子准备好进行TTS处理
+signal sentence_ready_for_tts(text: String)  # 句子准备好进行TTS处理
 
 var typing_speed: float = 0.05
 var parent_dialog: Panel
 var message_label: Label
 var typing_timer: Timer
-
 
 # 流式输出相关
 var display_buffer: String = ""
@@ -19,12 +18,10 @@ var is_receiving_stream: bool = false
 
 # 分段输出相关
 var splitter_state: SentenceSplitter.StreamState = SentenceSplitter.StreamState.new()
-var sentence_queue: Array = [] # 数组，元素为 {text: String, sentence_hash: String, no_tts: bool}
+var sentence_queue: Array = []  # 数组，元素为 {text: String, sentence_hash: String, no_tts: bool}
 var current_sentence_index: int = 0
 var is_showing_sentence: bool = false
 
-const COLOR_NORMAL = Color.WHITE 
-const COLOR_GRAY = Color.GRAY
 
 func _ready():
 	typing_timer = Timer.new()
@@ -32,12 +29,15 @@ func _ready():
 	typing_timer.timeout.connect(_on_typing_timer_timeout)
 	add_child(typing_timer)
 
+
 func setup(dialog: Panel, msg_label: Label):
 	parent_dialog = dialog
 	message_label = msg_label
 
+
 func set_typing_speed(speed: float) -> void:
 	typing_speed = clampf(speed, 0.01, 0.09)
+
 
 func start_stream():
 	is_receiving_stream = true
@@ -45,13 +45,14 @@ func start_stream():
 	sentence_queue = []
 	current_sentence_index = 0
 	is_showing_sentence = false
-	if message_label:
-		message_label.add_theme_color_override("font_color", COLOR_NORMAL)
+	_set_message_color(false)
 
 	message_label.text = ""
 
+
 func add_stream_content(content: String):
 	_extract_sentences(content, false)
+
 
 func end_stream():
 	is_receiving_stream = false
@@ -60,8 +61,10 @@ func end_stream():
 	if not is_showing_sentence and sentence_queue.size() > 0:
 		_show_next_sentence()
 
+
 func has_content() -> bool:
 	return sentence_queue.size() > 0 or not splitter_state.buffer.strip_edges().is_empty()
+
 
 func show_next_sentence() -> String:
 	"""显示下一个句子，并返回其哈希值"""
@@ -70,8 +73,7 @@ func show_next_sentence() -> String:
 		print("警告: 上一个句子仍在显示中，请等待完成")
 		typing_timer.stop()
 		displayed_text = display_buffer
-		if message_label:
-			message_label.add_theme_color_override("font_color", COLOR_NORMAL)
+		_set_message_color(false)
 
 		message_label.text = displayed_text
 
@@ -85,8 +87,10 @@ func show_next_sentence() -> String:
 	# 返回下一个句子的哈希值
 	return next_hash
 
+
 func has_more_sentences() -> bool:
 	return current_sentence_index < sentence_queue.size()
+
 
 func _extract_sentences(new_content: String, is_end: bool):
 	# 使用 SentenceSplitter 的流式分句功能
@@ -95,12 +99,15 @@ func _extract_sentences(new_content: String, is_end: bool):
 		var text = sentence_data.text
 		var no_tts = sentence_data.no_tts
 		var sentence_entry = {
-			"text": text,
-			"sentence_hash": _compute_sentence_hash(text),
-			"no_tts": no_tts
+			"text": text, "sentence_hash": _compute_sentence_hash(text), "no_tts": no_tts
 		}
 		sentence_queue.append(sentence_entry)
-		print("提取句子 hash:%s: %s (TTS: %s)" % [sentence_entry.sentence_hash.substr(0,8), text, not no_tts])
+		print(
+			(
+				"提取句子 hash:%s: %s (TTS: %s)"
+				% [sentence_entry.sentence_hash.substr(0, 8), text, not no_tts]
+			)
+		)
 
 		# 仅在 no_tts 为 false 时发送 TTS 信号
 		if not no_tts:
@@ -111,6 +118,7 @@ func _extract_sentences(new_content: String, is_end: bool):
 		if current_sentence_index < sentence_queue.size():
 			print("检测到新句子，继续显示")
 			_show_next_sentence()
+
 
 func _show_next_sentence():
 	# 防止重复调用
@@ -124,14 +132,12 @@ func _show_next_sentence():
 			# 流已结束，确实没有更多句子了
 			is_showing_sentence = false
 			all_sentences_completed.emit()
-			if message_label:
-				message_label.add_theme_color_override("font_color", COLOR_NORMAL)
+			_set_message_color(false)
 			print("所有句子显示完成")
 		else:
 			# 流仍在继续，但暂时没有新句子
 			is_showing_sentence = false
-			if message_label:
-				message_label.add_theme_color_override("font_color", COLOR_NORMAL)
+			_set_message_color(false)
 			print("等待流式传输更多句子...")
 		return
 
@@ -142,26 +148,30 @@ func _show_next_sentence():
 	if has_node("/root/TTSService") and not sentence_entry.no_tts:
 		var tts = get_node("/root/TTSService")
 		tts.on_new_sentence_displayed(sentence_entry.sentence_hash)
-		print("已通知 TTS句子 hash:%s" % sentence_entry.sentence_hash.substr(0,8))
+		print("已通知 TTS句子 hash:%s" % sentence_entry.sentence_hash.substr(0, 8))
 
 	current_sentence_index += 1
 
-	print("开始显示句子 hash:%s: %s (括号内: %s)" % [sentence_entry.sentence_hash.substr(0,8), sentence_entry.text, sentence_entry.no_tts])
+	print(
+		(
+			"开始显示句子 hash:%s: %s (括号内: %s)"
+			% [
+				sentence_entry.sentence_hash.substr(0, 8),
+				sentence_entry.text,
+				sentence_entry.no_tts
+			]
+		)
+	)
 
-	if sentence_entry.no_tts:
-		# 如果是括号内内容，设置为灰色
-		if message_label:
-			message_label.add_theme_color_override("font_color", COLOR_GRAY)
-	else:
-		# 如果不是括号内内容，恢复原始颜色
-		if message_label:
-			message_label.add_theme_color_override("font_color", COLOR_NORMAL)
+	# 旁白使用当前主题文字色的弱化版本，不再硬编码白色或灰色。
+	_set_message_color(sentence_entry.no_tts)
 	# 重置显示缓冲区
 	message_label.text = ""
 	displayed_text = ""
 	display_buffer = sentence_entry.text
 
 	typing_timer.start(typing_speed)
+
 
 func _on_typing_timer_timeout():
 	if displayed_text.length() < display_buffer.length():
@@ -171,6 +181,7 @@ func _on_typing_timer_timeout():
 	else:
 		typing_timer.stop()
 		sentence_completed.emit()
+
 
 func stop():
 	if typing_timer:
@@ -182,9 +193,21 @@ func stop():
 	current_sentence_index = 0
 	is_receiving_stream = false
 	is_showing_sentence = false
+	_set_message_color(false)
 	if message_label:
-		message_label.add_theme_color_override("font_color", COLOR_NORMAL)
 		message_label.text = ""
+
+
+func _set_message_color(muted: bool) -> void:
+	if message_label == null:
+		return
+	message_label.remove_theme_color_override("font_color")
+	if muted:
+		var base_color := message_label.get_theme_color("font_color")
+		message_label.add_theme_color_override(
+			"font_color", Color(base_color.r, base_color.g, base_color.b, 0.62)
+		)
+
 
 func _compute_sentence_hash(original_text: String) -> String:
 	if has_node("/root/TTSService"):
@@ -202,11 +225,13 @@ func _compute_sentence_hash(original_text: String) -> String:
 	var hash_bytes = hashing_context.finish()
 	return hash_bytes.hex_encode()
 
+
 func get_current_sentence_data() -> Dictionary:
 	"""获取当前正在显示（或刚刚显示完）的句子数据"""
 	if current_sentence_index > 0 and current_sentence_index <= sentence_queue.size():
 		return sentence_queue[current_sentence_index - 1]
 	return {}
+
 
 func get_sentence_data_by_hash(sentence_hash: String) -> Dictionary:
 	"""通过哈希值查找句子数据"""

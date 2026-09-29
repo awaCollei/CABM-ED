@@ -1,0 +1,157 @@
+[gd_scene format=3 uid="uid://dlqr2fi6xhbvu"]
+
+[ext_resource type="Script" uid="uid://de3rokfave0en" path="res://scripts/ui/style_settings_panel.gd" id="1_style"]
+
+[node name="风格样式" type="MarginContainer" unique_id=2114748234]
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+script = ExtResource("1_style")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1414603789]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="Title" type="Label" parent="VBoxContainer" unique_id=1781673893]
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "风格样式"
+
+[node name="SelectRow" type="HBoxContainer" parent="VBoxContainer" unique_id=464102012]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="SelectLabel" type="Label" parent="VBoxContainer/SelectRow" unique_id=92860826]
+layout_mode = 2
+text = "界面风格"
+vertical_alignment = 1
+
+[node name="StyleOption" type="OptionButton" parent="VBoxContainer/SelectRow" unique_id=803778322]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 42)
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="OpacitySettings" type="VBoxContainer" parent="VBoxContainer" unique_id=300734757]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SidebarRow" type="HBoxContainer" parent="VBoxContainer/OpacitySettings" unique_id=1881381281]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/OpacitySettings/SidebarRow" unique_id=381122075]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "边栏透明度"
+
+[node name="SidebarOpacity" type="HSlider" parent="VBoxContainer/OpacitySettings/SidebarRow" unique_id=578367755]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+value = 100.0
+
+[node name="SidebarValue" type="Label" parent="VBoxContainer/OpacitySettings/SidebarRow" unique_id=2050628697]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "100%"
+horizontal_alignment = 2
+
+[node name="DialogRow" type="HBoxContainer" parent="VBoxContainer/OpacitySettings" unique_id=604429838]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/OpacitySettings/DialogRow" unique_id=728170148]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "对话框透明度"
+
+[node name="DialogOpacity" type="HSlider" parent="VBoxContainer/OpacitySettings/DialogRow" unique_id=517031910]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+value = 100.0
+
+[node name="DialogValue" type="Label" parent="VBoxContainer/OpacitySettings/DialogRow" unique_id=1930310497]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "100%"
+horizontal_alignment = 2
+
+[node name="ButtonRow" type="HBoxContainer" parent="VBoxContainer/OpacitySettings" unique_id=266456283]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="VBoxContainer/OpacitySettings/ButtonRow" unique_id=218076281]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "按钮透明度"
+
+[node name="ButtonOpacity" type="HSlider" parent="VBoxContainer/OpacitySettings/ButtonRow" unique_id=493861898]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+value = 100.0
+
+[node name="ButtonValue" type="Label" parent="VBoxContainer/OpacitySettings/ButtonRow" unique_id=246106409]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "100%"
+horizontal_alignment = 2
+
+[node name="ResetOpacityButton" type="Button" parent="VBoxContainer" unique_id=195509993]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+text = "重置透明度"
+
+[node name="DescriptionLabel" type="Label" parent="VBoxContainer" unique_id=24234235]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 52)
+layout_mode = 2
+vertical_alignment = 1
+autowrap_mode = 3
+
+[node name="PreviewPanel" type="Panel" parent="VBoxContainer" unique_id=1327880452]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/PreviewPanel" unique_id=96079045]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 16
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/PreviewPanel/MarginContainer" unique_id=47765795]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="PreviewTitle" type="Label" parent="VBoxContainer/PreviewPanel/MarginContainer/VBoxContainer" unique_id=261966238]
+unique_name_in_owner = true
+layout_mode = 2
+text = "对话与侧边栏预览"
+
+[node name="PreviewText" type="Label" parent="VBoxContainer/PreviewPanel/MarginContainer/VBoxContainer" unique_id=1135622647]
+layout_mode = 2
+text = "今天也记录下新的故事吧。"
+
+[node name="PreviewButton" type="Button" parent="VBoxContainer/PreviewPanel/MarginContainer/VBoxContainer" unique_id=649124285]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 40)
+layout_mode = 2
+size_flags_horizontal = 0
+text = "示例按钮"
+
+[node name="StatusLabel" type="Label" parent="VBoxContainer" unique_id=144720313]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2

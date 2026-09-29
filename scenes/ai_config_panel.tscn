@@ -11,6 +11,7 @@
 [ext_resource type="PackedScene" uid="uid://brsfxwhf68334" path="res://scenes/ai_providers_panel.tscn" id="5_providers"]
 [ext_resource type="PackedScene" uid="uid://bwk25gf6blwoj" path="res://scenes/ai_models_panel.tscn" id="6_models"]
 [ext_resource type="PackedScene" path="res://scenes/ai_model_tasks_panel.tscn" id="7_tasks"]
+[ext_resource type="PackedScene" path="res://scenes/style_settings_panel.tscn" id="8_style"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_qhc2h"]
 bg_color = Color(0.12941177, 0.827451, 1, 0.78039217)
@@ -257,6 +258,11 @@ metadata/_tab_index = 3
 visible = false
 layout_mode = 2
 metadata/_tab_index = 4
+
+[node name="风格样式" parent="MarginContainer/VBoxContainer/TabContainer" instance=ExtResource("8_style")]
+visible = false
+layout_mode = 2
+metadata/_tab_index = 5
 
 [node name="存档导出" parent="MarginContainer/VBoxContainer/TabContainer" unique_id=674009850 instance=ExtResource("3_save_export")]
 visible = false
