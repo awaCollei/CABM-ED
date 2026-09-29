@@ -11,12 +11,18 @@ var _style_ids := [
 	UIStyleFactory.STYLE_NOTEBOOK,
 	UIStyleFactory.STYLE_MODERN,
 	UIStyleFactory.STYLE_SCIFI,
+	UIStyleFactory.STYLE_RETRO_RPG,
+	UIStyleFactory.STYLE_WIN_TERMINAL,
+	UIStyleFactory.STYLE_UBUNTU_TERMINAL,
 ]
 var _descriptions := {
-	UIStyleFactory.STYLE_DEFAULT: "使用Godot默认主题的半透明深色样式。",
-	UIStyleFactory.STYLE_NOTEBOOK: "暖色纸张、便签按钮，沉浸式养成。",
-	UIStyleFactory.STYLE_MODERN: "明亮留白、圆角卡片，清爽易读。",
-	UIStyleFactory.STYLE_SCIFI: "透明面板、冷青描边，未来终端质感。",
+	UIStyleFactory.STYLE_DEFAULT: "使用Godot默认主题的半透明深色样式",
+	UIStyleFactory.STYLE_NOTEBOOK: "暖色纸张、便签按钮，沉浸式养成",
+	UIStyleFactory.STYLE_MODERN: "明亮留白、圆角卡片，清爽易读",
+	UIStyleFactory.STYLE_SCIFI: "透明面板、冷青描边，未来终端质感",
+	UIStyleFactory.STYLE_RETRO_RPG: "灰色石质面板、直角边框、像素感按钮",
+	UIStyleFactory.STYLE_WIN_TERMINAL: "Windows终端风格",
+	UIStyleFactory.STYLE_UBUNTU_TERMINAL: "Ubuntu终端风格",
 }
 
 @onready var style_option: OptionButton = %StyleOption
@@ -36,7 +42,15 @@ var _descriptions := {
 
 func _ready() -> void:
 	style_option.clear()
-	for display_name in ["Godot默认", "日记本", "现代简约", "未来科幻"]:
+	for display_name in [
+		"Godot默认",
+		"日记本",
+		"现代简约",
+		"未来科幻",
+		"远古RPG",
+		"Windows终端",
+		"Ubuntu终端",
+	]:
 		style_option.add_item(display_name)
 	# 在配置管理器返回前也保持与项目实际默认风格一致。
 	style_option.select(_style_ids.find(UIStyleFactory.STYLE_NOTEBOOK))
@@ -155,7 +169,17 @@ func _save_opacity() -> void:
 func _update_preview(style_id: String) -> void:
 	description_label.text = _descriptions[style_id]
 	preview_title.text = "对话与侧边栏预览"
-	preview_button.text = "便签按钮" if style_id == UIStyleFactory.STYLE_NOTEBOOK else "示例按钮"
+	match style_id:
+		UIStyleFactory.STYLE_NOTEBOOK:
+			preview_button.text = "便签按钮"
+		UIStyleFactory.STYLE_RETRO_RPG:
+			preview_button.text = "菜单项"
+		UIStyleFactory.STYLE_WIN_TERMINAL:
+			preview_button.text = "> run"
+		UIStyleFactory.STYLE_UBUNTU_TERMINAL:
+			preview_button.text = "$ sudo"
+		_:
+			preview_button.text = "示例按钮"
 	var preview_theme := UIStyleFactory.create_theme(
 		style_id, button_opacity.value / 100.0, dialog_opacity.value / 100.0
 	)

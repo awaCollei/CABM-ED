@@ -6,7 +6,18 @@ const STYLE_DEFAULT := "default"
 const STYLE_NOTEBOOK := "notebook"
 const STYLE_MODERN := "modern"
 const STYLE_SCIFI := "scifi"
-const VALID_STYLES := [STYLE_DEFAULT, STYLE_NOTEBOOK, STYLE_MODERN, STYLE_SCIFI]
+const STYLE_RETRO_RPG := "retro_rpg"
+const STYLE_WIN_TERMINAL := "win_terminal"
+const STYLE_UBUNTU_TERMINAL := "ubuntu_terminal"
+const VALID_STYLES := [
+	STYLE_DEFAULT,
+	STYLE_NOTEBOOK,
+	STYLE_MODERN,
+	STYLE_SCIFI,
+	STYLE_RETRO_RPG,
+	STYLE_WIN_TERMINAL,
+	STYLE_UBUNTU_TERMINAL,
+]
 
 
 static func normalize_style(style_id: String) -> String:
@@ -49,7 +60,7 @@ static func create_theme(
 	result.set_stylebox(
 		"disabled", "Button", _button_box(style_id, "disabled", palette, button_opacity)
 	)
-	result.set_stylebox("focus", "Button", _focus_box(accent))
+	result.set_stylebox("focus", "Button", _focus_box(accent, style_id))
 
 	for input_type in ["LineEdit", "TextEdit"]:
 		result.set_stylebox(
@@ -92,6 +103,20 @@ static func create_theme(
 		ruled.content_margin_right = 5.0
 		ruled.content_margin_bottom = 5.0
 		result.set_stylebox("normal", "Label", ruled)
+	elif style_id == STYLE_RETRO_RPG:
+		# 老式 RPG：标签底部加一条浅灰分隔线，模拟菜单项。
+		var ruled := StyleBoxFlat.new()
+		ruled.bg_color = Color.TRANSPARENT
+		ruled.border_color = Color(0.55, 0.55, 0.58, 0.7)
+		ruled.border_width_bottom = 1
+		ruled.content_margin_left = 6.0
+		ruled.content_margin_right = 6.0
+		ruled.content_margin_bottom = 4.0
+		result.set_stylebox("normal", "Label", ruled)
+	elif style_id == STYLE_WIN_TERMINAL or style_id == STYLE_UBUNTU_TERMINAL:
+		# 终端风格：标签不额外描边，保持纯文本感。
+		var plain := StyleBoxEmpty.new()
+		result.set_stylebox("normal", "Label", plain)
 
 	return result
 
@@ -103,19 +128,45 @@ static func create_panel_style(style_id: String, opacity: float = 1.0) -> StyleB
 	var p := _palette(style_id)
 	var background: Color = p.background
 	background.a *= clampf(opacity, 0.0, 1.0)
-	var panel := _flat_box(
-		background,
-		p.border,
-		2 if style_id == STYLE_SCIFI else 1,
-		3 if style_id == STYLE_NOTEBOOK else 10
-	)
+
+	var border_width := 1
+	var radius := 10
+	var shadow_size := 8
+	var shadow_offset := Vector2(0, 3)
+
+	match style_id:
+		STYLE_SCIFI:
+			border_width = 2
+			radius = 10
+			shadow_size = 3
+		STYLE_NOTEBOOK:
+			border_width = 1
+			radius = 3
+			shadow_size = 8
+		STYLE_RETRO_RPG:
+			border_width = 2
+			radius = 0
+			shadow_size = 0
+			shadow_offset = Vector2.ZERO
+		STYLE_WIN_TERMINAL:
+			border_width = 1
+			radius = 0
+			shadow_size = 0
+			shadow_offset = Vector2.ZERO
+		STYLE_UBUNTU_TERMINAL:
+			border_width = 1
+			radius = 4
+			shadow_size = 6
+			shadow_offset = Vector2(0, 2)
+
+	var panel := _flat_box(background, p.border, border_width, radius)
 	panel.content_margin_left = 8.0
 	panel.content_margin_top = 8.0
 	panel.content_margin_right = 8.0
 	panel.content_margin_bottom = 8.0
-	panel.shadow_color = Color(0, 0, 0, 0.28)
-	panel.shadow_size = 8 if style_id != STYLE_SCIFI else 3
-	panel.shadow_offset = Vector2(0, 3)
+	panel.shadow_color = Color(0, 0, 0, 0.28 if shadow_size > 0 else 0.0)
+	panel.shadow_size = shadow_size
+	panel.shadow_offset = shadow_offset
 	return panel
 
 
@@ -154,6 +205,42 @@ static func _palette(style_id: String) -> Dictionary:
 				"border": Color(0.10, 0.58, 0.64),
 				"accent": Color(0.18, 0.92, 0.92)
 			}
+		STYLE_RETRO_RPG:
+			return {
+				# 经典 90 年代 RPG 菜单：中灰底、深灰描边、浅灰文字。
+				"background": Color(0.20, 0.20, 0.22, 0.98),
+				"surface": Color(0.27, 0.27, 0.30, 0.98),
+				"button": Color(0.34, 0.34, 0.37, 0.98),
+				"button_hover": Color(0.45, 0.45, 0.48, 1),
+				"text": Color(0.92, 0.92, 0.90),
+				"muted": Color(0.68, 0.68, 0.66),
+				"border": Color(0.62, 0.62, 0.64),
+				"accent": Color(0.95, 0.85, 0.35)
+			}
+		STYLE_WIN_TERMINAL:
+			return {
+				# Windows Terminal 默认配色：黑底、白字、蓝/青强调。
+				"background": Color(0.05, 0.05, 0.05, 0.98),
+				"surface": Color(0.08, 0.08, 0.08, 0.98),
+				"button": Color(0.12, 0.12, 0.12, 0.98),
+				"button_hover": Color(0.20, 0.20, 0.20, 1),
+				"text": Color(0.92, 0.92, 0.92),
+				"muted": Color(0.60, 0.60, 0.60),
+				"border": Color(0.35, 0.35, 0.35),
+				"accent": Color(0.30, 0.75, 1.0)
+			}
+		STYLE_UBUNTU_TERMINAL:
+			return {
+				# Ubuntu 终端：Aubergine 紫底、白字、橙黄强调。
+				"background": Color(0.18, 0.07, 0.18, 0.98),
+				"surface": Color(0.24, 0.10, 0.24, 0.98),
+				"button": Color(0.30, 0.13, 0.30, 0.98),
+				"button_hover": Color(0.40, 0.18, 0.40, 1),
+				"text": Color(0.96, 0.96, 0.96),
+				"muted": Color(0.78, 0.68, 0.80),
+				"border": Color(0.55, 0.30, 0.55),
+				"accent": Color(0.94, 0.55, 0.16)
+			}
 		_:
 			return {
 				"background": Color(0.965, 0.945, 0.878, 0.98),
@@ -187,46 +274,123 @@ static func _button_box(
 		shadow_size = 0
 	fill.a *= opacity
 	border.a *= opacity
-	var box := _flat_box(
-		fill, border, 2 if state == "pressed" else 1, 3 if style_id == STYLE_NOTEBOOK else 8
-	)
-	box.border_width_bottom = (
-		3 if style_id == STYLE_NOTEBOOK and state != "pressed" else box.border_width_bottom
-	)
-	box.shadow_color = Color(0.12, 0.08, 0.04, 0.25 * opacity)
+
+	var radius := 8
+	var border_width := 2 if state == "pressed" else 1
+	var shadow_offset := Vector2(0, 2)
+	var shadow_color := Color(0.12, 0.08, 0.04, 0.25 * opacity)
+	var margin_top := 7.0 if state != "pressed" else 9.0
+	var margin_bottom := 9.0 if state != "pressed" else 7.0
+
+	match style_id:
+		STYLE_NOTEBOOK:
+			radius = 3
+			if state != "pressed":
+				border_width = 1
+		STYLE_SCIFI:
+			radius = 8
+		STYLE_RETRO_RPG:
+			# 老式 RPG：直角、厚边框、无阴影，模拟像素菜单。
+			radius = 0
+			border_width = 2
+			shadow_size = 0
+			shadow_offset = Vector2.ZERO
+			shadow_color = Color.TRANSPARENT
+		STYLE_WIN_TERMINAL:
+			# Windows Terminal：直角、细边框、无阴影。
+			radius = 0
+			border_width = 1
+			shadow_size = 0
+			shadow_offset = Vector2.ZERO
+			shadow_color = Color.TRANSPARENT
+		STYLE_UBUNTU_TERMINAL:
+			# Ubuntu 终端：小圆角、细边框、轻微阴影。
+			radius = 4
+			border_width = 1
+			shadow_size = 2
+			shadow_offset = Vector2(0, 1)
+			shadow_color = Color(0, 0, 0, 0.35 * opacity)
+
+	var box := _flat_box(fill, border, border_width, radius)
+	if style_id == STYLE_NOTEBOOK and state != "pressed":
+		box.border_width_bottom = 3
+	box.shadow_color = shadow_color
 	box.shadow_size = shadow_size
-	box.shadow_offset = Vector2(0, 2)
+	box.shadow_offset = shadow_offset
 	box.content_margin_left = 12.0
 	box.content_margin_right = 12.0
-	box.content_margin_top = 7.0 if state != "pressed" else 9.0
-	box.content_margin_bottom = 9.0 if state != "pressed" else 7.0
+	box.content_margin_top = margin_top
+	box.content_margin_bottom = margin_bottom
 	return box
 
 
 static func _input_box(fill: Color, border: Color, width: int, style_id: String) -> StyleBoxFlat:
-	var box := _flat_box(fill, border, width, 3 if style_id == STYLE_NOTEBOOK else 8)
-	box.content_margin_left = 10.0
-	box.content_margin_right = 10.0
-	box.content_margin_top = 7.0
-	box.content_margin_bottom = 7.0
+	var radius := 8
+	var margin_left := 10.0
+	var margin_right := 10.0
+	var margin_top := 7.0
+	var margin_bottom := 7.0
+
+	match style_id:
+		STYLE_NOTEBOOK:
+			radius = 3
+		STYLE_RETRO_RPG:
+			radius = 0
+			margin_left = 8.0
+			margin_right = 8.0
+			margin_top = 6.0
+			margin_bottom = 6.0
+		STYLE_WIN_TERMINAL:
+			radius = 0
+		STYLE_UBUNTU_TERMINAL:
+			radius = 4
+
+	var box := _flat_box(fill, border, width, radius)
+	box.content_margin_left = margin_left
+	box.content_margin_right = margin_right
+	box.content_margin_top = margin_top
+	box.content_margin_bottom = margin_bottom
 	return box
 
 
 static func _separator_box(style_id: String, p: Dictionary) -> StyleBoxFlat:
 	var box := StyleBoxFlat.new()
 	box.bg_color = Color.TRANSPARENT
-	box.border_color = p.accent if style_id == STYLE_SCIFI else p.border
-	box.border_width_bottom = 1
+	match style_id:
+		STYLE_SCIFI:
+			box.border_color = p.accent
+			box.border_width_bottom = 1
+		STYLE_RETRO_RPG:
+			box.border_color = Color(0.55, 0.55, 0.58, 0.9)
+			box.border_width_bottom = 2
+		STYLE_WIN_TERMINAL:
+			box.border_color = Color(0.45, 0.45, 0.45, 0.9)
+			box.border_width_bottom = 1
+		STYLE_UBUNTU_TERMINAL:
+			box.border_color = Color(0.60, 0.35, 0.60, 0.9)
+			box.border_width_bottom = 1
+		_:
+			box.border_color = p.border
+			box.border_width_bottom = 1
 	box.content_margin_top = 6.0
 	return box
 
 
-static func _focus_box(accent: Color) -> StyleBoxFlat:
+static func _focus_box(accent: Color, style_id: String) -> StyleBoxFlat:
+	# 焦点框跟随各风格的圆角，避免直角样式（老式RPG/Windows Terminal）出现圆角描边。
+	var radius := 6
+	match style_id:
+		STYLE_NOTEBOOK:
+			radius = 3
+		STYLE_RETRO_RPG, STYLE_WIN_TERMINAL:
+			radius = 0
+		STYLE_UBUNTU_TERMINAL:
+			radius = 4
 	var box := StyleBoxFlat.new()
 	box.bg_color = Color.TRANSPARENT
 	box.border_color = Color(accent.r, accent.g, accent.b, 0.75)
 	box.set_border_width_all(2)
-	box.set_corner_radius_all(6)
+	box.set_corner_radius_all(radius)
 	return box
 
 

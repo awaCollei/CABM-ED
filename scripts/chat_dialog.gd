@@ -285,6 +285,34 @@ func _apply_ui_style(style_id: String) -> void:
 	_apply_button_opacity_tree(
 		self, button_opacity if current_ui_style == UIStyleFactory.STYLE_DEFAULT else 1.0
 	)
+	_apply_input_placeholder()
+
+
+func _input_placeholder_text() -> String:
+	"""终端风格把输入框提示换成命令提示符，营造命令行观感。"""
+	match current_ui_style:
+		UIStyleFactory.STYLE_NOTEBOOK:
+			return "说点什么..."
+		UIStyleFactory.STYLE_WIN_TERMINAL:
+			return "D:\\CABM-ED>"
+		UIStyleFactory.STYLE_UBUNTU_TERMINAL:
+			# 与 Linux 一致：管理员/root 身份用 # 提示符。
+			return "user@cabm_ed:~" + ("#" if _is_elevated() else "$")
+		_:
+			return "输入消息..."
+
+
+func _is_elevated() -> bool:
+	var platform := get_node_or_null("/root/PlatformManager")
+	return platform != null and platform.has_method("is_elevated") and platform.is_elevated()
+
+
+func _apply_input_placeholder() -> void:
+	var placeholder := _input_placeholder_text()
+	if input_field:
+		input_field.placeholder_text = placeholder
+	if top_input_field:
+		top_input_field.placeholder_text = placeholder
 
 
 func _apply_button_opacity_tree(root: Node, opacity: float) -> void:
@@ -438,7 +466,7 @@ func _setup_input_mode():
 	continue_indicator.visible = false
 	end_button.visible = true
 	input_field.text = ""
-	input_field.placeholder_text = "输入消息..."
+	_apply_input_placeholder()
 	input_field.modulate.a = 1.0
 	input_container.modulate.a = 1.0
 	custom_minimum_size.y = 120.0

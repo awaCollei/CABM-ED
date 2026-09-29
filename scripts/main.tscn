@@ -145,9 +145,11 @@ size_flags_vertical = 3
 placeholder_text = "输入消息..."
 
 [node name="MicButton" type="Button" parent="ChatDialog/MarginContainer/VBoxContainer/InputContainer" unique_id=87851394]
-custom_minimum_size = Vector2(40, 0)
+custom_minimum_size = Vector2(50, 0)
 layout_mode = 2
 focus_mode = 0
+icon_alignment = 1
+expand_icon = true
 
 [node name="PicButton" type="Button" parent="ChatDialog/MarginContainer/VBoxContainer/InputContainer" unique_id=55199557]
 custom_minimum_size = Vector2(50, 0)

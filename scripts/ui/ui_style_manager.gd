@@ -5,16 +5,27 @@ signal ui_style_changed(style_id: String)
 signal ui_opacity_changed(style_id: String, sidebar: float, dialog: float, buttons: float)
 
 const CONFIG_PATH := "user://ui_style.json"
-const VALID_STYLES := ["default", "notebook", "modern", "scifi"]
+const VALID_STYLES := [
+	"default",
+	"notebook",
+	"modern",
+	"scifi",
+	"retro_rpg",
+	"win_terminal",
+	"ubuntu_terminal",
+]
 # 每套风格的独立默认透明度。需要调整初始观感时只修改这里。
 const DEFAULT_OPACITY := {
 	"default": {"sidebar": 1.0, "dialog": 1.0, "buttons": 1.0},
 	"notebook": {"sidebar": 1.0, "dialog": 0.85, "buttons": 0.8},
 	"modern": {"sidebar": 0.9, "dialog": 0.8, "buttons": 0.8},
 	"scifi": {"sidebar": 0.0, "dialog": 0.0, "buttons": 0.5},
+	"retro_rpg": {"sidebar": 1.0, "dialog": 1.0, "buttons": 1.0},
+	"win_terminal": {"sidebar": 1.0, "dialog": 1.0, "buttons": 1.0},
+	"ubuntu_terminal": {"sidebar": 1.0, "dialog": 1.0, "buttons": 1.0},
 }
 const DEFAULT_CONFIG := {
-	"style": "notebook",	
+	"style": "notebook",
 	"opacity": {},
 }
 
