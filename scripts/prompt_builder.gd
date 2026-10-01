@@ -646,9 +646,15 @@ func _retrieve_knowledge_memory(query: String) -> String:
 
 	var kg_prompt = ""
 
+	# 高级参数由 AIConfigManager 统一提供；旧项目配置仍作为提示词模板来源。
+	var memory_tuning := {}
+	var ai_config_mgr = get_node_or_null("/root/AIConfigManager")
+	if ai_config_mgr:
+		memory_tuning = ai_config_mgr.load_memory_config()
+	var knowledge_top_k := int(memory_tuning.get("knowledge_top_k", config.get("knowledge_memory", {}).get("query", {}).get("top_k", 6)))
 	# 提取关键词（debug 会在 keyword_extractor 中打印 tokens/keywords）
 	var ke = preload("res://scripts/keyword_extractor.gd").new()
-	var keywords = ke.extract_keywords(query, config.get("knowledge_memory", {}).get("query", {}).get("top_k", 6))
+	var keywords = ke.extract_keywords(query, knowledge_top_k)
 	print("[PromptBuilder] extracted keywords:", keywords)
 
 	if keywords.is_empty():
@@ -656,7 +662,7 @@ func _retrieve_knowledge_memory(query: String) -> String:
 
 	# 查询知识图谱
 	var mg = preload("res://scripts/memory_graph.gd").new()
-	var top_k = config.get("knowledge_memory", {}).get("query", {}).get("top_k", 6)
+	var top_k := knowledge_top_k
 	var graph_results = mg.query_by_keywords(keywords, top_k)
 
 	if graph_results.is_empty():

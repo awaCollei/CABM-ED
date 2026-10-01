@@ -151,7 +151,8 @@ func _save_memory_and_diary(summary: String, conversation_text: String, custom_t
 
 	var unified_saver = owner_service.get_node_or_null("/root/UnifiedMemorySaver")
 	if unified_saver:
-		await unified_saver.save_memory(summary, unified_saver.MemoryType.CHAT, custom_timestamp, conversation_text, {})
+		# 向量使用摘要保持低延迟；原始对话作为同一记忆的可选细节保存，命中后按需展开，避免摘要吞掉事实。
+		await unified_saver.save_memory(summary, unified_saver.MemoryType.CHAT, custom_timestamp, conversation_text, {"raw_conversation": conversation_text})
 	else:
 		var timestamp: String
 		if custom_timestamp != null:

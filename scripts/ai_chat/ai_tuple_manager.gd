@@ -232,11 +232,15 @@ func _apply_forgetting_to_graph():
 
 	var new_graphs = []
 	var removed_count = 0
+	var forgetting_rate := 0.1
+	var ai_config_mgr = get_node_or_null("/root/AIConfigManager")
+	if ai_config_mgr:
+		forgetting_rate = float(ai_config_mgr.load_memory_config().get("knowledge_forgetting_rate", forgetting_rate))
 	for item in data.graphs:
 		var Ival = 1.0
 		if item.has("I"):
 			Ival = item.I
-		Ival -= 0.1
+		Ival -= forgetting_rate
 		if Ival < 0:
 			removed_count += 1
 			continue

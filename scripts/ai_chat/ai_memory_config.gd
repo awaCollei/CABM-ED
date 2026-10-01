@@ -1,151 +1,138 @@
 extends MarginContainer
-## 记忆系统配置管理模块
-## 处理记忆向量、语义检索、重排序和知识图谱的配置
+## 记忆系统配置面板。
+## 基础开关保持易懂，高级参数紧随所属功能，并与运行时共用 AIConfigManager 的默认值。
 
-# 记忆系统配置UI引用
 @onready var save_vector_checkbox: CheckBox = $ScrollContainer/VBoxContainer/VectorContainer/SaveVectorCheckBox
 @onready var semantic_search_checkbox: CheckBox = $ScrollContainer/VBoxContainer/VectorContainer/SemanticSearchCheckBox
+@onready var jieba_checkbox: CheckBox = $ScrollContainer/VBoxContainer/VectorContainer/JiebaCheckBox
 @onready var rerank_checkbox: CheckBox = $ScrollContainer/VBoxContainer/VectorContainer/RerankCheckBox
 @onready var time_aware_enhance_checkbox: CheckBox = $ScrollContainer/VBoxContainer/VectorContainer/TimeAwareEnhanceCheckBox
 @onready var pre_recall_reasoning_checkbox: CheckBox = $ScrollContainer/VBoxContainer/VectorContainer/PreRecallReasoningCheckBox
 @onready var save_kg_checkbox: CheckBox = $ScrollContainer/VBoxContainer/KGContainer/SaveKGCheckBox
 @onready var kg_search_checkbox: CheckBox = $ScrollContainer/VBoxContainer/KGContainer/KGSearchCheckBox
 @onready var enable_forgetting_checkbox: CheckBox = $ScrollContainer/VBoxContainer/KGContainer/EnableForgettingCheckBox
+@onready var advanced_checkbox: CheckButton = $ScrollContainer/VBoxContainer/AdvancedHeader/AdvancedCheckBox
+@onready var retrieval_advanced: VBoxContainer = $ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced
+@onready var similarity_advanced: VBoxContainer = $ScrollContainer/VBoxContainer/VectorContainer/SimilarityAdvanced
+@onready var reasoning_advanced: VBoxContainer = $ScrollContainer/VBoxContainer/VectorContainer/ReasoningAdvanced
+@onready var rerank_advanced: VBoxContainer = $ScrollContainer/VBoxContainer/VectorContainer/RerankAdvanced
+@onready var knowledge_advanced: VBoxContainer = $ScrollContainer/VBoxContainer/KGContainer/KnowledgeAdvanced
+@onready var forgetting_advanced: VBoxContainer = $ScrollContainer/VBoxContainer/KGContainer/ForgettingAdvanced
+@onready var retrieval_top_k: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RetrievalTopK
+@onready var lexical_weight: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/LexicalWeight
+@onready var raw_detail_max_chars: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RawDetailMaxChars
+@onready var retrieval_min_similarity: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/SimilarityAdvanced/RetrievalMinSimilarity
+@onready var rerank_multiplier: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/RerankAdvanced/RerankMultiplier
+@onready var reasoning_count: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/ReasoningAdvanced/ReasoningCount
+@onready var knowledge_top_k: SpinBox = $ScrollContainer/VBoxContainer/KGContainer/KnowledgeAdvanced/KnowledgeTopK
+@onready var forgetting_rate: SpinBox = $ScrollContainer/VBoxContainer/KGContainer/ForgettingAdvanced/ForgettingRate
 
 var config_manager: Node
 
-func _ready():
-	# 连接信号
-	save_vector_checkbox.toggled.connect(_on_save_vector_toggled)
-	semantic_search_checkbox.toggled.connect(_on_semantic_search_toggled)
-	rerank_checkbox.toggled.connect(_on_rerank_toggled)
-	time_aware_enhance_checkbox.toggled.connect(_on_time_aware_enhance_toggled)
-	pre_recall_reasoning_checkbox.toggled.connect(_on_pre_recall_reasoning_toggled)
-	save_kg_checkbox.toggled.connect(_on_save_kg_toggled)
-	kg_search_checkbox.toggled.connect(_on_kg_search_toggled)
-	enable_forgetting_checkbox.toggled.connect(_on_enable_forgetting_toggled)
+func _ready() -> void:
+	for checkbox in [save_vector_checkbox, semantic_search_checkbox, jieba_checkbox, rerank_checkbox, time_aware_enhance_checkbox, pre_recall_reasoning_checkbox, save_kg_checkbox, kg_search_checkbox, enable_forgetting_checkbox, advanced_checkbox]:
+		checkbox.toggled.connect(_on_setting_changed)
+	for field in [retrieval_top_k, lexical_weight, raw_detail_max_chars, retrieval_min_similarity, rerank_multiplier, reasoning_count, knowledge_top_k, forgetting_rate]:
+		field.value_changed.connect(_on_numeric_setting_changed)
 
-func initialize(config_mgr: Node):
-	"""初始化记忆系统配置管理器"""
+func initialize(config_mgr: Node) -> void:
 	config_manager = config_mgr
 	load_memory_config()
 
-func _on_save_vector_toggled(enabled: bool):
-	"""保存记忆向量勾选框状态改变"""
-	if not enabled:
-		# 父节点关闭时，子节点也关闭
+func _on_setting_changed(_enabled: bool) -> void:
+	_update_dependencies()
+	_update_advanced_visibility()
+	_auto_save_config()
+
+func _on_numeric_setting_changed(_value: float) -> void:
+	_auto_save_config()
+
+func _update_dependencies() -> void:
+	if not save_vector_checkbox.button_pressed:
 		semantic_search_checkbox.button_pressed = false
 		rerank_checkbox.button_pressed = false
 		time_aware_enhance_checkbox.button_pressed = false
 		pre_recall_reasoning_checkbox.button_pressed = false
-
-	# 更新子节点可用性
-	semantic_search_checkbox.disabled = not enabled
-	if not enabled:
-		rerank_checkbox.disabled = true
-		time_aware_enhance_checkbox.disabled = true
-		pre_recall_reasoning_checkbox.disabled = true
-	else:
-		rerank_checkbox.disabled = not semantic_search_checkbox.button_pressed
-		time_aware_enhance_checkbox.disabled = not (semantic_search_checkbox.button_pressed and rerank_checkbox.button_pressed)
-		pre_recall_reasoning_checkbox.disabled = not semantic_search_checkbox.button_pressed
-
-	# 自动保存配置
-	_auto_save_config()
-
-func _on_semantic_search_toggled(enabled: bool):
-	"""语义检索勾选框状态改变"""
-	if not enabled:
-		# 父节点关闭时，子节点也关闭
-		rerank_checkbox.button_pressed = false
-		time_aware_enhance_checkbox.button_pressed = false
-		pre_recall_reasoning_checkbox.button_pressed = false
-
-	# 更新子节点可用性
-	rerank_checkbox.disabled = not enabled
-	time_aware_enhance_checkbox.disabled = not (enabled and rerank_checkbox.button_pressed)
-	pre_recall_reasoning_checkbox.disabled = not enabled
-
-	# 自动保存配置
-	_auto_save_config()
-
-func _on_rerank_toggled(enabled: bool):
-	"""重排勾选框状态改变"""
-	# 重排的子节点：时间感知增强
-	if not enabled:
-		time_aware_enhance_checkbox.button_pressed = false
-	time_aware_enhance_checkbox.disabled = not enabled
-	_auto_save_config()
-
-func _on_time_aware_enhance_toggled(_enabled: bool):
-	"""时间感知增强勾选框状态改变"""
-	_auto_save_config()
-
-func _on_pre_recall_reasoning_toggled(_enabled: bool):
-	"""召回前推理勾选框状态改变"""
-	# 召回前推理没有子节点，不需要特殊处理
-	_auto_save_config()
-
-func _on_save_kg_toggled(enabled: bool):
-	"""保存知识图谱勾选框状态改变"""
-	if not enabled:
-		# 父节点关闭时，子节点也关闭
+	semantic_search_checkbox.disabled = not save_vector_checkbox.button_pressed
+	rerank_checkbox.disabled = not (save_vector_checkbox.button_pressed and semantic_search_checkbox.button_pressed)
+	time_aware_enhance_checkbox.disabled = not (semantic_search_checkbox.button_pressed and rerank_checkbox.button_pressed)
+	pre_recall_reasoning_checkbox.disabled = not (save_vector_checkbox.button_pressed and semantic_search_checkbox.button_pressed)
+	jieba_checkbox.disabled = semantic_search_checkbox.disabled
+	if not save_kg_checkbox.button_pressed:
 		kg_search_checkbox.button_pressed = false
 		enable_forgetting_checkbox.button_pressed = false
+	kg_search_checkbox.disabled = not save_kg_checkbox.button_pressed
+	enable_forgetting_checkbox.disabled = not save_kg_checkbox.button_pressed
+	_update_advanced_dependencies()
 
-	# 更新子节点可用性
-	kg_search_checkbox.disabled = not enabled
-	enable_forgetting_checkbox.disabled = not enabled
+func _update_advanced_visibility() -> void:
+	var show_advanced := advanced_checkbox.button_pressed
+	for section in [retrieval_advanced, similarity_advanced, reasoning_advanced, rerank_advanced, knowledge_advanced, forgetting_advanced]:
+		section.visible = show_advanced
+	_update_advanced_dependencies()
 
-	# 自动保存配置
-	_auto_save_config()
+func _update_advanced_dependencies() -> void:
+	# 参数紧跟所属功能，并继承父级开关状态；高级总开关只负责显示/隐藏。
+	retrieval_advanced.modulate = Color.WHITE if not semantic_search_checkbox.disabled else Color(0.6, 0.6, 0.6, 1.0)
+	similarity_advanced.modulate = retrieval_advanced.modulate
+	reasoning_advanced.modulate = Color.WHITE if not pre_recall_reasoning_checkbox.disabled else Color(0.6, 0.6, 0.6, 1.0)
+	rerank_advanced.modulate = Color.WHITE if not rerank_checkbox.disabled else Color(0.6, 0.6, 0.6, 1.0)
+	knowledge_advanced.modulate = Color.WHITE if not kg_search_checkbox.disabled else Color(0.6, 0.6, 0.6, 1.0)
+	forgetting_advanced.modulate = Color.WHITE if not enable_forgetting_checkbox.disabled else Color(0.6, 0.6, 0.6, 1.0)
+	retrieval_top_k.editable = not semantic_search_checkbox.disabled
+	lexical_weight.editable = not semantic_search_checkbox.disabled
+	raw_detail_max_chars.editable = not semantic_search_checkbox.disabled
+	retrieval_min_similarity.editable = not semantic_search_checkbox.disabled
+	reasoning_count.editable = not pre_recall_reasoning_checkbox.disabled
+	rerank_multiplier.editable = not rerank_checkbox.disabled
+	knowledge_top_k.editable = not kg_search_checkbox.disabled
+	forgetting_rate.editable = not enable_forgetting_checkbox.disabled
 
-func _on_kg_search_toggled(_enabled: bool):
-	"""图谱检索勾选框状态改变"""
-	# 图谱检索没有子节点，不需要特殊处理
-	_auto_save_config()
-
-func _on_enable_forgetting_toggled(_enabled: bool):
-	"""启用知识遗忘勾选框状态改变"""
-	# 知识遗忘没有子节点，不需要特殊处理
-	_auto_save_config()
-
-func _auto_save_config():
-	"""自动保存记忆系统配置"""
-	var config = collect_memory_config()
-	config_manager.save_memory_config(config)
+func _auto_save_config() -> void:
+	if config_manager:
+		config_manager.save_memory_config(collect_memory_config())
 
 func collect_memory_config() -> Dictionary:
-	"""收集当前UI中的配置"""
 	return {
 		"save_memory_vectors": save_vector_checkbox.button_pressed,
 		"enable_semantic_search": semantic_search_checkbox.button_pressed,
+		"use_jieba_tokenization": jieba_checkbox.button_pressed,
 		"enable_reranking": rerank_checkbox.button_pressed,
 		"enable_time_aware_reranking": time_aware_enhance_checkbox.button_pressed,
 		"enable_pre_recall_reasoning": pre_recall_reasoning_checkbox.button_pressed,
 		"save_knowledge_graph": save_kg_checkbox.button_pressed,
 		"enable_kg_search": kg_search_checkbox.button_pressed,
-		"enable_knowledge_forgetting": enable_forgetting_checkbox.button_pressed
+		"enable_knowledge_forgetting": enable_forgetting_checkbox.button_pressed,
+		"advanced_options_enabled": advanced_checkbox.button_pressed,
+		"retrieval_top_k": int(retrieval_top_k.value),
+		"lexical_match_weight": lexical_weight.value,
+		"raw_detail_max_chars": int(raw_detail_max_chars.value),
+		"retrieval_min_similarity": retrieval_min_similarity.value,
+		"rerank_candidate_multiplier": int(rerank_multiplier.value),
+		"reasoning_query_count": int(reasoning_count.value),
+		"knowledge_top_k": int(knowledge_top_k.value),
+		"knowledge_forgetting_rate": forgetting_rate.value
 	}
 
-func load_memory_config():
-	"""加载记忆系统配置"""
-	var config = config_manager.load_memory_config()
-
-	# 设置勾选框状态
-	save_vector_checkbox.button_pressed = config.get("save_memory_vectors", true)
-	semantic_search_checkbox.button_pressed = config.get("enable_semantic_search", true)
-	rerank_checkbox.button_pressed = config.get("enable_reranking", true)
-	time_aware_enhance_checkbox.button_pressed = config.get("enable_time_aware_reranking", false)
-	pre_recall_reasoning_checkbox.button_pressed = config.get("enable_pre_recall_reasoning", false)
-	save_kg_checkbox.button_pressed = config.get("save_knowledge_graph", true)
-	kg_search_checkbox.button_pressed = config.get("enable_kg_search", true)
+func load_memory_config() -> void:
+	var config: Dictionary = config_manager.load_memory_config()
+	save_vector_checkbox.button_pressed = config.save_memory_vectors
+	semantic_search_checkbox.button_pressed = config.enable_semantic_search
+	jieba_checkbox.button_pressed = config.use_jieba_tokenization
+	rerank_checkbox.button_pressed = config.enable_reranking
+	time_aware_enhance_checkbox.button_pressed = config.enable_time_aware_reranking
+	pre_recall_reasoning_checkbox.button_pressed = config.enable_pre_recall_reasoning
+	save_kg_checkbox.button_pressed = config.save_knowledge_graph
+	kg_search_checkbox.button_pressed = config.enable_kg_search
 	enable_forgetting_checkbox.button_pressed = config.get("enable_knowledge_forgetting", true)
-
-	# 设置初始的禁用状态
-	semantic_search_checkbox.disabled = not save_vector_checkbox.button_pressed
-	rerank_checkbox.disabled = not (save_vector_checkbox.button_pressed and semantic_search_checkbox.button_pressed)
-	time_aware_enhance_checkbox.disabled = not (save_vector_checkbox.button_pressed and semantic_search_checkbox.button_pressed and rerank_checkbox.button_pressed)
-	pre_recall_reasoning_checkbox.disabled = not (save_vector_checkbox.button_pressed and semantic_search_checkbox.button_pressed)
-	kg_search_checkbox.disabled = not save_kg_checkbox.button_pressed
-	enable_forgetting_checkbox.disabled = not save_kg_checkbox.button_pressed
+	advanced_checkbox.button_pressed = config.advanced_options_enabled
+	retrieval_top_k.value = config.retrieval_top_k
+	lexical_weight.value = config.lexical_match_weight
+	raw_detail_max_chars.value = config.raw_detail_max_chars
+	retrieval_min_similarity.value = config.retrieval_min_similarity
+	rerank_multiplier.value = config.rerank_candidate_multiplier
+	reasoning_count.value = config.reasoning_query_count
+	knowledge_top_k.value = config.knowledge_top_k
+	forgetting_rate.value = config.knowledge_forgetting_rate
+	_update_dependencies()
+	_update_advanced_visibility()

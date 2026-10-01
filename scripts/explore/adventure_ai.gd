@@ -195,7 +195,11 @@ func _retrieve_knowledge_memory(query: String) -> String:
 	
 	# 提取关键词
 	var ke = preload("res://scripts/keyword_extractor.gd").new()
-	var top_k = knowledge_config.get("query", {}).get("top_k", 6)
+	var tuning := {}
+	var ai_config_mgr = get_node_or_null("/root/AIConfigManager")
+	if ai_config_mgr:
+		tuning = ai_config_mgr.load_memory_config()
+	var top_k := int(tuning.get("knowledge_top_k", knowledge_config.get("query", {}).get("top_k", 6)))
 	var keywords = ke.extract_keywords(query, top_k)
 	
 	if keywords.is_empty():

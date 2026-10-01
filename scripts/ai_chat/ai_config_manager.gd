@@ -229,6 +229,28 @@ func load_response_mode() -> String:
 	return config.get("response_mode", "narrative")
 
 
+## 记忆配置的唯一默认来源。UI、检索和知识图谱都从这里读取，避免各处散落默认值。
+const MEMORY_DEFAULTS := {
+	"save_memory_vectors": true,
+	"enable_semantic_search": true,
+	"use_jieba_tokenization": false,
+	"enable_reranking": true,
+	"enable_time_aware_reranking": false,
+	"enable_pre_recall_reasoning": false,
+	"save_knowledge_graph": true,
+	"enable_kg_search": true,
+	"enable_knowledge_forgetting": true,
+	"advanced_options_enabled": false,
+	"retrieval_top_k": 5,
+	"retrieval_min_similarity": 0.3,
+	"lexical_match_weight": 0.28,
+	"raw_detail_max_chars": 1200,
+	"rerank_candidate_multiplier": 5,
+	"reasoning_query_count": 3,
+	"knowledge_top_k": 6,
+	"knowledge_forgetting_rate": 0.1
+}
+
 ## 保存记忆系统配置
 func save_memory_config(memory_config: Dictionary) -> bool:
 	var config = load_config()
@@ -239,15 +261,7 @@ func save_memory_config(memory_config: Dictionary) -> bool:
 ## 加载记忆系统配置
 func load_memory_config() -> Dictionary:
 	var config = load_config()
-	var default_config = {
-		"save_memory_vectors": true,
-		"enable_semantic_search": true,
-		"enable_reranking": true,
-		"enable_time_aware_reranking": false,
-		"enable_pre_recall_reasoning": false,
-		"save_knowledge_graph": true,
-		"enable_kg_search": true
-	}
+	var default_config = MEMORY_DEFAULTS.duplicate(true)
 
 	if config.has("memory_system"):
 		var memory_config = config.memory_system

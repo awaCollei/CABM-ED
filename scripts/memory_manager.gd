@@ -284,9 +284,14 @@ func get_relevant_memory_for_chat(context: String, exclude_timestamps: Array = [
 		await memory_system_ready
 	
 	var retrieval_config = config.get("retrieval", {})
-	var top_k = retrieval_config.get("top_k")
-	var min_similarity = retrieval_config.get("min_similarity")
-	var timeout = retrieval_config.get("timeout")
+	var top_k = retrieval_config.get("top_k", 5)
+	var min_similarity = retrieval_config.get("min_similarity", 0.3)
+	var timeout = retrieval_config.get("timeout", 10.0)
+	var ai_config_mgr = get_node_or_null("/root/AIConfigManager")
+	if ai_config_mgr:
+		var memory_config: Dictionary = ai_config_mgr.load_memory_config()
+		top_k = memory_config.retrieval_top_k
+		min_similarity = memory_config.retrieval_min_similarity
 	
 	print("开始检索记忆：top_k=%d, min_similarity=%.2f, 排除=%d条" % [top_k, min_similarity, exclude_timestamps.size()])
 	var result = await memory_system.get_relevant_memory(context, top_k, timeout, min_similarity, exclude_timestamps)

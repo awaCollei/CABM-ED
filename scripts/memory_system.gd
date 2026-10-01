@@ -56,6 +56,8 @@ var db_name: String = "default"
 var cosine_calculator = null
 var http_request: HTTPRequest = null
 var retrieval_optimizer = null
+var keyword_extractor = null
+var keyword_token_cache: Dictionary = {}
 
 # 记忆系统配置检查函数
 func _should_save_memory_vectors() -> bool:
@@ -92,6 +94,12 @@ func _check_memory_config(key: String, default_value: bool) -> bool:
 	if ai_config_mgr:
 		var memory_config = ai_config_mgr.load_memory_config()
 		return memory_config.get(key, default_value)
+	return default_value
+
+func _memory_number(key: String, default_value):
+	var ai_config_mgr = get_node_or_null("/root/AIConfigManager")
+	if ai_config_mgr:
+		return ai_config_mgr.load_memory_config().get(key, default_value)
 	return default_value
 
 # 嵌入API配置
@@ -133,6 +141,10 @@ func _ready():
 	http_request = HTTPRequest.new()
 	add_child(http_request)
 	http_request.request_completed.connect(_on_embedding_request_completed)
+
+	# 关键词分词器只在启用 Jieba 时参与召回；结果按文本缓存，避免重复分词。
+	keyword_extractor = preload("res://scripts/keyword_extractor.gd").new()
+	add_child(keyword_extractor)
 
 	# 创建检索优化器
 	retrieval_optimizer = Node.new()
@@ -250,22 +262,16 @@ func add_text(text: String, item_type: String = "conversation", metadata: Dictio
 
 	# 创建记忆项（使用确定的时间戳）
 	var item = MemoryItem.new(formatted_text, vector, item_type)
-	# 预计算向量模长并存入 metadata，便于后续快速相似度计算
+	# 预计算向量模长并存入 metadata，便于后续快速相似度计算。
+	# 先复制业务元数据，再补充 mag，避免 raw_conversation 等字段被覆盖。
+	item.metadata = metadata.duplicate()
 	var mag = 0.0
 	for i in range(vector.size()):
 		mag += vector[i] * vector[i]
 	mag = sqrt(mag)
-	if metadata.has("mag"):
-		# 不覆盖已有值，除非为空
-		if metadata.get("mag", 0.0) == 0.0:
-			item.metadata["mag"] = mag
-	else:
+	if not item.metadata.has("mag") or float(item.metadata.get("mag", 0.0)) == 0.0:
 		item.metadata["mag"] = mag
 	item.timestamp = timestamp  # 覆盖构造函数中的时间戳
-
-	# 只在有实际内容时才设置 metadata
-	if not metadata.is_empty():
-		item.metadata = metadata.duplicate()
 
 	memory_items.append(item)
 
@@ -428,39 +434,55 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 		min_similarity: 最小相似度阈值
 		exclude_timestamps: 要排除的时间戳列表（通过时间戳精确匹配）
 	"""
-	# 检查配置：是否应该进行语义检索
-	if not _should_perform_semantic_search():
-		print("配置已禁用语义检索，跳过向量搜索")
-		return []
+	var semantic_enabled := _should_perform_semantic_search()
+	if not semantic_enabled:
+		print("配置已禁用语义检索，使用关键词检索")
 
 	if memory_items.is_empty():
 		return []
+
+	# 先做低成本关键词召回：人物名、地点、物品和专有名词通常比向量更可靠。
+	# 这一路不调用网络，既能降低延迟，也能覆盖嵌入模型漏召回的精确事实。
+	var query_terms := _tokenize_for_memory(query)
+	var seen_items = {}
+	for item in memory_items:
+		if exclude_timestamps.has(item.timestamp):
+			continue
+		var lexical_score := _lexical_score(query_terms, item.text)
+		if lexical_score > 0.0:
+			seen_items[item.text] = {
+				"index": memory_items.find(item), "similarity": lexical_score,
+				"semantic_similarity": 0.0, "lexical_score": lexical_score,
+				"item": item, "query": query, "merged_timestamps": [item.timestamp]
+			}
 
 	# 准备查询列表
 	var queries_to_search = [query]  # 始终包含原始查询
 
 	# 检查配置：是否应该进行召回前推理
-	if _should_perform_pre_recall_reasoning():
+	if semantic_enabled and _should_perform_pre_recall_reasoning():
 		print("启用召回前推理，生成优化查询")
 		var context = _flatten_context_for_optimization()
 		var optimized_queries = await retrieval_optimizer.optimize_query(query, context)
 
 		if not optimized_queries.is_empty():
+			var reasoning_count := int(_memory_number("reasoning_query_count", 3))
+			optimized_queries = optimized_queries.slice(0, reasoning_count)
 			queries_to_search.append_array(optimized_queries)
 			print("召回前推理成功，添加 %d 个优化查询" % optimized_queries.size())
 		else:
 			print("召回前推理失败，使用原始查询")
 	# 对所有查询进行检索并合并结果
-	var seen_items = {}  # 用于去重，key为item的文本内容
-
 	for search_query in queries_to_search:
+		if not semantic_enabled:
+			continue
 		var query_vector = await get_embedding(search_query)
 		if query_vector.is_empty():
-			print("警告: 获取查询向量失败，跳过查询: %s" % search_query.substr(0, 30))
+			print("警告: 获取查询向量失败，保留关键词结果: %s" % search_query.substr(0, 30))
 			continue
 
 		# 使用最大堆维护top_k*5个最相似的结果（因为有多路查询）
-		var max_candidates_per_query = top_k * 5
+		var max_candidates_per_query = top_k * int(_memory_number("rerank_candidate_multiplier", 5))
 		var top_similarities = []
 
 		for i in range(memory_items.size()):
@@ -470,13 +492,16 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 			if exclude_timestamps.has(item.timestamp):
 				continue
 
-			var similarity = _calculate_similarity(query_vector, item.vector, item.metadata)
-			if similarity >= min_similarity:
+			var semantic_similarity := _calculate_similarity(query_vector, item.vector, item.metadata)
+			var lexical_score := _lexical_score(_tokenize_for_memory(search_query), item.text)
+			# 混合分数：语义负责泛化，关键词负责精确命中；两者同时命中会得到小幅加成。
+			var lexical_weight := float(_memory_number("lexical_match_weight", 0.28))
+			var similarity := semantic_similarity * (1.0 - lexical_weight) + lexical_score * lexical_weight
+			if semantic_similarity >= min_similarity or lexical_score > 0.0:
 				var candidate = {
-					"index": i,
-					"similarity": similarity,
-					"item": item,
-					"query": search_query  # 记录是哪个查询找到的
+					"index": i, "similarity": similarity,
+					"semantic_similarity": semantic_similarity, "lexical_score": lexical_score,
+					"item": item, "query": search_query  # 记录是哪个查询找到的
 				}
 
 				# 如果堆未满，直接添加
@@ -534,13 +559,15 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 				"similarity": similarities[i].similarity,
 				"timestamp": similarities[i].item.timestamp,
 				"merged_timestamps": similarities[i].merged_timestamps,
-				"type": similarities[i].item.type
+				"type": similarities[i].item.type,
+				"metadata": similarities[i].item.metadata
 			})
 		return results_without_reranking
 	# 获取前top_k*5个结果用于重排序
 	var use_time_aware_reranking := _should_enable_time_aware_reranking()
 	var initial_results = []
-	var num_candidates = min(top_k * 5, similarities.size())  # 为重排序准备更多候选文档
+	var candidate_multiplier := int(_memory_number("rerank_candidate_multiplier", 5))
+	var num_candidates = min(top_k * candidate_multiplier, similarities.size())  # 为重排序准备更多候选文档
 	for i in range(num_candidates):
 		var base_text: String = similarities[i].item.text
 		if use_time_aware_reranking:
@@ -552,7 +579,8 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 			"similarity": similarities[i].similarity,
 			"timestamp": similarities[i].item.timestamp,
 			"merged_timestamps": similarities[i].merged_timestamps,
-			"type": similarities[i].item.type
+			"type": similarities[i].item.type,
+			"metadata": similarities[i].item.metadata
 		})
 
 	# 进行重排序
@@ -572,10 +600,52 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 				"similarity": similarities[i].similarity,
 				"timestamp": similarities[i].item.timestamp,
 				"merged_timestamps": similarities[i].merged_timestamps,
-				"type": similarities[i].item.type
+				"type": similarities[i].item.type,
+				"metadata": similarities[i].item.metadata
 			})
 
 	return final_results
+
+func _tokenize_for_memory(text: String) -> Array[String]:
+	var normalized := text.to_lower().strip_edges()
+	if normalized.is_empty():
+		return []
+	if keyword_token_cache.has(normalized):
+		return keyword_token_cache[normalized].duplicate()
+
+	var terms: Array[String] = []
+	var use_jieba := bool(_memory_number("use_jieba_tokenization", false))
+	if use_jieba and keyword_extractor and ClassDB.class_exists("JiebaKeywordExtractor"):
+		# Jieba 仅对文本做一次本地分词，不调用 AI/API；top_k 足够覆盖关键词召回。
+		for term in keyword_extractor.extract_keywords(normalized, 32):
+			var cleaned := str(term).strip_edges().to_lower()
+			if not cleaned.is_empty():
+				terms.append(cleaned)
+	else:
+		# 轻量模式：英文按词，中文按字，兼容没有 GDExtension 的环境。
+		var latin := RegEx.new()
+		latin.compile("[a-z0-9_]+")
+		for match in latin.search_all(normalized):
+			terms.append(match.get_string())
+		for character in normalized:
+			if character.strip_edges() != "" and character.unicode_at(0) >= 0x4e00 and character.unicode_at(0) <= 0x9fff:
+				terms.append(character)
+	keyword_token_cache[normalized] = terms.duplicate()
+	return terms
+
+func _lexical_score(query_terms: Array, text: String) -> float:
+	if query_terms.is_empty() or text.is_empty():
+		return 0.0
+	var haystack := text.to_lower()
+	var matched := 0
+	var unique_terms := {}
+	for term in query_terms:
+		if unique_terms.has(term):
+			continue
+		unique_terms[term] = true
+		if haystack.find(str(term)) >= 0:
+			matched += 1
+	return float(matched) / float(unique_terms.size()) if not unique_terms.is_empty() else 0.0
 
 func _calculate_similarity(vec1: Array, vec2: Array, item_metadata: Dictionary = {}) -> float:
 	"""计算余弦相似度"""
@@ -690,16 +760,22 @@ func get_relevant_memory(query: String, top_k: int, _timeout: float, min_similar
 	var use_time_aware_reranking := _should_perform_reranking() and _should_enable_time_aware_reranking()
 	var memory_texts = []
 	for result in results:
+		var memory_text := str(result.text)
+		# 摘要是主索引，原始对话只在命中后按上限展开，兼顾细节与上下文长度。
+		var raw_detail := str(result.get("metadata", {}).get("raw_conversation", ""))
+		if not raw_detail.is_empty():
+			var detail_limit := int(_memory_number("raw_detail_max_chars", 1200))
+			memory_text += "\n细节：" + raw_detail.substr(0, detail_limit)
 		if use_time_aware_reranking:
-			memory_texts.append(result.text)
+			memory_texts.append(memory_text)
 		else:
 			var merged_ts: Array = result.get("merged_timestamps", [])
 			if not merged_ts.is_empty():
-				memory_texts.append("%s %s" % [TimeUtil.to_merged_relative_time_prefix(merged_ts), result.text])
+				memory_texts.append("%s %s" % [TimeUtil.to_merged_relative_time_prefix(merged_ts), memory_text])
 			elif result.has("timestamp") and not str(result.timestamp).is_empty():
-				memory_texts.append("%s %s" % [TimeUtil.to_relative_time_prefix(result.timestamp), result.text])
+				memory_texts.append("%s %s" % [TimeUtil.to_relative_time_prefix(result.timestamp), memory_text])
 			else:
-				memory_texts.append(result.text)
+				memory_texts.append(memory_text)
 	
 	var memory_prompt = prefix + "\n".join(memory_texts) + suffix
 	
@@ -900,7 +976,8 @@ func rerank_documents(query: String, documents: Array) -> Array:
 				"text": text,
 				"similarity": relevance_score,
 				"timestamp": original_doc.timestamp,
-				"type": original_doc.type
+				"type": original_doc.type,
+				"metadata": original_doc.get("metadata", {})
 			})
 
 	print("重排序完成，返回 %d 个结果" % reranked_results.size())
