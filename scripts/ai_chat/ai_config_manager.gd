@@ -274,6 +274,11 @@ func load_memory_config() -> Dictionary:
 	return default_config
 
 
+## 获取记忆系统默认配置（副本），供 UI 还原默认使用
+func get_memory_defaults() -> Dictionary:
+	return MEMORY_DEFAULTS.duplicate(true)
+
+
 ## 保存表情差分设置
 func save_expression_diff(enabled: bool) -> bool:
 	var config = load_config()

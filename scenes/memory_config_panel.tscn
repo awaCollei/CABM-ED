@@ -283,4 +283,11 @@ layout_mode = 2
 max_value = 1.0
 step = 0.01
 value = 0.1
-suffix = " /次"
+
+[node name="HSeparator3" type="HSeparator" parent="ScrollContainer/VBoxContainer" unique_id=1558242744]
+layout_mode = 2
+
+[node name="ResetDefaultsButton" type="Button" parent="ScrollContainer/VBoxContainer" unique_id=1104529873]
+layout_mode = 2
+tooltip_text = "将所有开关与高级参数恢复为默认值"
+text = "恢复默认"

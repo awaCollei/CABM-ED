@@ -27,6 +27,7 @@ extends MarginContainer
 @onready var reasoning_count: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/ReasoningAdvanced/ReasoningCountRow/ReasoningCount
 @onready var knowledge_top_k: SpinBox = $ScrollContainer/VBoxContainer/KGContainer/KnowledgeAdvanced/KnowledgeTopKRow/KnowledgeTopK
 @onready var forgetting_rate: SpinBox = $ScrollContainer/VBoxContainer/KGContainer/ForgettingAdvanced/ForgettingRateRow/ForgettingRate
+@onready var reset_defaults_button: Button = $ScrollContainer/VBoxContainer/ResetDefaultsButton
 var config_manager: Node
 
 func _ready() -> void:
@@ -34,6 +35,7 @@ func _ready() -> void:
 		checkbox.toggled.connect(_on_setting_changed)
 	for field in [retrieval_top_k, lexical_weight, raw_detail_max_chars, retrieval_min_similarity, rerank_multiplier, reasoning_count, knowledge_top_k, forgetting_rate]:
 		field.value_changed.connect(_on_numeric_setting_changed)
+	reset_defaults_button.pressed.connect(_on_reset_defaults_pressed)
 
 func initialize(config_mgr: Node) -> void:
 	config_manager = config_mgr
@@ -47,6 +49,12 @@ func _on_setting_changed(_enabled: bool) -> void:
 func _on_numeric_setting_changed(_value: float) -> void:
 	_auto_save_config()
 
+func _on_reset_defaults_pressed() -> void:
+	if not config_manager:
+		return
+	_apply_memory_config(config_manager.get_memory_defaults())
+	_auto_save_config()
+
 func _update_dependencies() -> void:
 	if not save_vector_checkbox.button_pressed:
 		semantic_search_checkbox.button_pressed = false
@@ -57,35 +65,17 @@ func _update_dependencies() -> void:
 	rerank_checkbox.disabled = not (save_vector_checkbox.button_pressed and semantic_search_checkbox.button_pressed)
 	time_aware_enhance_checkbox.disabled = not (semantic_search_checkbox.button_pressed and rerank_checkbox.button_pressed)
 	pre_recall_reasoning_checkbox.disabled = not (save_vector_checkbox.button_pressed and semantic_search_checkbox.button_pressed)
-	jieba_checkbox.disabled = semantic_search_checkbox.disabled
+	jieba_checkbox.disabled = not (save_vector_checkbox.button_pressed and semantic_search_checkbox.button_pressed)
 	if not save_kg_checkbox.button_pressed:
 		kg_search_checkbox.button_pressed = false
 		enable_forgetting_checkbox.button_pressed = false
 	kg_search_checkbox.disabled = not save_kg_checkbox.button_pressed
 	enable_forgetting_checkbox.disabled = not save_kg_checkbox.button_pressed
-	_update_advanced_dependencies()
 
 func _update_advanced_visibility() -> void:
 	var show_advanced := advanced_checkbox.button_pressed
 	for section in [retrieval_advanced, reasoning_advanced, rerank_advanced, knowledge_advanced, forgetting_advanced]:
 		section.visible = show_advanced
-	_update_advanced_dependencies()
-
-func _update_advanced_dependencies() -> void:
-	# 参数紧跟所属功能，并继承父级开关状态；高级总开关只负责显示/隐藏。
-	retrieval_advanced.modulate = Color.WHITE if not semantic_search_checkbox.disabled else Color(0.6, 0.6, 0.6, 1.0)
-	reasoning_advanced.modulate = Color.WHITE if not pre_recall_reasoning_checkbox.disabled else Color(0.6, 0.6, 0.6, 1.0)
-	rerank_advanced.modulate = Color.WHITE if not rerank_checkbox.disabled else Color(0.6, 0.6, 0.6, 1.0)
-	knowledge_advanced.modulate = Color.WHITE if not kg_search_checkbox.disabled else Color(0.6, 0.6, 0.6, 1.0)
-	forgetting_advanced.modulate = Color.WHITE if not enable_forgetting_checkbox.disabled else Color(0.6, 0.6, 0.6, 1.0)
-	retrieval_top_k.editable = not semantic_search_checkbox.disabled
-	lexical_weight.editable = not semantic_search_checkbox.disabled
-	raw_detail_max_chars.editable = not semantic_search_checkbox.disabled
-	retrieval_min_similarity.editable = not semantic_search_checkbox.disabled
-	reasoning_count.editable = not pre_recall_reasoning_checkbox.disabled
-	rerank_multiplier.editable = not rerank_checkbox.disabled
-	knowledge_top_k.editable = not kg_search_checkbox.disabled
-	forgetting_rate.editable = not enable_forgetting_checkbox.disabled
 
 func _auto_save_config() -> void:
 	if config_manager:
@@ -114,7 +104,9 @@ func collect_memory_config() -> Dictionary:
 	}
 
 func load_memory_config() -> void:
-	var config: Dictionary = config_manager.load_memory_config()
+	_apply_memory_config(config_manager.load_memory_config())
+
+func _apply_memory_config(config: Dictionary) -> void:
 	save_vector_checkbox.button_pressed = config.save_memory_vectors
 	semantic_search_checkbox.button_pressed = config.enable_semantic_search
 	jieba_checkbox.button_pressed = config.use_jieba_tokenization
