@@ -2,7 +2,7 @@ extends Panel
 
 signal chat_ended
 
-const UIStyleFactory = preload("res://scripts/ui/ui_style_factory.gd")
+# const UIStyleFactory = preload("res://scripts/ui/ui_style_factory.gd")
 
 @onready var margin_container: MarginContainer = $MarginContainer
 @onready var vbox: VBoxContainer = $MarginContainer/VBoxContainer
@@ -297,7 +297,7 @@ func _input_placeholder_text() -> String:
 			return "D:\\CABM-ED>"
 		UIStyleFactory.STYLE_UBUNTU_TERMINAL:
 			# 与 Linux 一致：管理员/root 身份用 # 提示符。
-			return "user@cabm_ed:~" + ("#" if _is_elevated() else "$")
+			return "user@cabm_ed:~#" if _is_elevated() else "root@cabm_ed:~$"
 		_:
 			return "输入消息..."
 
