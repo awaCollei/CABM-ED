@@ -80,67 +80,77 @@ size_flags_horizontal = 0
 tooltip_text = "启用长期记忆"
 text = "└启用语义检索"
 
-[node name="JiebaCheckBox" type="CheckBox" parent="ScrollContainer/VBoxContainer/VectorContainer" unique_id=1676318470]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 0
-tooltip_text = "使用 Jieba 对中文进行词语切分；关闭时使用轻量的逐字匹配"
-text = "    ├分词匹配"
-
 [node name="RetrievalAdvanced" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer" unique_id=1534345467]
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="RetrievalTopKLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced" unique_id=1096030281]
+[node name="RetrievalTopKRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced" unique_id=1096030282]
+layout_mode = 2
+
+[node name="RetrievalTopKLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RetrievalTopKRow" unique_id=1096030281]
 layout_mode = 2
 tooltip_text = "每次语义检索返回的记忆条数"
-text = "    检索数量"
+theme_override_font_sizes/font_size = 20
+text = "       ·检索数量"
 
-[node name="RetrievalTopK" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced" unique_id=2059880948]
+[node name="RetrievalTopK" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RetrievalTopKRow" unique_id=2059880948]
 layout_mode = 2
 min_value = 1.0
 value = 5.0
 suffix = " 条"
 
-[node name="LexicalWeightLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced" unique_id=921181055]
+[node name="LexicalWeightRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced" unique_id=921181056]
+layout_mode = 2
+
+[node name="LexicalWeightLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/LexicalWeightRow" unique_id=921181055]
 layout_mode = 2
 tooltip_text = "混合检索中关键词匹配所占的权重"
-text = "    关键词权重"
+theme_override_font_sizes/font_size = 20
+text = "       ·关键词权重"
 
-[node name="LexicalWeight" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced" unique_id=2084631564]
+[node name="LexicalWeight" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/LexicalWeightRow" unique_id=2084631564]
 layout_mode = 2
 max_value = 1.0
 step = 0.01
 value = 0.28
-suffix = " 权重"
 
-[node name="RawDetailMaxCharsLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced" unique_id=122026889]
+[node name="RetrievalMinSimilarityRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced" unique_id=377156257]
+layout_mode = 2
+
+[node name="RetrievalMinSimilarityLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RetrievalMinSimilarityRow" unique_id=377156256]
+layout_mode = 2
+tooltip_text = "低于此分数的记忆会被过滤"
+theme_override_font_sizes/font_size = 20
+text = "       ·相似度阈值"
+
+[node name="RetrievalMinSimilarity" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RetrievalMinSimilarityRow" unique_id=2036937479]
+layout_mode = 2
+max_value = 1.0
+step = 0.01
+value = 0.3
+
+[node name="RawDetailMaxCharsRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced" unique_id=122026890]
+layout_mode = 2
+
+[node name="RawDetailMaxCharsLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RawDetailMaxCharsRow" unique_id=122026889]
 layout_mode = 2
 tooltip_text = "命中摘要后额外展开的原始对话最大字符数"
-text = "    原始细节长度"
+theme_override_font_sizes/font_size = 20
+text = "       ·原始细节长度"
 
-[node name="RawDetailMaxChars" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced" unique_id=1546069462]
+[node name="RawDetailMaxChars" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RawDetailMaxCharsRow" unique_id=1546069462]
 layout_mode = 2
 max_value = 5000.0
 step = 100.0
 value = 1200.0
 suffix = " 字"
 
-[node name="SimilarityAdvanced" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer" unique_id=1942837001]
+[node name="JiebaCheckBox" type="CheckBox" parent="ScrollContainer/VBoxContainer/VectorContainer" unique_id=1676318470]
+unique_name_in_owner = true
 layout_mode = 2
-theme_override_constants/separation = 3
-
-[node name="RetrievalMinSimilarityLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/SimilarityAdvanced" unique_id=377156256]
-layout_mode = 2
-tooltip_text = "低于此分数的记忆会被过滤"
-text = "    相似度阈值"
-
-[node name="RetrievalMinSimilarity" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/SimilarityAdvanced" unique_id=2036937479]
-layout_mode = 2
-max_value = 1.0
-step = 0.01
-value = 0.3
-suffix = " 分"
+size_flags_horizontal = 0
+tooltip_text = "使用 Jieba 对中文进行词语切分；关闭时使用轻量的逐字匹配"
+text = "    ├分词匹配"
 
 [node name="PreRecallReasoningCheckBox" type="CheckBox" parent="ScrollContainer/VBoxContainer/VectorContainer" unique_id=1988265438]
 unique_name_in_owner = true
@@ -153,12 +163,16 @@ text = "    ├召回前推理"
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="ReasoningCountLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/ReasoningAdvanced" unique_id=1997972667]
+[node name="ReasoningCountRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer/ReasoningAdvanced" unique_id=1997972668]
+layout_mode = 2
+
+[node name="ReasoningCountLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/ReasoningAdvanced/ReasoningCountRow" unique_id=1997972667]
 layout_mode = 2
 tooltip_text = "召回前推理最多生成的优化查询数量"
-text = "        推理条数"
+theme_override_font_sizes/font_size = 20
+text = "            ·推理条数"
 
-[node name="ReasoningCount" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/ReasoningAdvanced" unique_id=1117389554]
+[node name="ReasoningCount" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/ReasoningAdvanced/ReasoningCountRow" unique_id=1117389554]
 layout_mode = 2
 min_value = 1.0
 max_value = 20.0
@@ -176,12 +190,16 @@ text = "    └启用重排序"
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="RerankMultiplierLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/RerankAdvanced" unique_id=1900552610]
+[node name="RerankMultiplierRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer/RerankAdvanced" unique_id=1900552611]
+layout_mode = 2
+
+[node name="RerankMultiplierLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/RerankAdvanced/RerankMultiplierRow" unique_id=1900552610]
 layout_mode = 2
 tooltip_text = "启用重排序时，先取检索数量 × 倍率的候选"
-text = "        重排检索倍率"
+theme_override_font_sizes/font_size = 20
+text = "            ·候选倍数"
 
-[node name="RerankMultiplier" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/RerankAdvanced" unique_id=1143146003]
+[node name="RerankMultiplier" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/RerankAdvanced/RerankMultiplierRow" unique_id=1143146003]
 layout_mode = 2
 min_value = 1.0
 max_value = 20.0
@@ -225,12 +243,16 @@ text = "├启用图谱检索"
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="KnowledgeTopKLabel" type="Label" parent="ScrollContainer/VBoxContainer/KGContainer/KnowledgeAdvanced" unique_id=593253135]
+[node name="KnowledgeTopKRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/KGContainer/KnowledgeAdvanced" unique_id=593253136]
+layout_mode = 2
+
+[node name="KnowledgeTopKLabel" type="Label" parent="ScrollContainer/VBoxContainer/KGContainer/KnowledgeAdvanced/KnowledgeTopKRow" unique_id=593253135]
 layout_mode = 2
 tooltip_text = "每次知识图谱检索提取的关键词和结果数量"
-text = "    知识检索数量"
+theme_override_font_sizes/font_size = 20
+text = "       ·知识检索数量"
 
-[node name="KnowledgeTopK" type="SpinBox" parent="ScrollContainer/VBoxContainer/KGContainer/KnowledgeAdvanced" unique_id=638302058]
+[node name="KnowledgeTopK" type="SpinBox" parent="ScrollContainer/VBoxContainer/KGContainer/KnowledgeAdvanced/KnowledgeTopKRow" unique_id=638302058]
 layout_mode = 2
 min_value = 1.0
 value = 6.0
@@ -247,12 +269,16 @@ text = "└启用知识遗忘"
 layout_mode = 2
 theme_override_constants/separation = 3
 
-[node name="ForgettingRateLabel" type="Label" parent="ScrollContainer/VBoxContainer/KGContainer/ForgettingAdvanced" unique_id=1063571123]
+[node name="ForgettingRateRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/KGContainer/ForgettingAdvanced" unique_id=1063571124]
+layout_mode = 2
+
+[node name="ForgettingRateLabel" type="Label" parent="ScrollContainer/VBoxContainer/KGContainer/ForgettingAdvanced/ForgettingRateRow" unique_id=1063571123]
 layout_mode = 2
 tooltip_text = "每次执行知识遗忘时，知识强度减少的比例"
-text = "    遗忘速率"
+theme_override_font_sizes/font_size = 20
+text = "       ·遗忘速率"
 
-[node name="ForgettingRate" type="SpinBox" parent="ScrollContainer/VBoxContainer/KGContainer/ForgettingAdvanced" unique_id=281532606]
+[node name="ForgettingRate" type="SpinBox" parent="ScrollContainer/VBoxContainer/KGContainer/ForgettingAdvanced/ForgettingRateRow" unique_id=281532606]
 layout_mode = 2
 max_value = 1.0
 step = 0.01

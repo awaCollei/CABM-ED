@@ -12,21 +12,21 @@ extends MarginContainer
 @onready var kg_search_checkbox: CheckBox = $ScrollContainer/VBoxContainer/KGContainer/KGSearchCheckBox
 @onready var enable_forgetting_checkbox: CheckBox = $ScrollContainer/VBoxContainer/KGContainer/EnableForgettingCheckBox
 @onready var advanced_checkbox: CheckButton = $ScrollContainer/VBoxContainer/AdvancedHeader/AdvancedCheckBox
+
 @onready var retrieval_advanced: VBoxContainer = $ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced
-@onready var similarity_advanced: VBoxContainer = $ScrollContainer/VBoxContainer/VectorContainer/SimilarityAdvanced
 @onready var reasoning_advanced: VBoxContainer = $ScrollContainer/VBoxContainer/VectorContainer/ReasoningAdvanced
 @onready var rerank_advanced: VBoxContainer = $ScrollContainer/VBoxContainer/VectorContainer/RerankAdvanced
 @onready var knowledge_advanced: VBoxContainer = $ScrollContainer/VBoxContainer/KGContainer/KnowledgeAdvanced
 @onready var forgetting_advanced: VBoxContainer = $ScrollContainer/VBoxContainer/KGContainer/ForgettingAdvanced
-@onready var retrieval_top_k: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RetrievalTopK
-@onready var lexical_weight: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/LexicalWeight
-@onready var raw_detail_max_chars: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RawDetailMaxChars
-@onready var retrieval_min_similarity: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/SimilarityAdvanced/RetrievalMinSimilarity
-@onready var rerank_multiplier: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/RerankAdvanced/RerankMultiplier
-@onready var reasoning_count: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/ReasoningAdvanced/ReasoningCount
-@onready var knowledge_top_k: SpinBox = $ScrollContainer/VBoxContainer/KGContainer/KnowledgeAdvanced/KnowledgeTopK
-@onready var forgetting_rate: SpinBox = $ScrollContainer/VBoxContainer/KGContainer/ForgettingAdvanced/ForgettingRate
 
+@onready var retrieval_top_k: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RetrievalTopKRow/RetrievalTopK
+@onready var lexical_weight: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/LexicalWeightRow/LexicalWeight
+@onready var raw_detail_max_chars: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RawDetailMaxCharsRow/RawDetailMaxChars
+@onready var retrieval_min_similarity: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RetrievalMinSimilarityRow/RetrievalMinSimilarity
+@onready var rerank_multiplier: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/RerankAdvanced/RerankMultiplierRow/RerankMultiplier
+@onready var reasoning_count: SpinBox = $ScrollContainer/VBoxContainer/VectorContainer/ReasoningAdvanced/ReasoningCountRow/ReasoningCount
+@onready var knowledge_top_k: SpinBox = $ScrollContainer/VBoxContainer/KGContainer/KnowledgeAdvanced/KnowledgeTopKRow/KnowledgeTopK
+@onready var forgetting_rate: SpinBox = $ScrollContainer/VBoxContainer/KGContainer/ForgettingAdvanced/ForgettingRateRow/ForgettingRate
 var config_manager: Node
 
 func _ready() -> void:
@@ -67,14 +67,13 @@ func _update_dependencies() -> void:
 
 func _update_advanced_visibility() -> void:
 	var show_advanced := advanced_checkbox.button_pressed
-	for section in [retrieval_advanced, similarity_advanced, reasoning_advanced, rerank_advanced, knowledge_advanced, forgetting_advanced]:
+	for section in [retrieval_advanced, reasoning_advanced, rerank_advanced, knowledge_advanced, forgetting_advanced]:
 		section.visible = show_advanced
 	_update_advanced_dependencies()
 
 func _update_advanced_dependencies() -> void:
 	# 参数紧跟所属功能，并继承父级开关状态；高级总开关只负责显示/隐藏。
 	retrieval_advanced.modulate = Color.WHITE if not semantic_search_checkbox.disabled else Color(0.6, 0.6, 0.6, 1.0)
-	similarity_advanced.modulate = retrieval_advanced.modulate
 	reasoning_advanced.modulate = Color.WHITE if not pre_recall_reasoning_checkbox.disabled else Color(0.6, 0.6, 0.6, 1.0)
 	rerank_advanced.modulate = Color.WHITE if not rerank_checkbox.disabled else Color(0.6, 0.6, 0.6, 1.0)
 	knowledge_advanced.modulate = Color.WHITE if not kg_search_checkbox.disabled else Color(0.6, 0.6, 0.6, 1.0)
