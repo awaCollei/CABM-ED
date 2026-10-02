@@ -62,6 +62,8 @@ var recall_bubble: PanelContainer = null
 var recall_label: Label = null
 var _recall_bubble_enabled: bool = true
 var _recall_bubble_text: String = ""
+var recall_tail_dot_large: Panel = null
+var recall_tail_dot_small: Panel = null
 
 
 func _ensure_ui_structure():
@@ -299,8 +301,24 @@ func _apply_ui_style(style_id: String) -> void:
 		recall_bubble.add_theme_stylebox_override("panel", _build_recall_bubble_style())
 	if recall_label != null:
 		recall_label.add_theme_color_override("font_color", _recall_bubble_font_color())
+	_update_recall_tail_dots_style()
 	_apply_input_placeholder()
 
+func _update_recall_tail_dots_style():
+	var bg_color := _recall_bubble_tail_color()
+	var border_color := _recall_bubble_border_color()
+	var border_width := _recall_bubble_border_width()
+
+	for dot in [recall_tail_dot_large, recall_tail_dot_small]:
+		if dot == null:
+			continue
+		var style := StyleBoxFlat.new()
+		var radius := int(dot.size.x / 2.0)
+		style.bg_color = bg_color
+		style.border_color = border_color
+		style.set_border_width_all(border_width)
+		style.set_corner_radius_all(radius)
+		dot.add_theme_stylebox_override("panel", style)
 
 func _input_placeholder_text() -> String:
 	"""终端风格把输入框提示换成命令提示符，营造命令行观感。"""
@@ -1509,9 +1527,16 @@ func set_recall_bubble_enabled(enabled: bool):
 	print("回忆气泡已%s" % ("启用" if enabled else "禁用"))
 
 
-## 响应回忆展示信号：kind ∈ question/keyword/time/clear
+## 响应回忆展示信号：kind ∈ question/keyword/time/reset/clear
+## reset：切换工具时重置累计内容，但保持气泡显示等待新内容
+## clear：开始回复或响应结束，隐藏气泡
 func _on_recall_display_updated(kind: String, text: String, replace: bool):
 	if not _recall_bubble_enabled or not _chat_active:
+		return
+
+	if kind == "reset":
+		# 仅重置累计内容，气泡保持显示直到新内容替换或开始回复
+		_recall_bubble_text = ""
 		return
 
 	if kind == "clear":
@@ -1520,21 +1545,22 @@ func _on_recall_display_updated(kind: String, text: String, replace: bool):
 
 	if kind == "keyword" and not replace:
 		# 关键词逐个流式取出，用"……"分隔追加
-		if _recall_bubble_text.is_empty():
-			_recall_bubble_text = text
-		else:
-			_recall_bubble_text += "……" + text
+		_recall_bubble_text += text+"..." 
 	else:
 		# 问题/时间点：替换当前气泡内容
-		_recall_bubble_text = text
+		_recall_bubble_text = text+"..."
 
 	if _recall_bubble_text.is_empty():
 		return
 
 	_ensure_recall_bubble()
-	recall_label.text = "💭 " + _recall_bubble_text
+	recall_label.text = _recall_bubble_text
 	_position_recall_bubble()
 	recall_bubble.visible = true
+	if recall_tail_dot_large != null:
+		recall_tail_dot_large.visible = true
+	if recall_tail_dot_small != null:
+		recall_tail_dot_small.visible = true
 
 
 ## 创建回忆气泡（懒加载，添加到主场景以便定位到角色右侧）
@@ -1550,10 +1576,10 @@ func _ensure_recall_bubble():
 
 	recall_label = Label.new()
 	recall_label.name = "RecallLabel"
-	recall_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	recall_label.custom_minimum_size = Vector2(160, 0)
+	recall_label.autowrap_mode = TextServer.AUTOWRAP_ARBITRARY
+	recall_label.custom_minimum_size = Vector2(250, 0)
 	recall_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	recall_label.add_theme_font_size_override("font_size", 15)
+	recall_label.add_theme_font_size_override("font_size", 24)
 	recall_label.add_theme_color_override("font_color", _recall_bubble_font_color())
 	recall_bubble.add_child(recall_label)
 
@@ -1562,6 +1588,55 @@ func _ensure_recall_bubble():
 		main_scene = self
 	main_scene.add_child(recall_bubble)
 
+	# 创建两个尾巴圆点
+	recall_tail_dot_large = _create_recall_tail_dot(14.0)
+	recall_tail_dot_small = _create_recall_tail_dot(8.0)
+	main_scene.add_child(recall_tail_dot_large)
+	main_scene.add_child(recall_tail_dot_small)
+
+func _recall_bubble_border_color() -> Color:
+	if current_ui_style == UIStyleFactory.STYLE_DEFAULT:
+		return Color(0.66, 0.54, 0.34, 0.6)
+
+	var base := UIStyleFactory.create_panel_style(current_ui_style, dialog_opacity)
+	if base is StyleBoxFlat:
+		return (base as StyleBoxFlat).border_color
+	return Color(0.66, 0.54, 0.34, 0.6)
+
+
+func _recall_bubble_border_width() -> int:
+	if current_ui_style == UIStyleFactory.STYLE_DEFAULT:
+		return 1
+
+	var base := UIStyleFactory.create_panel_style(current_ui_style, dialog_opacity)
+	if base is StyleBoxFlat:
+		return (base as StyleBoxFlat).border_width_top
+	return 1
+
+func _create_recall_tail_dot(diameter: float) -> Panel:
+	var dot := Panel.new()
+	dot.name = "RecallTailDot"
+	dot.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	dot.custom_minimum_size = Vector2(diameter, diameter)
+	dot.size = Vector2(diameter, diameter)
+
+	var style := StyleBoxFlat.new()
+	style.bg_color = _recall_bubble_tail_color()
+	style.border_color = _recall_bubble_border_color()
+	style.set_border_width_all(_recall_bubble_border_width())
+	style.set_corner_radius_all(int(diameter / 2.0))
+	dot.add_theme_stylebox_override("panel", style)
+
+	return dot
+
+func _recall_bubble_tail_color() -> Color:
+	if current_ui_style == UIStyleFactory.STYLE_DEFAULT:
+		return Color(1.0, 1.0, 1.0, 0.9)
+
+	var base := UIStyleFactory.create_panel_style(current_ui_style, dialog_opacity)
+	if base is StyleBoxFlat:
+		return (base as StyleBoxFlat).bg_color
+	return Color(1.0, 1.0, 1.0, 0.9)
 
 func _recall_bubble_font_color() -> Color:
 	# create_theme 在默认风格下返回 null，此时使用默认配色的文字色
@@ -1604,18 +1679,36 @@ func _position_recall_bubble():
 		character = get_tree().current_scene.get_node_or_null("Background/Character")
 
 	recall_bubble.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	var bubble_pos: Vector2
+
 	if character is Control:
 		var rect: Rect2 = (character as Control).get_global_rect()
-		recall_bubble.global_position = Vector2(
-			rect.position.x + rect.size.x + 16.0, rect.position.y + rect.size.y * 0.2
+		bubble_pos = Vector2(
+			rect.position.x + rect.size.x - 120.0, rect.position.y + rect.size.y * 0.2
 		)
 	else:
-		# 找不到角色时退回到屏幕右侧中上部
 		var viewport_size = get_viewport_rect().size
-		recall_bubble.global_position = Vector2(viewport_size.x - 360.0, viewport_size.y * 0.2)
+		bubble_pos = Vector2(viewport_size.x - 360.0, viewport_size.y * 0.2)
 
+	recall_bubble.global_position = bubble_pos
+
+	# 两个尾巴圆点放在气泡左下方，由大到小
+	if recall_tail_dot_large != null:
+		recall_tail_dot_large.global_position = Vector2(
+			bubble_pos.x - 24.0,
+			bubble_pos.y + recall_bubble.size.y + 6.0
+		)
+	if recall_tail_dot_small != null:
+		recall_tail_dot_small.global_position = Vector2(
+			bubble_pos.x - 46.0,
+			bubble_pos.y + recall_bubble.size.y + 30.0
+		)
 
 func _hide_recall_bubble():
 	_recall_bubble_text = ""
 	if recall_bubble != null:
 		recall_bubble.visible = false
+	if recall_tail_dot_large != null:
+		recall_tail_dot_large.visible = false
+	if recall_tail_dot_small != null:
+		recall_tail_dot_small.visible = false

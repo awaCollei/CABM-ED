@@ -726,7 +726,7 @@ func _normalize_mood_name(value: String) -> String:
 	var mood_name = value.strip_edges().trim_prefix("\"").trim_suffix("\"")
 	if mood_name.is_empty():
 		return ""
-	var prompt_builder = get_node_or_null("/root/PromptBuilder")
+	var prompt_builder = PromptBuilder if PromptBuilder else null
 	if prompt_builder and prompt_builder.has_method("get_mood_name_en_by_display_name"):
 		# 中文是提示词要求的格式，英文保留用于兼容旧回复。
 		return prompt_builder.get_mood_name_en_by_display_name(mood_name)

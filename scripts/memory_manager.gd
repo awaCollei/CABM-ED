@@ -352,7 +352,7 @@ func active_detail_search(prefix: String) -> String:
 ## 将主动检索结果格式化为可读文本
 func format_recall_results(results: Array) -> String:
 	if not memory_system:
-		return "未找到相关记忆。"
+		return "记不太清了..."
 	return memory_system.format_results(results, true)
 
 func save():

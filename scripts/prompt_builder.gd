@@ -163,7 +163,7 @@ func _build_recall_prefix() -> String:
 	var memory_mgr = get_node_or_null("/root/MemoryManager")
 	if memory_mgr == null or not memory_mgr.is_active_retrieval_enabled():
 		return ""
-	return "如果你需要回忆之前发生的事情，就调用提供的回忆工具；如果不需要回忆、或信息已经足够，则不要调用工具，直接输出下面的 json。\n"
+	return "如果你需要回忆之前发生的事情，就调用提供的回忆工具；如果不需要回忆或信息已经足够，则不要调用工具，直接输出下面的 json。\n"
 
 func _build_prompt_from_framework(framework: Array, fields: Dictionary, replacements: Dictionary) -> String:
 	"""根据框架和字段构建提示词"""
@@ -227,8 +227,6 @@ func _generate_moods_list() -> String:
 func _generate_scenes_list() -> String:
 	"""从scenes.json生成场景列表字符串"""
 	var scenes_config = _load_scenes_config()
-	if not scenes_config.has("scenes"):
-		return "0=客厅, 1=卧室, 2=浴室, 3=书房"
 	
 	# 获取排序后的场景ID列表，确保顺序一致
 	var scene_ids = scenes_config.scenes.keys()
@@ -378,13 +376,14 @@ func get_current_mood_name(mood_id: String) -> String:
 	return "平静"
 
 func _format_current_time() -> String:
-	"""格式化当前时间为"xx月xx日xx:xx，星期x"格式"""
+	"""格式化当前时间为"xxxx年xx月xx日xx:xx，星期x"格式"""
 	var datetime = Time.get_datetime_dict_from_system()
 	
 	var weekdays = ["日", "一", "二", "三", "四", "五", "六"]
 	var weekday = weekdays[datetime.weekday]
 	
-	return "%d月%d日%02d:%02d，星期%s" % [
+	return "%d年%d月%d日%02d:%02d，星期%s" % [
+		datetime.year,
 		datetime.month,
 		datetime.day,
 		datetime.hour,

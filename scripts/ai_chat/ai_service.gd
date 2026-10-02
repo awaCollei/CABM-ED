@@ -586,11 +586,11 @@ func _build_recall_tools(memory_mgr: Node) -> Array:
 			"type": "function",
 			"function": {
 				"name": "semantic_search",
-				"description": "语义回忆：用自然语言描述你想回忆的内容。可以一次给一个或多个问题。",
+				"description": "语义回忆：用自然语言提出问题进行回忆。可以一次给一个或多个问题。",
 				"parameters": {
 					"type": "object",
 					"properties": {
-						"queue": {"type": "array", "items": {"type": "string"}, "description": "一个或多个用于语义检索的问题"},
+						"queue": {"type": "array", "items": {"type": "string"}, "description": "一个或多个问题"},
 						"top_k": {"type": "integer", "description": "返回的检索结果总数量，默认5"}
 					},
 					"required": ["queue"]
@@ -618,7 +618,7 @@ func _build_recall_tools(memory_mgr: Node) -> Array:
 			"type": "function",
 			"function": {
 				"name": "time_search",
-				"description": "时间回忆：查找某个时间点附近/之前/之后发生的记忆。",
+				"description": "时间回忆：查找某个时间点的记忆。",
 				"parameters": {
 					"type": "object",
 					"properties": {
@@ -635,11 +635,11 @@ func _build_recall_tools(memory_mgr: Node) -> Array:
 			"type": "function",
 			"function": {
 				"name": "detail_search",
-				"description": "详细回忆：查询某条记忆的完整对话。只能根据记忆的前几个字来确认是哪一条。",
+				"description": "详细回忆：查询某条记忆的完整对话。",
 				"parameters": {
 					"type": "object",
 					"properties": {
-						"suf": {"type": "string", "description": "记忆的前几个字"}
+						"suf": {"type": "string", "description": "该记忆摘要的前几个字"}
 					},
 					"required": ["suf"]
 				}
@@ -667,13 +667,12 @@ func _handle_tool_calls():
 		})
 	messages.append({"role": "assistant", "content": null, "tool_calls": assistant_tool_calls})
 
-	chat_status_changed.emit("正在回忆")
+	chat_status_changed.emit("正在回忆...")
 	for tc in tool_calls:
 		var result_text: String = await _execute_recall_tool(str(tc.get("name", "")), str(tc.get("arguments", "")))
 		messages.append({"role": "tool", "tool_call_id": str(tc.get("id", "")), "content": result_text})
 
-	# 回忆结束，隐藏气泡并继续请求；超过轮数上限后强制模型直接回复
-	recall_display_updated.emit("clear", "", true)
+	# 回忆结束，保持气泡显示直到开始回复或下一次工具调用；超过轮数上限后强制模型直接回复
 	var allow_tools := _tool_round < MAX_TOOL_ROUNDS
 	_send_chat_request(messages, http_request.get_meta("item_data", {}), allow_tools)
 
@@ -716,14 +715,14 @@ func _on_tool_call_delta(index: int, name: String, _arguments_chunk: String):
 	if name.is_empty():
 		return
 
-	chat_status_changed.emit("正在回忆")
+	chat_status_changed.emit("正在回忆...")
 
-	# 切换到新的工具调用时，清空气泡并重置展示计数
+	# 切换到新的工具调用时，重置气泡累计内容（保留显示，等待新内容替换）
 	if index != _recall_active_index:
 		_recall_active_index = index
 		_recall_shown_count = 0
 		_recall_last_time = ""
-		recall_display_updated.emit("clear", "", true)
+		recall_display_updated.emit("reset", "", true)
 
 	var args := ""
 	if index < response_parser.pending_tool_calls.size():

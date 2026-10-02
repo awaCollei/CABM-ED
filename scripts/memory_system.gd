@@ -697,7 +697,7 @@ func _keyword_match_score(query_terms: Array, item_keywords: Array) -> float:
 func format_results(results: Array, include_time_prefix: bool = true) -> String:
 	"""把检索结果格式化为文本（用于工具调用返回给模型）"""
 	if results.is_empty():
-		return "未找到相关记忆。"
+		return "记不太清了..."
 	var lines := []
 	for i in range(results.size()):
 		var text := str(results[i].get("text", ""))
