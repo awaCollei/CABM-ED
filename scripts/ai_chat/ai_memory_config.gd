@@ -47,7 +47,7 @@ const GRAPH := [
 	{"kind": "check", "key": "enable_active_time_search", "label": "时间检索", "default": true,
 		"requires_any": ["save_memory_vectors", "save_memory_keywords"],
 		"tooltip": "按时间点（更早/更晚/附近）回忆"},
-	{"kind": "check", "key": "enable_active_detail_search", "label": "细节查询", "default": true,
+	{"kind": "check", "key": "enable_active_detail_search", "label": "细节查询", "default": false,
 		"requires_any": ["save_memory_vectors", "save_memory_keywords"],
 		"tooltip": "回忆某条记忆的完整对话"},
 
@@ -79,7 +79,7 @@ const GRAPH := [
 		"requires_all": ["save_memory_keywords"],
 		"tooltip": "用玩家输入的关键词与已保存关键词匹配"},
 
-	{"kind": "section", "label": "知识图谱（被动检索）"},
+	{"kind": "section", "label": "知识图谱"},
 	{"kind": "check", "key": "save_knowledge_graph", "label": "保存知识图谱", "default": true,
 		"tooltip": "保存从对话中学习到的知识"},
 	{"kind": "check", "key": "enable_kg_search", "label": "启用图谱检索", "default": true, "indent": 1,
