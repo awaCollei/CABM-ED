@@ -61,61 +61,62 @@ var keyword_extractor = null
 var query_keyword_cache: Dictionary = {}
 
 # 记忆系统配置检查函数（依赖关系在此集中校验）
+# 默认值统一由 ai_config_manager.MEMORY_DEFAULTS 提供（load_memory_config 已合并），此处不再重复声明。
 func _should_save_memory_vectors() -> bool:
 	"""检查是否应该保存记忆向量"""
-	return _check_memory_config("save_memory_vectors", true)
+	return _check_memory_config("save_memory_vectors")
 
 func _should_save_memory_keywords() -> bool:
 	"""检查是否应该保存记忆关键词"""
-	return _check_memory_config("save_memory_keywords", true)
+	return _check_memory_config("save_memory_keywords")
 
 func _keyword_count() -> int:
 	"""保存/检索时提取的关键词数量"""
-	return max(1, int(_memory_number("keyword_count", 8)))
+	return max(1, int(_memory_number("keyword_count")))
 
 # ── 主动检索（工具调用）──
 func _should_active_semantic_search() -> bool:
-	return _should_save_memory_vectors() and _check_memory_config("enable_active_semantic_search", true)
+	return _should_save_memory_vectors() and _check_memory_config("enable_active_semantic_search")
 
 func _should_active_keyword_search() -> bool:
-	return _should_save_memory_keywords() and _check_memory_config("enable_active_keyword_search", true)
+	return _should_save_memory_keywords() and _check_memory_config("enable_active_keyword_search")
 
 func _should_active_time_search() -> bool:
-	return (_should_save_memory_vectors() or _should_save_memory_keywords()) and _check_memory_config("enable_active_time_search", true)
+	return (_should_save_memory_vectors() or _should_save_memory_keywords()) and _check_memory_config("enable_active_time_search")
 
 func _should_active_detail_search() -> bool:
 	# 详细检索读取记忆的原始对话；若无任何存储方式，则记忆条目根本不会产生。
-	return (_should_save_memory_vectors() or _should_save_memory_keywords()) and _check_memory_config("enable_active_detail_search", true)
+	return (_should_save_memory_vectors() or _should_save_memory_keywords()) and _check_memory_config("enable_active_detail_search")
 
 func _should_active_reranking() -> bool:
-	return _should_active_semantic_search() and _check_memory_config("active_reranking", true)
+	return _should_active_semantic_search() and _check_memory_config("active_reranking")
 
 func _should_active_time_aware() -> bool:
-	return _should_active_reranking() and _check_memory_config("active_time_aware", true)
+	return _should_active_reranking() and _check_memory_config("active_time_aware")
 
 # ── 被动检索 ──
 func _should_passive_semantic_search() -> bool:
-	return _should_save_memory_vectors() and _check_memory_config("enable_passive_semantic_search", false)
+	return _should_save_memory_vectors() and _check_memory_config("enable_passive_semantic_search")
 
 func _should_passive_keyword_search() -> bool:
-	return _should_save_memory_keywords() and _check_memory_config("enable_passive_keyword_search", false)
+	return _should_save_memory_keywords() and _check_memory_config("enable_passive_keyword_search")
 
 func _should_passive_reranking() -> bool:
-	return _should_passive_semantic_search() and _check_memory_config("passive_reranking", true)
+	return _should_passive_semantic_search() and _check_memory_config("passive_reranking")
 
 func _should_passive_time_aware() -> bool:
-	return _should_passive_reranking() and _check_memory_config("passive_time_aware", false)
+	return _should_passive_reranking() and _check_memory_config("passive_time_aware")
 
 func _should_passive_pre_recall_reasoning() -> bool:
-	return _should_passive_semantic_search() and _check_memory_config("passive_pre_recall_reasoning", false)
+	return _should_passive_semantic_search() and _check_memory_config("passive_pre_recall_reasoning")
 
 func _should_save_knowledge_graph() -> bool:
 	"""检查是否应该保存知识图谱"""
-	return _check_memory_config("save_knowledge_graph", true)
+	return _check_memory_config("save_knowledge_graph")
 
 func _should_perform_kg_search() -> bool:
 	"""检查是否应该进行知识图谱检索"""
-	return _check_memory_config("enable_kg_search", true)
+	return _check_memory_config("enable_kg_search")
 
 ## 主动检索是否启用（任一工具可用），供提示词/请求构建判断
 func is_active_retrieval_enabled() -> bool:
@@ -135,19 +136,19 @@ func is_active_time_enabled() -> bool:
 func is_active_detail_enabled() -> bool:
 	return _should_active_detail_search()
 
-func _check_memory_config(key: String, default_value: bool) -> bool:
-	"""通用配置检查函数"""
+func _check_memory_config(key: String) -> bool:
+	"""通用配置检查函数（默认值来自 ai_config_manager.MEMORY_DEFAULTS）"""
 	var ai_config_mgr = get_node_or_null("/root/AIConfigManager")
 	if ai_config_mgr:
-		var memory_config = ai_config_mgr.load_memory_config()
-		return memory_config.get(key, default_value)
-	return default_value
+		return bool(ai_config_mgr.load_memory_config().get(key, false))
+	return false
 
-func _memory_number(key: String, default_value):
+func _memory_number(key: String) -> float:
+	"""通用数值配置读取（默认值来自 ai_config_manager.MEMORY_DEFAULTS）"""
 	var ai_config_mgr = get_node_or_null("/root/AIConfigManager")
 	if ai_config_mgr:
-		return ai_config_mgr.load_memory_config().get(key, default_value)
-	return default_value
+		return float(ai_config_mgr.load_memory_config().get(key, 0.0))
+	return 0.0
 
 # 嵌入API配置
 var embedding_model: String = ""
@@ -510,7 +511,7 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 		var context := _flatten_context_for_optimization()
 		var optimized_queries = await retrieval_optimizer.optimize_query(query, context)
 		if not optimized_queries.is_empty():
-			var reasoning_count = max(1, int(_memory_number("passive_reasoning_count", 3)))
+			var reasoning_count = max(1, int(_memory_number("passive_reasoning_count")))
 			queries_to_search.append_array(optimized_queries.slice(0, reasoning_count))
 			print("召回前推理成功，添加 %d 个优化查询" % min(reasoning_count, optimized_queries.size()))
 		else:
@@ -539,7 +540,7 @@ func search(query: String, top_k: int, min_similarity: float, exclude_timestamps
 
 	# 重排序：准备更多候选，必要时加入时间感知前缀
 	var use_time_aware := _should_passive_time_aware()
-	var candidate_multiplier = max(1, int(_memory_number("passive_rerank_multiplier", 5)))
+	var candidate_multiplier = max(1, int(_memory_number("passive_rerank_multiplier")))
 	var num_candidates = min(top_k * candidate_multiplier, similarities.size())
 	var initial_results := _candidates_to_results(similarities.slice(0, num_candidates), num_candidates, use_time_aware)
 
@@ -920,7 +921,7 @@ func _finalize_active_results(sorted_list: Array, rerank_query: String, top_k: i
 	var results: Array
 	if _should_active_reranking():
 		var time_aware := _should_active_time_aware()
-		var multiplier = max(1, int(_memory_number("active_rerank_multiplier", 5)))
+		var multiplier = max(1, int(_memory_number("active_rerank_multiplier")))
 		var num_candidates = min(top_k * multiplier, sorted_list.size())
 		var initial := _candidates_to_results(sorted_list.slice(0, num_candidates), num_candidates, time_aware)
 		var reranked = await rerank_documents(rerank_query, initial)

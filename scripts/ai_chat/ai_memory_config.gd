@@ -16,82 +16,83 @@ var _loading: bool = false
 #   requires_all: 依赖的其它 key，全部为真才真正生效
 #   requires_any: 依赖的其它 key，任一为真即可（OR 依赖）
 #   advanced: 高级项，以"·"标识，仅"高级选项"开启时显示
+# 默认值不在此声明，统一由 ai_config_manager.MEMORY_DEFAULTS 提供。
 const GRAPH := [
 	{"kind": "section", "label": "记忆存储"},
-	{"kind": "check", "key": "save_memory_vectors", "label": "保存记忆向量", "default": true,
+	{"kind": "check", "key": "save_memory_vectors", "label": "保存记忆向量",
 		"tooltip": "保存长期记忆；语义检索与详细检索的基础"},
-	{"kind": "check", "key": "save_memory_keywords", "label": "保存记忆关键词", "default": true,
+	{"kind": "check", "key": "save_memory_keywords", "label": "保存记忆关键词",
 		"tooltip": "保存用于匹配的关键词；关键词检索与详细检索的基础"},
-	{"kind": "number", "key": "keyword_count", "label": "关键词数量", "default": 8,
+	{"kind": "number", "key": "keyword_count", "label": "关键词数量",
 		"min": 1, "max": 50, "suffix": " 个", "indent": 1, "advanced": true,
 		"requires_all": ["save_memory_keywords"],
 		"tooltip": "每条记忆保存/匹配的关键词数量"},
 
 	{"kind": "section", "label": "主动检索"},
-	{"kind": "check", "key": "enable_active_semantic_search", "label": "语义检索", "default": true,
+	{"kind": "check", "key": "enable_active_semantic_search", "label": "语义检索",
 		"requires_all": ["save_memory_vectors"],
 		"tooltip": "按语义相近程度回忆"},
-	{"kind": "check", "key": "active_reranking", "label": "重排序", "default": true, "indent": 1,
+	{"kind": "check", "key": "active_reranking", "label": "重排序", "indent": 1,
 		"requires_all": ["enable_active_semantic_search"],
 		"tooltip": "优化语义检索结果"},
-	{"kind": "number", "key": "active_rerank_multiplier", "label": "候选倍数", "default": 5,
+	{"kind": "number", "key": "active_rerank_multiplier", "label": "候选倍数",
 		"min": 1, "max": 20, "suffix": " 倍", "indent": 2, "advanced": true,
 		"requires_all": ["active_reranking"],
 		"tooltip": "重排序时先取检索数量 × 倍率的候选"},
-	{"kind": "check", "key": "active_time_aware", "label": "时间感知增强", "default": true, "indent": 3,
+	{"kind": "check", "key": "active_time_aware", "label": "时间感知增强", "indent": 3,
 		"requires_all": ["active_reranking"],
 		"tooltip": "重排序时纳入时间，提升有限"},
-	{"kind": "check", "key": "enable_active_keyword_search", "label": "关键词检索", "default": true,
+	{"kind": "check", "key": "enable_active_keyword_search", "label": "关键词检索",
 		"requires_all": ["save_memory_keywords"],
 		"tooltip": "按关键词匹配回忆"},
-	{"kind": "check", "key": "enable_active_time_search", "label": "时间检索", "default": true,
+	{"kind": "check", "key": "enable_active_time_search", "label": "时间检索",
 		"requires_any": ["save_memory_vectors", "save_memory_keywords"],
 		"tooltip": "按时间点（更早/更晚/附近）回忆"},
-	{"kind": "check", "key": "enable_active_detail_search", "label": "细节查询", "default": false,
+	{"kind": "check", "key": "enable_active_detail_search", "label": "细节查询",
 		"requires_any": ["save_memory_vectors", "save_memory_keywords"],
 		"tooltip": "回忆某条记忆的完整对话"},
 
 	{"kind": "section", "label": "被动检索"},
-	{"kind": "check", "key": "enable_passive_semantic_search", "label": "语义检索", "default": false,
+	{"kind": "check", "key": "enable_passive_semantic_search", "label": "语义检索",
 		"requires_all": ["save_memory_vectors"],
 		"tooltip": "被动检索时不再携带对话细节，需要细节请使用主动检索"},
-	{"kind": "number", "key": "passive_retrieval_top_k", "label": "检索数量", "default": 5,
+	{"kind": "number", "key": "passive_retrieval_top_k", "label": "检索数量",
 		"min": 1, "max": 20, "suffix": " 条", "indent": 1, "advanced": true,
 		"requires_all": ["enable_passive_semantic_search"]},
-	{"kind": "number", "key": "passive_min_similarity", "label": "相似度阈值", "default": 0.3,
+	{"kind": "number", "key": "passive_min_similarity", "label": "相似度阈值",
 		"min": 0.0, "max": 1.0, "step": 0.01, "indent": 1, "advanced": true,
 		"requires_all": ["enable_passive_semantic_search"],
 		"tooltip": "低于此分数的记忆会被过滤"},
-	{"kind": "check", "key": "passive_pre_recall_reasoning", "label": "召回前推理", "default": false, "indent": 1,
+	{"kind": "check", "key": "passive_pre_recall_reasoning", "label": "召回前推理", "indent": 1,
 		"requires_all": ["enable_passive_semantic_search"],
 		"tooltip": "用模型把玩家输入扩展为多个检索查询"},
-	{"kind": "number", "key": "passive_reasoning_count", "label": "推理条数", "default": 3,
+	{"kind": "number", "key": "passive_reasoning_count", "label": "推理条数",
 		"min": 1, "max": 20, "suffix": " 条", "indent": 2, "advanced": true,
 		"requires_all": ["passive_pre_recall_reasoning"]},
-	{"kind": "check", "key": "passive_reranking", "label": "重排序", "default": false, "indent": 1,
+	{"kind": "check", "key": "passive_reranking", "label": "重排序", "indent": 1,
 		"requires_all": ["enable_passive_semantic_search"]},
-	{"kind": "number", "key": "passive_rerank_multiplier", "label": "候选倍数", "default": 5,
+	{"kind": "number", "key": "passive_rerank_multiplier", "label": "候选倍数",
 		"min": 1, "max": 20, "suffix": " 倍", "indent": 2, "advanced": true,
 		"requires_all": ["passive_reranking"]},
-	{"kind": "check", "key": "passive_time_aware", "label": "时间感知增强", "default": false, "indent": 3,
+	{"kind": "check", "key": "passive_time_aware", "label": "时间感知增强", "indent": 3,
 		"requires_all": ["passive_reranking"]},
-	{"kind": "check", "key": "enable_passive_keyword_search", "label": "关键词检索", "default": false,
+	{"kind": "check", "key": "enable_passive_keyword_search", "label": "关键词检索",
 		"requires_all": ["save_memory_keywords"],
 		"tooltip": "用玩家输入的关键词与已保存关键词匹配"},
 
 	{"kind": "section", "label": "知识图谱"},
-	{"kind": "check", "key": "save_knowledge_graph", "label": "保存知识图谱", "default": true,
+	{"kind": "check", "key": "save_knowledge_graph", "label": "保存知识图谱",
 		"tooltip": "保存从对话中学习到的知识"},
-	{"kind": "check", "key": "enable_kg_search", "label": "启用图谱检索", "default": true, "indent": 1,
+	{"kind": "check", "key": "enable_kg_search", "label": "启用图谱检索", "indent": 1,
 		"requires_all": ["save_knowledge_graph"]},
-	{"kind": "number", "key": "knowledge_top_k", "label": "知识检索数量", "default": 6,
+	{"kind": "number", "key": "knowledge_top_k", "label": "知识检索数量",
 		"min": 1, "max": 20, "suffix": " 条", "indent": 2, "advanced": true,
 		"requires_all": ["enable_kg_search"],
 		"tooltip": "每次知识图谱检索提取的结果数量"},
-	{"kind": "check", "key": "enable_knowledge_forgetting", "label": "启用知识遗忘", "default": true, "indent": 1,
+	{"kind": "check", "key": "enable_knowledge_forgetting", "label": "启用知识遗忘", "indent": 1,
 		"requires_all": ["save_knowledge_graph"],
 		"tooltip": "遗忘掉过时的知识"},
-	{"kind": "number", "key": "knowledge_forgetting_rate", "label": "遗忘速率", "default": 0.1,
+	{"kind": "number", "key": "knowledge_forgetting_rate", "label": "遗忘速率",
 		"min": 0.0, "max": 1.0, "step": 0.01, "indent": 2, "advanced": true,
 		"requires_all": ["enable_knowledge_forgetting"],
 		"tooltip": "每次知识遗忘时强度减少的比例"},
@@ -198,7 +199,6 @@ func _create_number_row(spec: Dictionary, index: int) -> HBoxContainer:
 	spin.max_value = spec.get("max", 100)
 	spin.step = spec.get("step", 1.0)
 	spin.suffix = spec.get("suffix", "")
-	spin.value = spec.get("default", 0)
 	spin.tooltip_text = _tooltip_with_dependency(spec)
 	spin.value_changed.connect(_on_numeric_setting_changed)
 	row.add_child(spin)
@@ -317,14 +317,14 @@ func load_memory_config() -> void:
 	_apply_memory_config(config_manager.load_memory_config())
 
 func _apply_memory_config(config: Dictionary) -> void:
+	# config 由 load_memory_config() / get_memory_defaults() 提供，均已包含全部默认值。
 	_loading = true
 	for spec in GRAPH:
 		var kind: String = spec.get("kind", "")
 		if kind == "check":
-			var value: bool = bool(config.get(spec.key, spec.get("default", false)))
-			(_checks[spec.key] as CheckBox).set_pressed_no_signal(value)
+			(_checks[spec.key] as CheckBox).set_pressed_no_signal(bool(config.get(spec.key, false)))
 		elif kind == "number":
-			(_numbers[spec.key] as SpinBox).value = float(config.get(spec.key, spec.get("default", 0)))
+			(_numbers[spec.key] as SpinBox).value = float(config.get(spec.key, 0.0))
 	advanced_checkbox.set_pressed_no_signal(bool(config.get("advanced_options_enabled", false)))
 	_loading = false
 	_update_dependencies()

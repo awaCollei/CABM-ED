@@ -243,7 +243,7 @@ const MEMORY_DEFAULTS := {
 	"enable_active_semantic_search": true,
 	"enable_active_keyword_search": true,
 	"enable_active_time_search": true,
-	"enable_active_detail_search": true,
+	"enable_active_detail_search": false,
 	# 主动检索 - 语义高级项（主动检索的查询由模型通过工具直接给出，无需召回前推理）
 	"active_reranking": true,
 	"active_rerank_multiplier": 5,
