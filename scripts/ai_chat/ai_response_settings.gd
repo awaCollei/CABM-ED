@@ -21,6 +21,7 @@ const TYPING_PREVIEW_TEXT = "这是一段示例文本，你可以拖动滑杆观
 @onready var active_chat_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/ActiveChatContainer/ActiveChatCheckButton
 @onready var offline_diary_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/OfflineDiaryContainer/OfflineDiaryCheckButton
 @onready var status_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/StatusContainer/StatusCheckButton
+@onready var recall_bubble_checkbutton = $VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/RecallBubbleContainer/RecallBubbleCheckButton
 @onready var typing_speed_slider: HSlider = $VBoxContainer/HBoxContainer/RightContainer/HSlider
 @onready var typing_speed_preview_text_edit: TextEdit = $VBoxContainer/HBoxContainer/RightContainer/TextEdit
 @onready var offline_mode_option_button: OptionButton = $VBoxContainer/HBoxContainer/RightContainer/OfflineModeContainer/OfflineModeOptionButton
@@ -70,6 +71,7 @@ func _ready() -> void:
 	active_chat_checkbutton.toggled.connect(_on_active_chat_toggled)
 	offline_diary_checkbutton.toggled.connect(_on_offline_diary_toggled)
 	status_checkbutton.toggled.connect(_on_status_check_toggled)
+	recall_bubble_checkbutton.toggled.connect(_on_recall_bubble_toggled)
 	typing_speed_slider.value_changed.connect(_on_typing_speed_slider_changed)
 	offline_mode_option_button.item_selected.connect(_on_offline_mode_selected)
 	
@@ -117,6 +119,9 @@ func load_response_settings() -> void:
 	
 	# 加载显示请求状态设置
 	status_checkbutton.button_pressed = config_manager.load_status_check()
+	
+	# 加载回忆气泡设置
+	recall_bubble_checkbutton.button_pressed = config_manager.load_recall_bubble()
 	
 	# 加载文本输出速度设置
 	_is_loading_typing_speed = true
@@ -201,6 +206,18 @@ func _on_status_check_toggled(enabled: bool) -> void:
 		var chat_dialog = main_scene.get_node_or_null("ChatDialog")
 		if chat_dialog and chat_dialog.has_method("set_status_check_enabled"):
 			chat_dialog.set_status_check_enabled(enabled)
+
+## 回忆气泡开关切换
+func _on_recall_bubble_toggled(enabled: bool) -> void:
+	config_manager.save_recall_bubble(enabled)
+	print("回忆气泡已%s" % ("开启" if enabled else "关闭"))
+	
+	# 通知聊天对话框更新回忆气泡显示
+	var main_scene = get_tree().current_scene
+	if main_scene:
+		var chat_dialog = main_scene.get_node_or_null("ChatDialog")
+		if chat_dialog and chat_dialog.has_method("set_recall_bubble_enabled"):
+			chat_dialog.set_recall_bubble_enabled(enabled)
 
 ## 离线模式选择
 func _on_offline_mode_selected(index: int) -> void:

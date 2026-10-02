@@ -5,6 +5,7 @@ extends Node
 # 否则降级到一个简单的GDScript分词实现。
 
 var _stop_words = {}
+var _fallback_warned: bool = false
 
 func _ready():
 	_load_stop_words()
@@ -49,14 +50,16 @@ func extract_keywords(text: String, top_k: int = 5) -> Array:
 			var inst = ClassDB.instantiate("JiebaKeywordExtractor")
 			if inst:
 				var kws = inst.extract_keywords(text, top_k)
-				print("[JiebaKeywordExtractor C++] tokens/keywords:", kws)
 				return kws
 		else:
 			print("Jieba 配置文件缺失，使用简单分词回退方案")
 	
 	# C++未加载时的简单分词回退方案
-	MessageDisplay.show_failure_message("分词插件加载失败，请关闭知识图谱")
-	print("C++未加载！ 使用简单分词回退方案")
+	# 关键词提取现在会在每次保存/检索时调用，提示只弹一次，避免刷屏。
+	if not _fallback_warned:
+		_fallback_warned = true
+		MessageDisplay.show_failure_message("分词插件加载失败，请关闭知识图谱")
+		print("C++未加载！ 使用简单分词回退方案（后续不再重复提示）")
 	
 	# 简单分词：按非字母数字字符分割
 	var tokens = _simple_tokenize(text)

@@ -198,6 +198,21 @@ theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
 theme_override_font_sizes/font_size = 12
 text = "聊天时显示后台状态"
 
+[node name="RecallBubbleContainer" type="VBoxContainer" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 3
+
+[node name="RecallBubbleCheckButton" type="CheckButton" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/RecallBubbleContainer"]
+layout_mode = 2
+size_flags_horizontal = 0
+text = "显示回忆气泡"
+
+[node name="RecallBubbleDescLabel" type="Label" parent="VBoxContainer/HBoxContainer/LeftContainer/VBoxContainer/RecallBubbleContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 12
+text = "回忆时在角色旁显示正在查询的内容"
+
 [node name="VSeparator" type="VSeparator" parent="VBoxContainer/HBoxContainer"]
 layout_mode = 2
 

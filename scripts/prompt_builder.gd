@@ -116,6 +116,7 @@ func build_system_prompt(trigger_mode: String = "passive", keep_long_term_memory
 		"{current_weather}": _get_weather_description(save_mgr.get_current_weather()),
 		"{long_term_memory}": "{long_term_memory}" if keep_long_term_memory_placeholder else "", # 保留或清空
 		"{knowledge_memory}": "{knowledge_memory}" if keep_long_term_memory_placeholder else "", # 知识图谱占位符
+		"{recall_prefix}": _build_recall_prefix(), # 主动检索：回忆工具说明（关闭时为空）
 		"{memory_context}": memory_context,
 		"{relationship_context}": relationship_context,
 		"{moods}": moods,
@@ -157,6 +158,13 @@ func build_system_prompt(trigger_mode: String = "passive", keep_long_term_memory
 	
 	return prompt
 
+func _build_recall_prefix() -> String:
+	"""主动检索启用时，在输出要求前插入"可调用回忆工具"的说明；关闭时返回空"""
+	var memory_mgr = get_node_or_null("/root/MemoryManager")
+	if memory_mgr == null or not memory_mgr.is_active_retrieval_enabled():
+		return ""
+	return "如果你需要回忆之前发生的事情，就调用提供的回忆工具；如果不需要回忆、或信息已经足够，则不要调用工具，直接输出下面的 json。\n"
+
 func _build_prompt_from_framework(framework: Array, fields: Dictionary, replacements: Dictionary) -> String:
 	"""根据框架和字段构建提示词"""
 	var parts = []
@@ -173,8 +181,10 @@ func _build_prompt_from_framework(framework: Array, fields: Dictionary, replacem
 		# 替换占位符
 		field_content = _replace_placeholders(field_content, replacements)
 		
-		# 如果有标题，添加二级标题
+		# 有标题的字段：内容为空时整段跳过，避免留下空标题（如"以前发生的事情""相关的知识记忆"）
 		if title != null and not title.is_empty():
+			if str(field_content).strip_edges().is_empty():
+				continue
 			parts.append("## " + title + "\n" + field_content)
 		else:
 			parts.append(field_content)

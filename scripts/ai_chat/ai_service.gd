@@ -14,6 +14,8 @@ signal auto_save_started(message: String)
 signal auto_save_completed(summary: String)
 signal options_generated(options: Array)
 signal chat_status_changed(status: String)  # 用于状态显示，空字符串表示隐藏
+# 回忆展示：kind ∈ question/keyword/time/clear；replace=true 表示替换气泡内容
+signal recall_display_updated(kind: String, text: String, replace: bool)
 
 func emit_chat_status(status: String):
 	"""发出聊天状态变化信号（供外部模块调用）"""
@@ -51,6 +53,13 @@ var pending_summary_data: Dictionary = {} # 待总结的数据
 var auto_save_in_progress: bool = false
 var last_summarized_timestamp: float = 0.0 # 最近一次被总结的消息时间戳（用于避免重复总结）
 
+# 主动检索（回忆工具）状态
+var _tool_round: int = 0                    # 当前对话已进行的工具调用轮数，防止无限循环
+const MAX_TOOL_ROUNDS: int = 3
+var _recall_active_index: int = -1          # 当前正在流式展示的 tool_call index
+var _recall_shown_count: int = 0            # 已展示的条目数量（问题/关键词）
+var _recall_last_time: String = ""          # 已展示的时间检索描述
+
 # 检查是否有 API key
 var has_api_key: bool:
 	get:
@@ -81,6 +90,7 @@ func _ready():
 	response_parser.content_received.connect(_on_content_received)
 	response_parser.mood_extracted.connect(_on_mood_extracted)
 	response_parser.parse_error.connect(_on_parse_error)
+	response_parser.tool_call_delta.connect(_on_tool_call_delta)
 
 	logger = preload("res://scripts/ai_chat/ai_logger.gd").new()
 	add_child(logger)
@@ -272,6 +282,7 @@ func start_chat(user_message: String = "", trigger_mode: String = "passive", ite
 			current_conversation.clear()
 
 	is_chatting = true
+	_tool_round = 0
 
 	# 新的一轮对话开始，丢弃上一轮可能仍在进行中的选项生成结果
 	if options_generator:
@@ -402,18 +413,34 @@ func _call_chat_api(messages: Array, _user_message: String, item_data: Dictionar
 		messages.append({"role": "user", "content": ""})
 		print("紧急修复: 添加user占位符以避免API错误")
 
-	# 验证消息内容不为null
+	# 验证消息内容不为null（assistant 的工具调用消息 content 允许为 null）
 	for i in range(messages.size()):
 		if not messages[i].has("content") or messages[i].content == null:
-			messages[i].content = ""
-			print("警告: 修复了第%d条消息的空content" % i)
+			if not messages[i].has("tool_calls"):
+				messages[i].content = ""
+				print("警告: 修复了第%d条消息的空content" % i)
+
+	http_request.set_meta("messages", messages)
+	http_request.set_meta("item_data", item_data)
+	_send_chat_request(messages, item_data)
+
+func _send_chat_request(messages: Array, item_data: Dictionary = {}, allow_tools: bool = true):
+	"""构建并发送一次对话请求（工具循环中可重复调用）"""
+	# 主动检索启用时关闭 JSON 模式（JSON 模式与工具调用不兼容），并注入回忆工具
+	var memory_mgr = get_node_or_null("/root/MemoryManager")
+	var active_enabled = allow_tools and memory_mgr != null and memory_mgr.is_active_retrieval_enabled()
+	var extra_params := {}
+	if active_enabled:
+		var tools := _build_recall_tools(memory_mgr)
+		if not tools.is_empty():
+			extra_params = {"tools": tools, "tool_choice": "auto"}
 
 	# 使用 stream_ai 构建请求参数
 	var params = stream_ai.build_request_params(
 		"chat_model",
 		messages,
-		true,  # 启用JSON模式
-		{}     # 额外参数
+		not active_enabled,  # 主动检索：关闭 JSON 模式
+		extra_params
 	)
 
 	if params.has("error"):
@@ -422,7 +449,6 @@ func _call_chat_api(messages: Array, _user_message: String, item_data: Dictionar
 		is_chatting = false
 		return
 
-	# 可以在这里添加对话特有的额外处理
 	var url = params.url
 	var headers = params.headers
 	var json_body = params.body
@@ -435,14 +461,13 @@ func _call_chat_api(messages: Array, _user_message: String, item_data: Dictionar
 
 	_stream_parse_error_emitted = false
 	response_parser.reset()
-
-	http_request.set_meta("messages", messages)
-	http_request.set_meta("request_body", body)
-	http_request.set_meta("item_data", item_data)
+	_recall_active_index = -1
+	_recall_shown_count = 0
+	_recall_last_time = ""
 
 	var timeout = config_loader.config.chat_model.get("timeout", 30.0)
 	chat_status_changed.emit("等待响应...")
-	
+
 	# 直接使用 http_client_module 发送请求（因为需要连接完成后的处理）
 	http_client_module.start_stream_request(url, headers, json_body, timeout)
 
@@ -450,8 +475,10 @@ func _on_stream_chunk_received(data: String):
 	"""处理流式数据块"""
 	var is_done = response_parser.process_stream_data(data)
 	if is_done:
-		_finalize_stream_response()
+		_finish_current_stream()
 	elif not response_parser.msg_buffer.is_empty():
+		# 开始回复时隐藏回忆气泡
+		recall_display_updated.emit("clear", "", true)
 		chat_status_changed.emit("正在回复...")
 
 func _on_stream_completed():
@@ -463,12 +490,20 @@ func _on_stream_error(error_message: String):
 	is_chatting = false
 	chat_status_changed.emit("")
 
-	if not response_parser.msg_buffer.is_empty():
-		print("超时但已收到部分内容，完成处理")
-		_finalize_stream_response()
+	if not response_parser.msg_buffer.is_empty() or response_parser.has_tool_calls():
+		print("超时但已收到部分内容/工具调用，完成处理")
+		_finish_current_stream()
 	else:
 		print("超时且未收到内容，触发错误回调")
 		chat_error.emit(error_message)
+
+func _finish_current_stream():
+	"""一次流式响应结束：若含工具调用则进入工具循环，否则完成回复"""
+	http_client_module.stop_streaming()
+	if response_parser.has_tool_calls():
+		_handle_tool_calls()
+	else:
+		_finalize_stream_response()
 
 func _on_content_received(content: String):
 	"""接收到新内容"""
@@ -488,9 +523,10 @@ func _on_mood_extracted(mood_name_en: String):
 
 func _finalize_stream_response():
 	"""完成流式响应处理"""
-	http_client_module.stop_streaming()
 	is_chatting = false
 	chat_status_changed.emit("")
+	recall_display_updated.emit("clear", "", true)
+	_tool_round = 0
 
 	var extracted_fields = response_parser.finalize_response()
 	
@@ -539,6 +575,259 @@ func _finalize_stream_response():
 	if config_loader and config_loader.load_generation_options():
 		print("开始生成对话选项...")
 		options_generator.generate_options(current_conversation)
+
+# ── 主动检索（回忆工具）──
+
+func _build_recall_tools(memory_mgr: Node) -> Array:
+	"""按配置组装当前可用的回忆工具"""
+	var tools := []
+	if memory_mgr.is_active_semantic_enabled():
+		tools.append({
+			"type": "function",
+			"function": {
+				"name": "semantic_search",
+				"description": "语义回忆：用自然语言描述你想回忆的内容。可以一次给一个或多个问题。",
+				"parameters": {
+					"type": "object",
+					"properties": {
+						"queue": {"type": "array", "items": {"type": "string"}, "description": "一个或多个用于语义检索的问题"},
+						"top_k": {"type": "integer", "description": "返回的检索结果总数量，默认5"}
+					},
+					"required": ["queue"]
+				}
+			}
+		})
+	if memory_mgr.is_active_keyword_enabled():
+		tools.append({
+			"type": "function",
+			"function": {
+				"name": "keyword_search",
+				"description": "关键词回忆：按关键词精确查找记忆。可以一次给一个或多个关键词。",
+				"parameters": {
+					"type": "object",
+					"properties": {
+						"key": {"type": "array", "items": {"type": "string"}, "description": "一个或多个关键词"},
+						"top_k": {"type": "integer", "description": "返回的检索结果总数量，默认5"}
+					},
+					"required": ["key"]
+				}
+			}
+		})
+	if memory_mgr.is_active_time_enabled():
+		tools.append({
+			"type": "function",
+			"function": {
+				"name": "time_search",
+				"description": "时间回忆：查找某个时间点附近/之前/之后发生的记忆。",
+				"parameters": {
+					"type": "object",
+					"properties": {
+						"time": {"type": "string", "description": "时间点，格式为 YYYY-MM-DD HH:MM"},
+						"direction": {"type": "string", "enum": ["更早", "更晚", "附近"], "description": "检索方向"},
+						"top_k": {"type": "integer", "description": "返回的检索结果总数量，默认5"}
+					},
+					"required": ["time"]
+				}
+			}
+		})
+	if memory_mgr.is_active_detail_enabled():
+		tools.append({
+			"type": "function",
+			"function": {
+				"name": "detail_search",
+				"description": "详细回忆：查询某条记忆的完整对话。只能根据记忆的前几个字来确认是哪一条。",
+				"parameters": {
+					"type": "object",
+					"properties": {
+						"suf": {"type": "string", "description": "记忆的前几个字"}
+					},
+					"required": ["suf"]
+				}
+			}
+		})
+	return tools
+
+func _handle_tool_calls():
+	"""执行本轮工具调用，把结果作为 tool 消息追加后继续请求（不写入长期上下文）"""
+	var tool_calls = response_parser.get_tool_calls()
+	if tool_calls.is_empty():
+		_finalize_stream_response()
+		return
+
+	_tool_round += 1
+	is_chatting = true
+	var messages: Array = http_request.get_meta("messages", [])
+	# assistant 消息携带 tool_calls，仅用于本次请求，不写入 current_conversation
+	var assistant_tool_calls := []
+	for tc in tool_calls:
+		assistant_tool_calls.append({
+			"id": str(tc.get("id", "")),
+			"type": "function",
+			"function": {"name": str(tc.get("name", "")), "arguments": str(tc.get("arguments", ""))}
+		})
+	messages.append({"role": "assistant", "content": null, "tool_calls": assistant_tool_calls})
+
+	chat_status_changed.emit("正在回忆")
+	for tc in tool_calls:
+		var result_text: String = await _execute_recall_tool(str(tc.get("name", "")), str(tc.get("arguments", "")))
+		messages.append({"role": "tool", "tool_call_id": str(tc.get("id", "")), "content": result_text})
+
+	# 回忆结束，隐藏气泡并继续请求；超过轮数上限后强制模型直接回复
+	recall_display_updated.emit("clear", "", true)
+	var allow_tools := _tool_round < MAX_TOOL_ROUNDS
+	_send_chat_request(messages, http_request.get_meta("item_data", {}), allow_tools)
+
+func _execute_recall_tool(tool_name: String, arguments_json: String) -> String:
+	"""执行单个回忆工具，返回给模型的文本结果"""
+	var memory_mgr = get_node_or_null("/root/MemoryManager")
+	if memory_mgr == null:
+		return "记忆系统不可用。"
+
+	var args: Dictionary = {}
+	var json = JSON.new()
+	if json.parse(arguments_json) == OK and json.data is Dictionary:
+		args = json.data
+
+	match tool_name:
+		"semantic_search":
+			var queue: Array = args.get("queue", [])
+			var top_k := int(args.get("top_k", 5))
+			var results = await memory_mgr.active_semantic_search(queue, top_k)
+			return memory_mgr.format_recall_results(results)
+		"keyword_search":
+			var keys: Array = args.get("key", [])
+			var top_k := int(args.get("top_k", 5))
+			var results = await memory_mgr.active_keyword_search(keys, top_k)
+			return memory_mgr.format_recall_results(results)
+		"time_search":
+			var time_str := str(args.get("time", ""))
+			var direction := str(args.get("direction", "附近"))
+			var top_k := int(args.get("top_k", 5))
+			var results = await memory_mgr.active_time_search(time_str, direction, top_k)
+			return memory_mgr.format_recall_results(results)
+		"detail_search":
+			return memory_mgr.active_detail_search(str(args.get("suf", "")))
+	return "未知的回忆工具：%s" % tool_name
+
+func _on_tool_call_delta(index: int, name: String, _arguments_chunk: String):
+	"""流式展示正在查询的问题/关键词/时间点"""
+	if name.is_empty() and index < response_parser.pending_tool_calls.size():
+		name = str(response_parser.pending_tool_calls[index].get("name", ""))
+	if name.is_empty():
+		return
+
+	chat_status_changed.emit("正在回忆")
+
+	# 切换到新的工具调用时，清空气泡并重置展示计数
+	if index != _recall_active_index:
+		_recall_active_index = index
+		_recall_shown_count = 0
+		_recall_last_time = ""
+		recall_display_updated.emit("clear", "", true)
+
+	var args := ""
+	if index < response_parser.pending_tool_calls.size():
+		args = str(response_parser.pending_tool_calls[index].get("arguments", ""))
+
+	match name:
+		"semantic_search":
+			var questions := _extract_complete_string_items(args, "queue")
+			for i in range(_recall_shown_count, questions.size()):
+				# 每个新问题替换当前气泡内容
+				recall_display_updated.emit("question", questions[i], true)
+			_recall_shown_count = max(_recall_shown_count, questions.size())
+		"keyword_search":
+			var keywords := _extract_complete_string_items(args, "key")
+			for i in range(_recall_shown_count, keywords.size()):
+				recall_display_updated.emit("keyword", keywords[i], false)
+			_recall_shown_count = max(_recall_shown_count, keywords.size())
+		"time_search":
+			var time_str := _extract_field_string(args, "time")
+			if not time_str.is_empty():
+				var direction := _extract_field_string(args, "direction")
+				var desc := _format_time_recall(time_str, direction)
+				if desc != _recall_last_time:
+					_recall_last_time = desc
+					recall_display_updated.emit("time", desc, true)
+
+func _format_time_recall(time_str: String, direction: String) -> String:
+	"""把时间检索参数转换为“3天前晚上之前/之后/左右”这样的展示文本"""
+	var iso := time_str.strip_edges().replace(" ", "T")
+	if iso.is_empty():
+		return ""
+	var relative := TimeUtil.to_natural_description(iso)
+	var suffix := ""
+	match direction:
+		"更早":
+			suffix = "之前"
+		"更晚":
+			suffix = "之后"
+		_:
+			suffix = "左右"
+	return "%s%s" % [relative, suffix]
+
+func _extract_complete_string_items(json_text: String, field: String) -> Array:
+	"""从（可能仍在流式写入的）JSON 文本中提取指定数组字段里已完整的字符串项"""
+	var items := []
+	var key_pos = json_text.find('"%s"' % field)
+	if key_pos == -1:
+		return items
+	var bracket = json_text.find("[", key_pos)
+	if bracket == -1:
+		return items
+	var i = bracket + 1
+	while i < json_text.length():
+		var ch = json_text[i]
+		if ch == '"':
+			var parsed = _read_json_string(json_text, i)
+			if not parsed.get("closed", false):
+				break
+			items.append(parsed.value)
+			i = int(parsed.end) + 1
+		elif ch == ']':
+			break
+		else:
+			i += 1
+	return items
+
+func _extract_field_string(json_text: String, field: String) -> String:
+	"""从（可能仍在流式写入的）JSON 文本中提取指定字段的字符串值"""
+	var key_pos = json_text.find('"%s"' % field)
+	if key_pos == -1:
+		return ""
+	var colon = json_text.find(":", key_pos)
+	if colon == -1:
+		return ""
+	var quote = json_text.find('"', colon + 1)
+	if quote == -1:
+		return ""
+	var parsed = _read_json_string(json_text, quote)
+	return str(parsed.get("value", "")) if parsed.get("closed", false) else ""
+
+func _read_json_string(text: String, quote_start: int) -> Dictionary:
+	"""读取从 quote_start 开始的 JSON 字符串，返回 {value, end, closed}"""
+	var i = quote_start + 1
+	var value := ""
+	var escape := false
+	while i < text.length():
+		var ch = text[i]
+		if escape:
+			match ch:
+				"n": value += "\n"
+				"t": value += "\t"
+				"r": value += "\r"
+				'"': value += '"'
+				"\\": value += "\\"
+				_: value += ch
+			escape = false
+		elif ch == "\\":
+			escape = true
+		elif ch == '"':
+			return {"value": value, "end": i, "closed": true}
+		else:
+			value += ch
+		i += 1
+	return {"value": value, "end": text.length(), "closed": false}
 
 func _apply_mood_immediately(mood_name_en: String):
 	"""立即应用模型返回的英文mood名称"""

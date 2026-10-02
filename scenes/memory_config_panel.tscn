@@ -7,7 +7,7 @@
 texture = ExtResource("2_7yh58")
 modulate_color = Color(1, 1, 1, 0.32941177)
 
-[node name="MemoryConfigPanel" type="MarginContainer" unique_id=1293565147]
+[node name="MemoryConfigPanel" type="MarginContainer" unique_id=1974489868]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -19,34 +19,34 @@ theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 script = ExtResource("1")
 
-[node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=545062672]
+[node name="ScrollContainer" type="ScrollContainer" parent="." unique_id=463856378]
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxTexture_g6blp")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer" unique_id=2098258094]
+[node name="VBoxContainer" type="VBoxContainer" parent="ScrollContainer" unique_id=2101852039]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 15
 
-[node name="AdvancedHeader" type="HBoxContainer" parent="ScrollContainer/VBoxContainer" unique_id=1880060553]
+[node name="AdvancedHeader" type="HBoxContainer" parent="ScrollContainer/VBoxContainer" unique_id=1321792879]
 layout_mode = 2
 alignment = 2
 
-[node name="DescLabel" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedHeader" unique_id=662078604]
+[node name="DescLabel" type="Label" parent="ScrollContainer/VBoxContainer/AdvancedHeader" unique_id=916185815]
 layout_mode = 2
 size_flags_horizontal = 3
-text = "            记忆系统"
+text = "                 记忆系统"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="AdvancedCheckBox" type="CheckButton" parent="ScrollContainer/VBoxContainer/AdvancedHeader" unique_id=329556871]
+[node name="AdvancedCheckBox" type="CheckButton" parent="ScrollContainer/VBoxContainer/AdvancedHeader" unique_id=1595590404]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0
 tooltip_text = "显示检索、推理和知识图谱的详细参数"
 text = "高级选项"
 
-[node name="LinkButton" type="LinkButton" parent="ScrollContainer/VBoxContainer" unique_id=457864820]
+[node name="LinkButton" type="LinkButton" parent="ScrollContainer/VBoxContainer" unique_id=1222667174]
 layout_mode = 2
 theme_override_colors/font_color = Color(0.40784314, 0.6745098, 1, 1)
 theme_override_colors/font_focus_color = Color(0.9411765, 0.94509804, 0, 1)
@@ -54,240 +54,18 @@ theme_override_colors/font_hover_color = Color(0.9411765, 0.94509804, 0, 1)
 text = "❓了解更多"
 uri = "https://cabm.shasnow.top/site/CABM-ED/docs/memory-system.html"
 
-[node name="HSeparator" type="HSeparator" parent="ScrollContainer/VBoxContainer" unique_id=3956583]
+[node name="HSeparator" type="HSeparator" parent="ScrollContainer/VBoxContainer" unique_id=1417593081]
 layout_mode = 2
 
-[node name="VectorContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer" unique_id=306522481]
+[node name="ContentContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer" unique_id=1932332097]
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 5
 
-[node name="VectorTitle" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer" unique_id=1916308663]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "向量记忆"
-
-[node name="SaveVectorCheckBox" type="CheckBox" parent="ScrollContainer/VBoxContainer/VectorContainer" unique_id=534406416]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 0
-tooltip_text = "保存长期记忆"
-text = "保存记忆向量"
-
-[node name="SemanticSearchCheckBox" type="CheckBox" parent="ScrollContainer/VBoxContainer/VectorContainer" unique_id=1049235329]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 0
-tooltip_text = "启用长期记忆"
-text = "└启用语义检索"
-
-[node name="RetrievalAdvanced" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer" unique_id=1534345467]
-layout_mode = 2
-theme_override_constants/separation = 3
-
-[node name="RetrievalTopKRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced" unique_id=1096030282]
+[node name="HSeparator2" type="HSeparator" parent="ScrollContainer/VBoxContainer" unique_id=98900016]
 layout_mode = 2
 
-[node name="RetrievalTopKLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RetrievalTopKRow" unique_id=1096030281]
-layout_mode = 2
-tooltip_text = "每次语义检索返回的记忆条数"
-theme_override_font_sizes/font_size = 20
-text = "       ·检索数量"
-
-[node name="RetrievalTopK" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RetrievalTopKRow" unique_id=2059880948]
-layout_mode = 2
-min_value = 1.0
-value = 5.0
-suffix = " 条"
-
-[node name="LexicalWeightRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced" unique_id=921181056]
-layout_mode = 2
-
-[node name="LexicalWeightLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/LexicalWeightRow" unique_id=921181055]
-layout_mode = 2
-tooltip_text = "混合检索中关键词匹配所占的权重"
-theme_override_font_sizes/font_size = 20
-text = "       ·关键词权重"
-
-[node name="LexicalWeight" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/LexicalWeightRow" unique_id=2084631564]
-layout_mode = 2
-max_value = 1.0
-step = 0.01
-value = 0.28
-
-[node name="RetrievalMinSimilarityRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced" unique_id=377156257]
-layout_mode = 2
-
-[node name="RetrievalMinSimilarityLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RetrievalMinSimilarityRow" unique_id=377156256]
-layout_mode = 2
-tooltip_text = "低于此分数的记忆会被过滤"
-theme_override_font_sizes/font_size = 20
-text = "       ·相似度阈值"
-
-[node name="RetrievalMinSimilarity" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RetrievalMinSimilarityRow" unique_id=2036937479]
-layout_mode = 2
-max_value = 1.0
-step = 0.01
-value = 0.3
-
-[node name="RawDetailMaxCharsRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced" unique_id=122026890]
-layout_mode = 2
-
-[node name="RawDetailMaxCharsLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RawDetailMaxCharsRow" unique_id=122026889]
-layout_mode = 2
-tooltip_text = "命中摘要后额外展开的原始对话最大字符数"
-theme_override_font_sizes/font_size = 20
-text = "       ·原始细节长度"
-
-[node name="RawDetailMaxChars" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/RetrievalAdvanced/RawDetailMaxCharsRow" unique_id=1546069462]
-layout_mode = 2
-max_value = 5000.0
-step = 100.0
-value = 1200.0
-suffix = " 字"
-
-[node name="JiebaCheckBox" type="CheckBox" parent="ScrollContainer/VBoxContainer/VectorContainer" unique_id=1676318470]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 0
-tooltip_text = "使用 Jieba 对中文进行词语切分；关闭时使用轻量的逐字匹配"
-text = "    ├分词匹配"
-
-[node name="PreRecallReasoningCheckBox" type="CheckBox" parent="ScrollContainer/VBoxContainer/VectorContainer" unique_id=1988265438]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 0
-tooltip_text = "优化检索查询，如需启用建议同时启用重排序"
-text = "    ├召回前推理"
-
-[node name="ReasoningAdvanced" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer" unique_id=378329353]
-layout_mode = 2
-theme_override_constants/separation = 3
-
-[node name="ReasoningCountRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer/ReasoningAdvanced" unique_id=1997972668]
-layout_mode = 2
-
-[node name="ReasoningCountLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/ReasoningAdvanced/ReasoningCountRow" unique_id=1997972667]
-layout_mode = 2
-tooltip_text = "召回前推理最多生成的优化查询数量"
-theme_override_font_sizes/font_size = 20
-text = "            ·推理条数"
-
-[node name="ReasoningCount" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/ReasoningAdvanced/ReasoningCountRow" unique_id=1117389554]
-layout_mode = 2
-min_value = 1.0
-max_value = 20.0
-value = 3.0
-suffix = " 条"
-
-[node name="RerankCheckBox" type="CheckBox" parent="ScrollContainer/VBoxContainer/VectorContainer" unique_id=1284096644]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 0
-tooltip_text = "优化检索结果"
-text = "    └启用重排序"
-
-[node name="RerankAdvanced" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer" unique_id=1689740625]
-layout_mode = 2
-theme_override_constants/separation = 3
-
-[node name="RerankMultiplierRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/VectorContainer/RerankAdvanced" unique_id=1900552611]
-layout_mode = 2
-
-[node name="RerankMultiplierLabel" type="Label" parent="ScrollContainer/VBoxContainer/VectorContainer/RerankAdvanced/RerankMultiplierRow" unique_id=1900552610]
-layout_mode = 2
-tooltip_text = "启用重排序时，先取检索数量 × 倍率的候选"
-theme_override_font_sizes/font_size = 20
-text = "            ·候选倍数"
-
-[node name="RerankMultiplier" type="SpinBox" parent="ScrollContainer/VBoxContainer/VectorContainer/RerankAdvanced/RerankMultiplierRow" unique_id=1143146003]
-layout_mode = 2
-min_value = 1.0
-max_value = 20.0
-value = 5.0
-suffix = " 倍"
-
-[node name="TimeAwareEnhanceCheckBox" type="CheckBox" parent="ScrollContainer/VBoxContainer/VectorContainer" unique_id=1301749715]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 0
-tooltip_text = "重排序时加入时间，但是提升有限"
-text = "        └时间感知增强"
-
-[node name="HSeparator2" type="HSeparator" parent="ScrollContainer/VBoxContainer" unique_id=1446939343]
-layout_mode = 2
-
-[node name="KGContainer" type="VBoxContainer" parent="ScrollContainer/VBoxContainer" unique_id=2063283786]
-layout_mode = 2
-theme_override_constants/separation = 5
-
-[node name="KGTitle" type="Label" parent="ScrollContainer/VBoxContainer/KGContainer" unique_id=409585703]
-layout_mode = 2
-theme_override_font_sizes/font_size = 24
-text = "知识图谱"
-
-[node name="SaveKGCheckBox" type="CheckBox" parent="ScrollContainer/VBoxContainer/KGContainer" unique_id=869138606]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 0
-tooltip_text = "保存学习到的知识"
-text = "保存知识图谱"
-
-[node name="KGSearchCheckBox" type="CheckBox" parent="ScrollContainer/VBoxContainer/KGContainer" unique_id=546787168]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 0
-tooltip_text = "使用学习到的知识"
-text = "├启用图谱检索"
-
-[node name="KnowledgeAdvanced" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/KGContainer" unique_id=968345082]
-layout_mode = 2
-theme_override_constants/separation = 3
-
-[node name="KnowledgeTopKRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/KGContainer/KnowledgeAdvanced" unique_id=593253136]
-layout_mode = 2
-
-[node name="KnowledgeTopKLabel" type="Label" parent="ScrollContainer/VBoxContainer/KGContainer/KnowledgeAdvanced/KnowledgeTopKRow" unique_id=593253135]
-layout_mode = 2
-tooltip_text = "每次知识图谱检索提取的关键词和结果数量"
-theme_override_font_sizes/font_size = 20
-text = "       ·知识检索数量"
-
-[node name="KnowledgeTopK" type="SpinBox" parent="ScrollContainer/VBoxContainer/KGContainer/KnowledgeAdvanced/KnowledgeTopKRow" unique_id=638302058]
-layout_mode = 2
-min_value = 1.0
-value = 6.0
-suffix = " 条"
-
-[node name="EnableForgettingCheckBox" type="CheckBox" parent="ScrollContainer/VBoxContainer/KGContainer" unique_id=2010463718]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 0
-tooltip_text = "遗忘掉过时的知识"
-text = "└启用知识遗忘"
-
-[node name="ForgettingAdvanced" type="VBoxContainer" parent="ScrollContainer/VBoxContainer/KGContainer" unique_id=854836652]
-layout_mode = 2
-theme_override_constants/separation = 3
-
-[node name="ForgettingRateRow" type="HBoxContainer" parent="ScrollContainer/VBoxContainer/KGContainer/ForgettingAdvanced" unique_id=1063571124]
-layout_mode = 2
-
-[node name="ForgettingRateLabel" type="Label" parent="ScrollContainer/VBoxContainer/KGContainer/ForgettingAdvanced/ForgettingRateRow" unique_id=1063571123]
-layout_mode = 2
-tooltip_text = "每次执行知识遗忘时，知识强度减少的比例"
-theme_override_font_sizes/font_size = 20
-text = "       ·遗忘速率"
-
-[node name="ForgettingRate" type="SpinBox" parent="ScrollContainer/VBoxContainer/KGContainer/ForgettingAdvanced/ForgettingRateRow" unique_id=281532606]
-layout_mode = 2
-max_value = 1.0
-step = 0.01
-value = 0.1
-
-[node name="HSeparator3" type="HSeparator" parent="ScrollContainer/VBoxContainer" unique_id=1558242744]
-layout_mode = 2
-
-[node name="ResetDefaultsButton" type="Button" parent="ScrollContainer/VBoxContainer" unique_id=1104529873]
+[node name="ResetDefaultsButton" type="Button" parent="ScrollContainer/VBoxContainer" unique_id=1002574288]
 layout_mode = 2
 tooltip_text = "将所有开关与高级参数恢复为默认值"
 text = "恢复默认"

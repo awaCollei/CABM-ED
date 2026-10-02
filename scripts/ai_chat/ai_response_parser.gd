@@ -7,6 +7,7 @@ signal content_received(content: String)
 signal mood_extracted(mood_name_en: String)
 signal parse_error(error_message: String)
 signal warning(message: String)  # 新增：警告信号
+signal tool_call_delta(index: int, name: String, arguments_chunk: String)  # 工具调用参数流式增量
 
 var sse_buffer: String = ""
 var json_response_buffer: String = ""
@@ -16,6 +17,9 @@ var pending_goto: int = -1  # 暂存的goto字段（-1表示无暂存）
 var fallback_extraction_used: bool = false
 var empty_msg_response_detected: bool = false
 var last_error_message: String = ""
+# 流式累积的工具调用：[{ "id": "", "name": "", "arguments": "" }]
+var pending_tool_calls: Array = []
+var last_finish_reason: String = ""
 
 func reset():
 	"""重置所有缓冲区"""
@@ -27,6 +31,8 @@ func reset():
 	fallback_extraction_used = false
 	empty_msg_response_detected = false
 	last_error_message = ""
+	pending_tool_calls = []
+	last_finish_reason = ""
 
 func process_stream_data(data: String):
 	"""处理流式响应数据（SSE格式）"""
@@ -64,12 +70,55 @@ func _parse_stream_chunk(json_str: String):
 	if not chunk.has("choices") or chunk.choices.is_empty():
 		return
 
-	var delta = chunk.choices[0].get("delta", {})
+	var choice = chunk.choices[0]
+	var delta = choice.get("delta", {})
+	if choice.has("finish_reason") and choice.finish_reason != null:
+		last_finish_reason = str(choice.finish_reason)
+
+	# 工具调用（回忆工具）：按 index 流式累积
+	if delta.has("tool_calls") and delta.tool_calls != null:
+		_accumulate_tool_calls(delta.tool_calls)
+
 	if delta.has("content") and delta.content != null:
 		var content = delta.content
 		json_response_buffer += content
 		# print("接收到内容块: ", content)
 		_extract_msg_from_buffer()
+
+func _accumulate_tool_calls(tool_calls_delta: Array) -> void:
+	"""累积流式工具调用增量（按 index 归并 id/name/arguments）"""
+	for tool_call in tool_calls_delta:
+		if not (tool_call is Dictionary):
+			continue
+		var stream_index := int(tool_call.get("index", pending_tool_calls.size()))
+		while pending_tool_calls.size() <= stream_index:
+			pending_tool_calls.append({"id": "", "name": "", "arguments": ""})
+		var entry: Dictionary = pending_tool_calls[stream_index]
+
+		if tool_call.has("id") and tool_call.id != null and not str(tool_call.id).is_empty():
+			entry["id"] = str(tool_call.id)
+
+		var function_data = tool_call.get("function", {})
+		if not (function_data is Dictionary):
+			continue
+		var name_chunk := "" if function_data.get("name", null) == null else str(function_data.get("name"))
+		var args_chunk := "" if function_data.get("arguments", null) == null else str(function_data.get("arguments"))
+
+		if not name_chunk.is_empty() and not entry["name"].ends_with(name_chunk):
+			entry["name"] += name_chunk
+		if not args_chunk.is_empty():
+			entry["arguments"] += args_chunk
+
+		if not name_chunk.is_empty() or not args_chunk.is_empty():
+			tool_call_delta.emit(stream_index, entry["name"], args_chunk)
+
+func has_tool_calls() -> bool:
+	"""是否已累积到工具调用"""
+	return not pending_tool_calls.is_empty()
+
+func get_tool_calls() -> Array:
+	"""获取累积的工具调用（深拷贝）"""
+	return pending_tool_calls.duplicate(true)
 
 func _extract_msg_from_buffer():
 	"""从流式缓冲中实时提取msg字段内容"""

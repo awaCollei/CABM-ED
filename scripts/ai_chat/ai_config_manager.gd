@@ -230,25 +230,54 @@ func load_response_mode() -> String:
 
 
 ## 记忆配置的唯一默认来源。UI、检索和知识图谱都从这里读取，避免各处散落默认值。
+## 结构为扁平键 + 依赖关系（而非树）：每项依赖由 UI 与运行时各自校验。
+##   save_memory_vectors  → 语义检索（主动 / 被动）
+##   save_memory_keywords → 关键词检索（主动 / 被动）
+##   时间检索 / 详细检索依赖任一存储（原始对话始终随记忆一起保存）
 const MEMORY_DEFAULTS := {
+	# ── 存储 ──
 	"save_memory_vectors": true,
-	"enable_semantic_search": true,
-	"use_jieba_tokenization": false,
-	"enable_reranking": true,
-	"enable_time_aware_reranking": false,
-	"enable_pre_recall_reasoning": false,
+	"save_memory_keywords": true,
+	"keyword_count": 8,
+	# ── 主动检索（工具调用）：全部默认开启 ──
+	"enable_active_semantic_search": true,
+	"enable_active_keyword_search": true,
+	"enable_active_time_search": true,
+	"enable_active_detail_search": true,
+	# 主动检索 - 语义高级项（主动检索的查询由模型通过工具直接给出，无需召回前推理）
+	"active_reranking": true,
+	"active_rerank_multiplier": 5,
+	"active_time_aware": true,
+	# ── 被动检索：默认关闭，由玩家选择开启 ──
+	"enable_passive_semantic_search": false,
+	"enable_passive_keyword_search": false,
+	"passive_retrieval_top_k": 5,
+	"passive_min_similarity": 0.3,
+	"passive_reranking": true,
+	"passive_rerank_multiplier": 5,
+	"passive_time_aware": false,
+	"passive_pre_recall_reasoning": false,
+	"passive_reasoning_count": 3,
+	# ── 知识图谱（被动，结构不变）──
 	"save_knowledge_graph": true,
 	"enable_kg_search": true,
 	"enable_knowledge_forgetting": true,
-	"advanced_options_enabled": false,
-	"retrieval_top_k": 5,
-	"retrieval_min_similarity": 0.3,
-	"lexical_match_weight": 0.28,
-	"raw_detail_max_chars": 1200,
-	"rerank_candidate_multiplier": 5,
-	"reasoning_query_count": 3,
 	"knowledge_top_k": 6,
-	"knowledge_forgetting_rate": 0.1
+	"knowledge_forgetting_rate": 0.1,
+	# ── UI 状态 ──
+	"advanced_options_enabled": false
+}
+
+# 旧配置键 → 新配置键，用于无感迁移（旧键曾是"被动检索"语义）
+const MEMORY_LEGACY_KEY_MAP := {
+	"enable_semantic_search": "enable_passive_semantic_search",
+	"enable_reranking": "passive_reranking",
+	"enable_time_aware_reranking": "passive_time_aware",
+	"enable_pre_recall_reasoning": "passive_pre_recall_reasoning",
+	"retrieval_top_k": "passive_retrieval_top_k",
+	"retrieval_min_similarity": "passive_min_similarity",
+	"rerank_candidate_multiplier": "passive_rerank_multiplier",
+	"reasoning_query_count": "passive_reasoning_count"
 }
 
 ## 保存记忆系统配置
@@ -261,17 +290,19 @@ func save_memory_config(memory_config: Dictionary) -> bool:
 ## 加载记忆系统配置
 func load_memory_config() -> Dictionary:
 	var config = load_config()
-	var default_config = MEMORY_DEFAULTS.duplicate(true)
-
-	if config.has("memory_system"):
-		var memory_config = config.memory_system
-		# 合并默认配置，确保所有字段都存在
-		for key in default_config.keys():
-			if not memory_config.has(key):
-				memory_config[key] = default_config[key]
-		return memory_config
-
-	return default_config
+	var memory_config: Dictionary = config.get("memory_system", {})
+	var merged := MEMORY_DEFAULTS.duplicate(true)
+	if memory_config is Dictionary:
+		# 旧键迁移：仅在用户尚未显式设置新键时生效
+		for legacy_key in MEMORY_LEGACY_KEY_MAP.keys():
+			var new_key: String = MEMORY_LEGACY_KEY_MAP[legacy_key]
+			if memory_config.has(legacy_key) and not memory_config.has(new_key):
+				merged[new_key] = memory_config[legacy_key]
+		# 合并用户已保存的值
+		for key in memory_config.keys():
+			if merged.has(key):
+				merged[key] = memory_config[key]
+	return merged
 
 
 ## 获取记忆系统默认配置（副本），供 UI 还原默认使用
@@ -333,6 +364,19 @@ func save_status_check(enabled: bool) -> bool:
 func load_status_check() -> bool:
 	var config = load_config()
 	return config.get("status_check", true)  # 默认开启
+
+
+## 保存回忆气泡设置（聊天设置中控制是否显示"正在回忆"气泡）
+func save_recall_bubble(enabled: bool) -> bool:
+	var config = load_config()
+	config["recall_bubble"] = enabled
+	return save_config(config)
+
+
+## 加载回忆气泡设置
+func load_recall_bubble() -> bool:
+	var config = load_config()
+	return config.get("recall_bubble", true)  # 默认开启
 
 
 ## 保存使用内置密钥设置

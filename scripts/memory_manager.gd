@@ -290,14 +290,70 @@ func get_relevant_memory_for_chat(context: String, exclude_timestamps: Array = [
 	var ai_config_mgr = get_node_or_null("/root/AIConfigManager")
 	if ai_config_mgr:
 		var memory_config: Dictionary = ai_config_mgr.load_memory_config()
-		top_k = memory_config.retrieval_top_k
-		min_similarity = memory_config.retrieval_min_similarity
+		top_k = int(memory_config.get("passive_retrieval_top_k", top_k))
+		min_similarity = float(memory_config.get("passive_min_similarity", min_similarity))
 	
 	print("开始检索记忆：top_k=%d, min_similarity=%.2f, 排除=%d条" % [top_k, min_similarity, exclude_timestamps.size()])
 	var result = await memory_system.get_relevant_memory(context, top_k, timeout, min_similarity, exclude_timestamps)
 	print("记忆检索完成，结果长度: %d" % result.length())
 	
 	return result
+
+## 主动检索是否启用（任一回忆工具可用）
+func is_active_retrieval_enabled() -> bool:
+	if not memory_system:
+		return false
+	return memory_system.is_active_retrieval_enabled()
+
+func is_active_semantic_enabled() -> bool:
+	return memory_system != null and memory_system.is_active_semantic_enabled()
+
+func is_active_keyword_enabled() -> bool:
+	return memory_system != null and memory_system.is_active_keyword_enabled()
+
+func is_active_time_enabled() -> bool:
+	return memory_system != null and memory_system.is_active_time_enabled()
+
+func is_active_detail_enabled() -> bool:
+	return memory_system != null and memory_system.is_active_detail_enabled()
+
+## 主动语义检索：返回结果数组
+func active_semantic_search(queries: Array, top_k: int = 5) -> Array:
+	if not is_initialized:
+		await memory_system_ready
+	if not memory_system:
+		return []
+	return await memory_system.active_semantic_search(queries, top_k)
+
+## 主动关键词检索：返回结果数组
+func active_keyword_search(keywords: Array, top_k: int = 5) -> Array:
+	if not is_initialized:
+		await memory_system_ready
+	if not memory_system:
+		return []
+	return await memory_system.active_keyword_search(keywords, top_k)
+
+## 主动时间检索：返回结果数组
+func active_time_search(time_str: String, direction: String = "附近", top_k: int = 5) -> Array:
+	if not is_initialized:
+		await memory_system_ready
+	if not memory_system:
+		return []
+	return await memory_system.active_time_search(time_str, direction, top_k)
+
+## 主动详细检索：返回完整对话文本
+func active_detail_search(prefix: String) -> String:
+	if not is_initialized:
+		await memory_system_ready
+	if not memory_system:
+		return "记忆系统未就绪。"
+	return memory_system.active_detail_search(prefix)
+
+## 将主动检索结果格式化为可读文本
+func format_recall_results(results: Array) -> String:
+	if not memory_system:
+		return "未找到相关记忆。"
+	return memory_system.format_results(results, true)
 
 func save():
 	"""手动保存记忆数据"""

@@ -57,6 +57,12 @@ var goto_notification_label: Label = null
 
 var _status_check_enabled: bool = false
 
+# 回忆气泡（主动检索时在角色右侧显示正在查询的问题/关键词/时间点）
+var recall_bubble: PanelContainer = null
+var recall_label: Label = null
+var _recall_bubble_enabled: bool = true
+var _recall_bubble_text: String = ""
+
 
 func _ensure_ui_structure():
 	"""简化的UI结构检查"""
@@ -114,6 +120,7 @@ func _ready():
 		ai_service.chat_error.connect(_on_ai_error)
 		ai_service.options_generated.connect(_on_options_generated)
 		ai_service.chat_status_changed.connect(_on_chat_status_changed)
+		ai_service.recall_display_updated.connect(_on_recall_display_updated)
 
 	# 连接事件管理器信号
 	if has_node("/root/EventManager"):
@@ -245,6 +252,9 @@ func _load_config():
 
 		# 加载状态显示设置
 		_status_check_enabled = config_mgr.load_status_check()
+
+		# 加载回忆气泡设置
+		_recall_bubble_enabled = config_mgr.load_recall_bubble()
 	else:
 		print("ChatDialog: 警告 - AIConfigManager未找到，使用默认值 false")
 		top_input_enabled = false
@@ -285,6 +295,10 @@ func _apply_ui_style(style_id: String) -> void:
 	_apply_button_opacity_tree(
 		self, button_opacity if current_ui_style == UIStyleFactory.STYLE_DEFAULT else 1.0
 	)
+	if recall_bubble != null:
+		recall_bubble.add_theme_stylebox_override("panel", _build_recall_bubble_style())
+	if recall_label != null:
+		recall_label.add_theme_color_override("font_color", _recall_bubble_font_color())
 	_apply_input_placeholder()
 
 
@@ -465,6 +479,7 @@ func _setup_input_mode():
 		pic_button.modulate.a = 1.0
 	continue_indicator.visible = false
 	end_button.visible = true
+	_hide_recall_bubble()
 	input_field.text = ""
 	_apply_input_placeholder()
 	input_field.modulate.a = 1.0
@@ -589,6 +604,8 @@ func hide_dialog():
 
 	if continue_indicator:
 		continue_indicator.visible = false
+
+	_hide_recall_bubble()
 
 	var tween = create_tween()
 	tween.set_parallel(true)
@@ -1482,3 +1499,123 @@ func _on_chat_status_changed(status: String):
 	else:
 		status_label.text = status
 		status_label.visible = true
+
+
+## 设置回忆气泡开关（由设置面板调用）
+func set_recall_bubble_enabled(enabled: bool):
+	_recall_bubble_enabled = enabled
+	if not enabled:
+		_hide_recall_bubble()
+	print("回忆气泡已%s" % ("启用" if enabled else "禁用"))
+
+
+## 响应回忆展示信号：kind ∈ question/keyword/time/clear
+func _on_recall_display_updated(kind: String, text: String, replace: bool):
+	if not _recall_bubble_enabled or not _chat_active:
+		return
+
+	if kind == "clear":
+		_hide_recall_bubble()
+		return
+
+	if kind == "keyword" and not replace:
+		# 关键词逐个流式取出，用"……"分隔追加
+		if _recall_bubble_text.is_empty():
+			_recall_bubble_text = text
+		else:
+			_recall_bubble_text += "……" + text
+	else:
+		# 问题/时间点：替换当前气泡内容
+		_recall_bubble_text = text
+
+	if _recall_bubble_text.is_empty():
+		return
+
+	_ensure_recall_bubble()
+	recall_label.text = "💭 " + _recall_bubble_text
+	_position_recall_bubble()
+	recall_bubble.visible = true
+
+
+## 创建回忆气泡（懒加载，添加到主场景以便定位到角色右侧）
+func _ensure_recall_bubble():
+	if recall_bubble != null:
+		return
+
+	recall_bubble = PanelContainer.new()
+	recall_bubble.name = "RecallBubble"
+	recall_bubble.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	recall_bubble.visible = false
+	recall_bubble.add_theme_stylebox_override("panel", _build_recall_bubble_style())
+
+	recall_label = Label.new()
+	recall_label.name = "RecallLabel"
+	recall_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	recall_label.custom_minimum_size = Vector2(160, 0)
+	recall_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	recall_label.add_theme_font_size_override("font_size", 15)
+	recall_label.add_theme_color_override("font_color", _recall_bubble_font_color())
+	recall_bubble.add_child(recall_label)
+
+	var main_scene = get_tree().current_scene
+	if main_scene == null:
+		main_scene = self
+	main_scene.add_child(recall_bubble)
+
+
+func _recall_bubble_font_color() -> Color:
+	# create_theme 在默认风格下返回 null，此时使用默认配色的文字色
+	if current_ui_style == UIStyleFactory.STYLE_DEFAULT:
+		return Color(0.243, 0.196, 0.153)
+	var theme := UIStyleFactory.create_theme(current_ui_style, button_opacity, dialog_opacity)
+	if theme == null:
+		return Color(0.243, 0.196, 0.153)
+	return theme.get_color("font_color", "Label")
+
+
+func _build_recall_bubble_style() -> StyleBox:
+	# 💭 思考气泡：大圆角 + 半透明底 + 柔和描边
+	if current_ui_style == UIStyleFactory.STYLE_DEFAULT:
+		var style := StyleBoxFlat.new()
+		style.bg_color = Color(1.0, 1.0, 1.0, 0.9)
+		style.border_color = Color(0.66, 0.54, 0.34, 0.6)
+		style.set_border_width_all(1)
+		style.set_corner_radius_all(16)
+		style.set_content_margin_all(10)
+		style.shadow_color = Color(0, 0, 0, 0.18)
+		style.shadow_size = 5
+		return style
+	# 其它风格沿用主题面板样式（保证文字与底色协调），并放大圆角贴近气泡观感
+	var base := UIStyleFactory.create_panel_style(current_ui_style, dialog_opacity)
+	if base is StyleBoxFlat:
+		var flat := (base as StyleBoxFlat).duplicate() as StyleBoxFlat
+		flat.set_corner_radius_all(16)
+		return flat
+	return base
+
+
+## 将气泡定位到角色右侧
+func _position_recall_bubble():
+	if recall_bubble == null:
+		return
+
+	var character = null
+	if get_tree().current_scene:
+		character = get_tree().current_scene.get_node_or_null("Background/Character")
+
+	recall_bubble.set_anchors_preset(Control.PRESET_TOP_LEFT)
+	if character is Control:
+		var rect: Rect2 = (character as Control).get_global_rect()
+		recall_bubble.global_position = Vector2(
+			rect.position.x + rect.size.x + 16.0, rect.position.y + rect.size.y * 0.2
+		)
+	else:
+		# 找不到角色时退回到屏幕右侧中上部
+		var viewport_size = get_viewport_rect().size
+		recall_bubble.global_position = Vector2(viewport_size.x - 360.0, viewport_size.y * 0.2)
+
+
+func _hide_recall_bubble():
+	_recall_bubble_text = ""
+	if recall_bubble != null:
+		recall_bubble.visible = false
