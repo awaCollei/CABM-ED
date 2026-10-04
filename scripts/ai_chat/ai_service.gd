@@ -755,15 +755,16 @@ func _format_time_recall(time_str: String, direction: String) -> String:
 	if iso.is_empty():
 		return ""
 	var relative := TimeUtil.to_natural_description(iso)
-	var suffix := ""
-	match direction:
-		"更早":
-			suffix = "之前"
-		"更晚":
-			suffix = "之后"
-		_:
-			suffix = "左右"
-	return "%s%s" % [relative, suffix]
+	return relative
+	# var suffix := ""
+	# match direction:
+	# 	"更早":
+	# 		suffix = "之前"
+	# 	"更晚":
+	# 		suffix = "之后"
+	# 	_:
+	# 		suffix = "左右"
+	# return "%s%s" % [relative, suffix]
 
 func _extract_complete_string_items(json_text: String, field: String) -> Array:
 	"""从（可能仍在流式写入的）JSON 文本中提取指定数组字段里已完整的字符串项"""
