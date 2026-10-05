@@ -10,7 +10,13 @@ class JiebaKeywordExtractor : public RefCounted {
     GDCLASS(JiebaKeywordExtractor, RefCounted)
 
 private:
-    // 可以在这里添加私有成员变量
+    // 延迟初始化，避免每次调用都重新加载词典
+    // 用 void* 是为了不在头文件里暴露 cppjieba 类型
+    void *extractor_ptr_ = nullptr;
+    bool   init_attempted_ = false;
+    bool   init_ok_ = false;
+
+    bool ensure_extractor();
 
 protected:
     static void _bind_methods();
