@@ -29,6 +29,7 @@ func _ready():
 	language_option.add_item("汉语")
 	language_option.add_item("英语")
 	language_option.add_item("日语")
+	language_option.add_item("粤语")
 	language_option.select(0)
 
 func _on_close_pressed():

@@ -165,8 +165,8 @@ autowrap_mode = 3
 [node name="HintLabel" type="Label" parent="ScrollContainer/VBoxContainer" unique_id=613800353]
 layout_mode = 2
 theme_override_font_sizes/font_size = 18
-text = "提示：
-• 「启用语音合成」那边有个开关，默认是关的，你是不是没看见（
+text = "• 「启用语音合成」那边有个开关，默认是关的，你是不是没看见（
+• 汉语和英语以外的语言由于模型自身的缺陷存在冒词等问题，请自行更换模型
 • 请确保语种相同——或者你就想听「日式中文」？
 • 参考音频需要是8~10秒的清晰、无噪音的WAV格式音频"
 autowrap_mode = 1

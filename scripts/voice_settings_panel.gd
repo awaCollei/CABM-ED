@@ -27,8 +27,8 @@ extends MarginContainer
 @onready var response_format_option = $ScrollContainer/VBoxContainer/AdvancedContainer/ResponseFormatContainer/ResponseFormatOption
 @onready var audio_content_field_input = $ScrollContainer/VBoxContainer/AdvancedContainer/AudioContentFieldContainer/AudioContentFieldInput
 
-var _lang_index_map = {0: "zh", 1: "en", 2: "ja"}
-var _lang_name_map = {"zh": "汉语", "en": "英语", "ja": "日语"}
+var _lang_index_map = {0: "zh", 1: "en", 2: "ja", 3: "yue"}
+var _lang_name_map = {"zh": "汉语", "en": "英语", "ja": "日语", "yue": "粤语"}
 var blue_theme = preload("res://theme/blue_button.tres")
 var red_theme = preload("res://theme/red_button.tres")
 const AddVoicePanelScene = preload("res://scenes/add_voice_panel.tscn")
@@ -75,6 +75,7 @@ func _ready():
 	language_option.add_item("汉语")
 	language_option.add_item("英语")
 	language_option.add_item("日语")
+	language_option.add_item("粤语")
 	
 	# 创建确认对话框
 	_create_confirmation_dialog()

@@ -263,9 +263,9 @@ func _save_voice_cache():
 
 func _init_builtin_voices():
 	"""初始化内置声线"""
-	for lang in ["zh", "en", "ja"]:
+	for lang in ["zh", "en", "ja", "yue"]:
 		var voice_id = "builtin-%s" % lang
-		var lang_name = {"zh":"汉语","en":"英语","ja":"日语"}[lang]
+		var lang_name = {"zh":"汉语","en":"英语","ja":"日语","yue":"粤语"}[lang]
 		
 		# 检查是否已存在
 		var exists = false
@@ -705,7 +705,14 @@ func translate_text(target_lang: String, text: String, callback: Callable) -> vo
 	var trans_params = summary_config.get("translation", {})
 
 	var system_prompt = trans_params.get("system_prompt", "")
-	system_prompt = system_prompt.replace("{language}", target_lang)
+	var lang_name_map = {
+		"zh": "中文",
+		"en": "英文",
+		"ja": "日文",
+		"yue": "繁体粤文"
+	}
+	var lang_name = lang_name_map.get(target_lang)
+	system_prompt = system_prompt.replace("{language}", lang_name)
 
 	var messages = [
 		{"role": "system", "content": system_prompt},
@@ -730,6 +737,7 @@ func translate_text(target_lang: String, text: String, callback: Callable) -> vo
 		return
 
 	callback.call(result.content)
+	# callback.call("<|"+target_lang+"|>"+result.content)
 
 func _synthesize_with_voice(sentence_hash: String, text: String, lang: String):
 	"""发送TTS请求
