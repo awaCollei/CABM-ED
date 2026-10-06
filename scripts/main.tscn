@@ -232,6 +232,12 @@ layout_mode = 2
 theme_override_font_sizes/font_size = 28
 text = "💤 助眠"
 
+[node name="BathButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer" unique_id=324894283]
+custom_minimum_size = Vector2(100, 0)
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "🛁 洗澡"
+
 [node name="GameButton" type="Button" parent="ActionMenu/MarginContainer/VBoxContainer" unique_id=2075903665]
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2

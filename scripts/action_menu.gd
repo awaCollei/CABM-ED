@@ -4,6 +4,7 @@ signal action_selected(action: String)
 signal game_selected(game_type: String)
 signal companion_mode_selected
 signal sleep_mode_selected
+signal bath_mode_selected
 
 const UIStyleFactory = preload("res://scripts/ui/ui_style_factory.gd")
 const ANIMATION_DURATION = 0.2
@@ -19,9 +20,16 @@ var current_ui_style: String = UIStyleFactory.STYLE_NOTEBOOK
 	if has_node("MarginContainer/VBoxContainer/CompanionButton")
 	else null
 )
-@onready var sleep_button: Button = (
+@onready
+var sleep_button: Button = (
 	$MarginContainer/VBoxContainer/SleepButton
 	if has_node("MarginContainer/VBoxContainer/SleepButton")
+	else null
+)
+@onready
+var bath_button: Button = (
+	$MarginContainer/VBoxContainer/BathButton
+	if has_node("MarginContainer/VBoxContainer/BathButton")
 	else null
 )
 @onready var game_button: Button = $MarginContainer/VBoxContainer/GameButton
@@ -62,6 +70,12 @@ func _ready():
 		print("助眠按钮信号已连接")
 	else:
 		print("警告：助眠按钮未找到")
+
+	if bath_button:
+		bath_button.pressed.connect(_on_bath_button_pressed)
+		print("洗澡按钮信号已连接")
+	else:
+		print("警告：洗澡按钮未找到")
 
 	if game_button:
 		game_button.pressed.connect(_on_game_button_pressed)
@@ -167,6 +181,10 @@ func show_menu(at_position: Vector2, scene_id: String = ""):
 	if sleep_button:
 		sleep_button.visible = (scene_id == "bedroom")
 
+	# 只在浴室场景显示洗澡按钮
+	if bath_button:
+		bath_button.visible = (scene_id == "bathroom")
+
 	# 隐藏子菜单
 	if game_submenu:
 		game_submenu.visible = false
@@ -235,6 +253,12 @@ func _on_sleep_button_pressed():
 		hide_menu()
 		return
 	sleep_mode_selected.emit()
+	hide_menu()
+
+
+func _on_bath_button_pressed():
+	print("洗澡按钮被点击")
+	bath_mode_selected.emit()
 	hide_menu()
 
 

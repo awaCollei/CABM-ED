@@ -235,6 +235,7 @@ func _connect_signals():
 	action_menu.game_selected.connect(_on_game_selected)
 	action_menu.companion_mode_selected.connect(_on_companion_mode_selected)
 	action_menu.sleep_mode_selected.connect(_on_sleep_mode_selected)
+	action_menu.bath_mode_selected.connect(_on_bath_mode_selected)
 	
 	# 场景菜单
 	scene_menu.scene_selected.connect(_on_scene_menu_selected)
@@ -659,6 +660,28 @@ func _on_sleep_mode_selected():
 	else:
 		# 如果没有过渡管理器，直接切换
 		get_tree().change_scene_to_file("res://scenes/sleep_mode.tscn")
+
+func _on_bath_mode_selected():
+	"""处理洗澡模式选择"""
+	print("进入洗澡模式")
+	
+	# 验证当前场景是否为浴室
+	if scene_manager.current_scene != "bathroom":
+		MessageDisplay.show_failure_message("只能在浴室进入洗澡模式")
+		return
+	
+	# 保存当前游戏状态
+	if has_node("/root/SaveManager"):
+		var save_mgr = get_node("/root/SaveManager")
+		save_mgr.save_game(save_mgr.current_slot)
+	
+	# 使用过渡效果切换到洗澡模式场景
+	if has_node("/root/SceneTransition"):
+		var transition = get_node("/root/SceneTransition")
+		await transition.change_scene_with_fade("res://scenes/bath_mode.tscn")
+	else:
+		# 如果没有过渡管理器，直接切换
+		get_tree().change_scene_to_file("res://scenes/bath_mode.tscn")
 
 func _on_game_selected(game_type: String):
 	print("游戏选择信号接收: ", game_type)
