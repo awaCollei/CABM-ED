@@ -1,10 +1,11 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene format=3 uid="uid://c6hyc7w6wipej"]
 
-[ext_resource type="Script" path="res://scripts/bath/bath_mode.gd" id="1_bath"]
-[ext_resource type="Texture2D" path="res://assets/images/bath/1.png" id="2_bg"]
-[ext_resource type="AudioStream" path="res://assets/audio/bath/water.mp3" id="3_water"]
+[ext_resource type="Script" uid="uid://cckd8kklyqtnv" path="res://scripts/bath/bath_mode.gd" id="1_bath"]
+[ext_resource type="Texture2D" uid="uid://b4dmwaoci4wuh" path="res://assets/images/bath/1.png" id="2_bg"]
+[ext_resource type="Texture2D" uid="uid://vyhcwqppds7b" path="res://assets/images/bath/fog.png" id="3_rhwm2"]
+[ext_resource type="Script" uid="uid://dexrnjawunieo" path="res://scripts/bath/fog_container.gd" id="4_fogcontainer"]
 
-[node name="BathMode" type="Control"]
+[node name="BathMode" type="Control" unique_id=1416534890]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -13,7 +14,7 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_bath")
 
-[node name="BackgroundImage" type="TextureRect" parent="."]
+[node name="BackgroundImage" type="TextureRect" parent="." unique_id=917660178]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -24,12 +25,48 @@ texture = ExtResource("2_bg")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="WaterPlayer" type="AudioStreamPlayer" parent="."]
+[node name="Fog" type="TextureRect" parent="BackgroundImage" unique_id=1902514399]
+layout_mode = 0
+offset_left = 466.0
+offset_top = 426.0
+offset_right = 1024.0
+offset_bottom = 740.0
+texture = ExtResource("3_rhwm2")
 
-[node name="ExitButton" type="Button" parent="."]
+[node name="FogContainer" type="Control" parent="BackgroundImage" unique_id=1902514400]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("4_fogcontainer")
+
+[node name="WaterPlayer" type="AudioStreamPlayer" parent="." unique_id=2076281041]
+
+[node name="ExitButton" type="Button" parent="." unique_id=1955493288]
 layout_mode = 1
 offset_left = 20.0
 offset_top = 20.0
 offset_right = 120.0
 offset_bottom = 70.0
 text = "退出"
+
+[node name="FogToggle" type="CheckButton" parent="." unique_id=1955493289]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -172.0
+offset_top = 20.0
+offset_right = -72.0
+offset_bottom = 58.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_focus_color = Color(0, 0, 0, 1)
+theme_override_colors/font_pressed_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_color = Color(0, 0, 0, 1)
+theme_override_colors/font_hover_pressed_color = Color(0, 0, 0, 1)
+button_pressed = true
+text = "水雾"
