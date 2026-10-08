@@ -7,13 +7,13 @@ const BATH_BACKGROUND := "res://assets/images/bath/1.png"
 const BATH_AUDIO := "res://assets/audio/bath/water.mp3"
 
 # ============ 水雾参数（硬编码） ============
-const CLUSTER_COUNT := 15              # 云团数量
+const CLUSTER_COUNT := 20              # 云团数量
 const PUFFS_PER_CLUSTER_MIN := 8      # 每团最少粒子
 const PUFFS_PER_CLUSTER_MAX := 12     # 每团最多粒子
 const CLUSTER_SPREAD := 130.0         # 团内粒子分布半径
 const PUFF_RADIUS_MIN := 60.0         # 粒子最小半径
 const PUFF_RADIUS_MAX := 140.0        # 粒子最大半径
-const PUFF_ALPHA_MIN := 0.06          # 粒子最小透明度
+const PUFF_ALPHA_MIN := 0.10          # 粒子最小透明度
 const PUFF_ALPHA_MAX := 0.20          # 粒子最大透明度
 const CLUSTER_DRIFT := 50.0           # 云团整体漂移幅度
 const PUFF_DRIFT := 14.0              # 粒子局部抖动幅度

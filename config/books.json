@@ -32,7 +32,7 @@
       "title": "破冰者（一）",
       "author": ["awaCollei", "DeepSeek"],
       "icon": "res://assets/images/books/book2.png",
-      "description": "雪狐原作的小说，第一部。但是全是AI写的，而且没写完……以后肯定是要重写的，毕竟AI写的也是一坨（",
+      "description": "现代架空 | 科幻 | 军事 | 超能力 | AI生成\n本故事纯属虚构，涉及的世界、组织、人物、科技均为艺术创作设定，与现实中的任何国家、地区、事件、团体及个人无关。如有雷同，纯属巧合。\n此故事与CABM-ED没有直接关联。\n由于是AI生成，在某些地方可能会有逻辑漏洞，忽略就行了（",
       "chapters": [
         { "index": 1, "title": "序章" },
         { "index": 2, "title": "死寂" },
@@ -41,7 +41,7 @@
         { "index": 5, "title": "破冰" },
         { "index": 6, "title": "潜袭" },
         { "index": 7, "title": "幽灵" },
-        { "index": 8, "title": "雪狐" }
+        { "index": 8, "title": "未完待续..." }
       ]
     },
     {

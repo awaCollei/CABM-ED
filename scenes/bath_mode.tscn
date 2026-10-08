@@ -27,9 +27,9 @@ stretch_mode = 5
 
 [node name="Fog" type="TextureRect" parent="BackgroundImage" unique_id=1902514399]
 layout_mode = 0
-offset_left = 466.0
+offset_left = 472.0
 offset_top = 426.0
-offset_right = 1024.0
+offset_right = 1030.0
 offset_bottom = 740.0
 texture = ExtResource("3_rhwm2")
 
